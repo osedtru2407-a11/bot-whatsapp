@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Sales Bot Studio - Panel de Control</title>
+  <meta name="description" content="Panel visual intuitivo para configurar flujos de respuesta, programar envíos y gestionar prospectos con WhatsApp Web para no programadores.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header Principal -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-logo">
+        <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"/>
+        </svg>
+        <div class="brand-text">
+          <h1>WhatsApp Sales Bot</h1>
+          <span class="brand-subtitle">Panel de Control & Automatización Comercial</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Estado de Conexión -->
+    <div class="header-right">
+      <div id="connection-pill" class="connection-pill status-loading">
+        <span class="status-dot"></span>
+        <span id="connection-text">Iniciando...</span>
+      </div>
+
+      <div class="bot-toggle-wrapper">
+        <label class="switch">
+          <input type="checkbox" id="bot-toggle" checked>
+          <span class="slider round"></span>
+        </label>
+        <span id="bot-toggle-label" class="toggle-label">Bot Activo</span>
+      </div>
+
+      <button id="btn-reconnect" class="btn btn-outline-sm" title="Reiniciar conexión con WhatsApp">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Reconectar
+      </button>
+    </div>
+  </header>
+
+  <!-- Banner Flotante / Alerta de QR Code si se requiere escanear -->
+  <section id="qr-modal-banner" class="qr-banner-container hidden">
+    <div class="qr-card">
+      <div class="qr-header">
+        <div class="qr-badge">Escaneo Requerido</div>
+        <h2>Vincula tu WhatsApp en 3 pasos</h2>
+        <p>Apunta la cámara de WhatsApp de tu celular hacia este código QR para activar el bot:</p>
+      </div>
+
+      <div class="qr-body">
+        <div class="qr-image-wrapper">
+          <img id="qr-image" src="" alt="Código QR de WhatsApp" />
+          <div id="qr-loading-spinner" class="spinner hidden"></div>
+        </div>
+        <div class="qr-steps">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <span>Abre <strong>WhatsApp</strong> en tu celular.</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <span>Toca <strong>Ajustes / Menú (⋮)</strong> y selecciona <strong>Dispositivos vinculados</strong>.</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <span>Presiona <strong>Vincular un dispositivo</strong> y apunta tu cámara aquí.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contenedor Principal con Tabs de Navegación -->
+  <main class="app-main">
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-rules">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        Rutas de Respuesta (Flujos de Venta)
+      </button>
+      <button class="tab-btn" data-tab="tab-scheduler">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Programar Envíos
+        <span id="tab-sched-badge" class="badge-counter">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-simulator">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        Simulador en Vivo
+      </button>
+      <button class="tab-btn" data-tab="tab-quick-send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        Envío Directo / Prueba
+      </button>
+      <button class="tab-btn" data-tab="tab-leads">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        Prospectos & Clientes
+      </button>
+      <button class="tab-btn" data-tab="tab-settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Configuración
+      </button>
+    </nav>
+
+    <!-- ==================== TAB 1: REGLAS / RUTAS DE RESPUESTA ==================== -->
+    <section id="tab-rules" class="tab-content active">
+      <div class="content-toolbar">
+        <div>
+          <h2>Rutas de Respuesta Automática</h2>
+          <p class="section-desc">Crea y personaliza cómo responde tu bot cuando un cliente escribe palabras clave específicas.</p>
+        </div>
+        <button id="btn-open-create-rule" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Nueva Ruta de Venta
+        </button>
+      </div>
+
+      <!-- Grid de Reglas Visuales -->
+      <div id="rules-grid" class="cards-grid">
+        <!-- Generado dinámicamente -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: PROGRAMACIÓN DE ENVÍOS ==================== -->
+    <section id="tab-scheduler" class="tab-content">
+      <div class="grid-two-cols">
+        <!-- Formulario para Programar -->
+        <div class="card card-form">
+          <div class="card-header">
+            <h3>⏰ Programar Nuevo Envío</h3>
+            <p>Configura un mensaje automático para ser enviado a una fecha y hora exacta.</p>
+          </div>
+          <form id="schedule-form" class="form-body">
+            <div class="form-group">
+              <label for="sched-name">Nombre de la campaña / recordatorio</label>
+              <input type="text" id="sched-name" placeholder="Ej: Recordatorio Promoción Fin de Mes" required>
+            </div>
+
+            <div class="form-group">
+              <label for="sched-recipient">Número de WhatsApp (con código de país sin +)</label>
+              <input type="text" id="sched-recipient" placeholder="Ej: 573118017673" value="573118017673" required>
+              <span class="field-help">Ejemplo Colombia: 57 + celular (10 dígitos).</span>
+            </div>
+
+            <div class="form-group">
+              <label for="sched-datetime">Fecha y Hora de Envío</label>
+              <input type="datetime-local" id="sched-datetime" required>
+            </div>
+
+            <div class="form-group">
+              <label for="sched-message">Mensaje a Enviar</label>
+              <textarea id="sched-message" rows="4" placeholder="Escribe tu mensaje comercial o recordatorio..." required></textarea>
+              <div class="format-helpers">
+                <span>Tips: usa <strong>*negrita*</strong>, <em>_cursiva_</em> y saltos de línea.</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              Guardar y Programar Envío
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Mensajes Programados -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Envíos Registrados</h3>
+            <p>Historial y cola de mensajes pendientes de entrega.</p>
+          </div>
+          <div class="schedules-list-wrapper">
+            <div id="schedules-list" class="schedules-list">
+              <!-- Generado dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: SIMULADOR EN VIVO ==================== -->
+    <section id="tab-simulator" class="tab-content">
+      <div class="simulator-container">
+        <div class="simulator-info">
+          <h2>Simulador de Chat en Vivo</h2>
+          <p>Prueba tus flujos de venta y respuestas automáticas directamente aquí sin enviar mensajes reales a clientes.</p>
+          <div class="simulator-tips">
+            <h4>💡 Prueba escribiendo:</h4>
+            <div class="quick-test-chips">
+              <button class="chip-btn" data-text="hola">hola</button>
+              <button class="chip-btn" data-text="catalogo">catalogo</button>
+              <button class="chip-btn" data-text="precios">precios</button>
+              <button class="chip-btn" data-text="pagos">pagos</button>
+              <button class="chip-btn" data-text="asesor">asesor</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mockup de Teléfono Celular -->
+        <div class="phone-mockup">
+          <div class="phone-top-bar">
+            <div class="camera-hole"></div>
+          </div>
+          <div class="phone-chat-header">
+            <div class="avatar-circle">🤖</div>
+            <div class="chat-header-info">
+              <span class="chat-name" id="sim-business-name">Mi Tienda Virtual</span>
+              <span class="chat-status">en línea (Bot)</span>
+            </div>
+          </div>
+
+          <div id="phone-chat-messages" class="phone-chat-body">
+            <div class="msg-bubble bot-bubble">
+              ¡Hola! Escribe un mensaje para poner a prueba las reglas configuradas.
+              <span class="msg-time">12:00</span>
+            </div>
+          </div>
+
+          <form id="phone-chat-input-form" class="phone-chat-footer">
+            <input type="text" id="phone-chat-input" placeholder="Escribe un mensaje de prueba..." autocomplete="off">
+            <button type="submit" class="btn-send-sim">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: ENVÍO DIRECTO / PRUEBA ==================== -->
+    <section id="tab-quick-send" class="tab-content">
+      <div class="card card-center-max">
+        <div class="card-header">
+          <h2>🚀 Enviar Mensaje Directo de WhatsApp</h2>
+          <p>Envía un mensaje instantáneo o prueba tu "Hola Mundo" al contacto configurado sin esperar.</p>
+        </div>
+
+        <form id="quick-send-form" class="form-body">
+          <div class="form-group">
+            <label for="quick-phone">Número de WhatsApp Destino</label>
+            <input type="text" id="quick-phone" value="573118017673" placeholder="573118017673" required>
+            <span class="field-help">Número en formato internacional sin el signo '+'.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="quick-message">Mensaje</label>
+            <textarea id="quick-message" rows="5" placeholder="Escribe el mensaje a enviar..." required>¡Hola Mundo! Este es mi primer mensaje enviado desde el panel visual de mi Bot de WhatsApp 🚀</textarea>
+          </div>
+
+          <div class="quick-presets">
+            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola Mundo! 🚀 Este es un mensaje de prueba desde mi Bot de WhatsApp.">Preset: Hola Mundo</button>
+            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! 👋 Te contactamos para confirmar tu pedido en Mi Tienda Virtual. ¿Todo en orden?">Preset: Confirmación de Pedido</button>
+            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! Tenemos un descuento especial del 20% para ti el día de hoy. Escribe *menu* para ver nuestro catálogo.">Preset: Descuento Comercial</button>
+          </div>
+
+          <button type="submit" id="btn-submit-quick-send" class="btn btn-primary btn-block btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            Enviar Mensaje Ahora por WhatsApp
+          </button>
+        </form>
+
+        <div id="quick-send-result" class="result-banner hidden"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: LEADS & PROSPECTOS ==================== -->
+    <section id="tab-leads" class="tab-content">
+      <div class="content-toolbar">
+        <div>
+          <h2>Prospectos y Contactos</h2>
+          <p class="section-desc">Clientes que han interactuado con tu bot de WhatsApp y sus estados comerciales.</p>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="leads-table">
+          <thead>
+            <tr>
+              <th>Contacto / Teléfono</th>
+              <th>Estado / Etiqueta</th>
+              <th>Último Mensaje</th>
+              <th>Fecha</th>
+              <th>Atención Humana</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="leads-table-body">
+            <!-- Generado dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: CONFIGURACIÓN ==================== -->
+    <section id="tab-settings" class="tab-content">
+      <div class="card card-center-max">
+        <div class="card-header">
+          <h2>⚙️ Configuración del Negocio y Bot</h2>
+          <p>Ajustes generales de comportamiento de tu asistente comercial.</p>
+        </div>
+
+        <form id="settings-form" class="form-body">
+          <div class="form-group">
+            <label for="set-biz-name">Nombre de tu Negocio / Tienda</label>
+            <input type="text" id="set-biz-name" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="set-simulate-typing">Simular "Escribiendo..."</label>
+              <select id="set-simulate-typing">
+                <option value="true">Sí (Más natural y humano)</option>
+                <option value="false">No (Respuesta instantánea)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="set-delay-seconds">Tiempo de escritura (segundos)</label>
+              <input type="number" id="set-delay-seconds" min="1" max="10" value="2">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="set-ignore-groups">Ignorar Mensajes de Grupos</label>
+            <select id="set-ignore-groups">
+              <option value="true">Sí (Recomendado: responder solo a chats individuales)</option>
+              <option value="false">No (Responder también en grupos)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="set-fallback">Mensaje de Ayuda cuando el bot no entiende la pregunta</label>
+            <textarea id="set-fallback" rows="3" placeholder="Mensaje para orientar al cliente..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            Guardar Cambios
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: CREAR / EDITAR REGLA -->
+  <div id="rule-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-rule-title">Nueva Ruta de Venta</h3>
+        <button id="btn-close-modal" class="btn-close">&times;</button>
+      </div>
+
+      <form id="rule-modal-form" class="form-body">
+        <input type="hidden" id="modal-rule-id">
+
+        <div class="form-group">
+          <label for="rule-name">Nombre descriptivo de la ruta</label>
+          <input type="text" id="rule-name" placeholder="Ej: Precios de Zapatos, Garantías, etc." required>
+        </div>
+
+        <div class="form-group">
+          <label for="rule-match-type">Tipo de Coincidencia</label>
+          <select id="rule-match-type">
+            <option value="contains_any">Contiene alguna de las palabras clave (Recomendado)</option>
+            <option value="exact">Coincidencia exacta (Solo si el mensaje es idéntico)</option>
+            <option value="starts_with">Empieza con la palabra clave</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="rule-triggers">Palabras Clave (Separadas por comas)</label>
+          <input type="text" id="rule-triggers" placeholder="Ej: precio, cuanto cuesta, costo, valor" required>
+          <span class="field-help">Si el cliente escribe cualquiera de estas palabras, se activará esta respuesta.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="rule-response">Respuesta Automática</label>
+          <div class="editor-quick-tools">
+            <button type="button" class="tool-btn" data-wrap="*">Negrita *texto*</button>
+            <button type="button" class="tool-btn" data-wrap="_">Cursiva _texto_</button>
+            <button type="button" class="tool-btn" data-insert="🛍️">🛍️</button>
+            <button type="button" class="tool-btn" data-insert="💰">💰</button>
+            <button type="button" class="tool-btn" data-insert="🚚">🚚</button>
+            <button type="button" class="tool-btn" data-insert="📱">📱</button>
+            <button type="button" class="tool-btn" data-insert="✅">✅</button>
+          </div>
+          <textarea id="rule-response" rows="6" placeholder="Escribe la respuesta que recibirá el cliente..." required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rule-lead-tag">Etiqueta para el Prospecto</label>
+            <input type="text" id="rule-lead-tag" placeholder="Ej: Cotizó, Interesado, Por Pagar">
+          </div>
+
+          <div class="form-group form-checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" id="rule-pause-bot">
+              <span class="checkmark"></span>
+              Pausar bot tras responder (Para transferir a un Asesor Humano)
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-modal" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Ruta de Respuesta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
