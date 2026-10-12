@@ -144,6 +144,9 @@ function readFileAsBase64(file) {
 }
 
 async function uploadFileApi(file, folder = 'rules') {
+  if (file.size > 50 * 1024 * 1024) {
+    throw new Error('El archivo supera los 50 MB. Por favor elige un archivo más liviano.');
+  }
   const base64Data = await readFileAsBase64(file);
   const res = await fetch('/api/upload', {
     method: 'POST',
@@ -156,8 +159,11 @@ async function uploadFileApi(file, folder = 'rules') {
     })
   });
   if (!res.ok) {
+    if (res.status === 413) {
+      throw new Error('El servidor rechazó el archivo por tamaño (413). Recuerda reiniciar el panel para que tome la nueva configuración.');
+    }
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Error al procesar el archivo');
+    throw new Error(err.error || `Error al procesar el archivo (código ${res.status})`);
   }
   return await res.json();
 }

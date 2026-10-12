@@ -18,9 +18,9 @@ const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
     }
 });
 
-// Aumentar límites para permitir subida de archivos (imágenes, PDFs, etc.)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Aumentar límites para permitir subida de archivos (imágenes, PDFs de catálogo, etc.)
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Estado global del cliente WhatsApp
