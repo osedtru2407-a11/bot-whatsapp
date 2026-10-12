@@ -78,3 +78,7 @@ typings/
 # IDE's
 .idea
 .vscode
+
+# Archivos subidos y recibidos por WhatsApp (medios, comprobantes, catálogos)
+public/uploads/
+uploads/

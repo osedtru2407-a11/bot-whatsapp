@@ -66,10 +66,17 @@
         "que venden",
         "catálogo"
       ],
-      "response": "🛍️ *CATÁLOGO DE PRODUCTOS 2026*\n\nConoce toda nuestra colección y promociones de la temporada aquí:\n🔗 https://mitiendavirtual.ejemplo.com/catalogo\n\nSi te interesa algún producto en específico, indícanos el nombre o escribe *precios* para consultar la lista.",
-      "media": null,
+      "response": "🛍️ *CATÁLOGO DE PRODUCTOS 2026*\n\nConoce toda nuestra colección y promociones de la temporada\n\nSi te interesa algún producto de la imagen, indícanos el nombre o escribe *precios* para consultar la lista.",
+      "media": {
+        "success": true,
+        "url": "/uploads/rules/1791833134101_Gemini_Generated_Image_ipt80xipt80xipt8.jpg",
+        "filename": "Gemini_Generated_Image_ipt80xipt80xipt8.jpg",
+        "mimetype": "image/jpeg",
+        "size": 2213878
+      },
       "leadTag": "Vio Catálogo",
-      "pauseBot": false
+      "pauseBot": false,
+      "mediaTypeFilter": "any"
     },
     {
       "id": "rule-prices",
@@ -171,10 +178,10 @@
     {
       "phone": "167675556851809@lid",
       "name": "Rubén Darío Villamil",
-      "tag": "Requiere Asesor",
-      "lastMessage": "4",
-      "lastInteraction": "2026-10-12T18:51:51.678Z",
-      "humanPaused": true,
+      "tag": "Vio Catálogo",
+      "lastMessage": "Catálogo",
+      "lastInteraction": "2026-10-12T19:26:14.590Z",
+      "humanPaused": false,
       "receivedFiles": []
     },
     {
