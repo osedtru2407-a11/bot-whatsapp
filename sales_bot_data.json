@@ -13,6 +13,7 @@
       "id": "rule-welcome",
       "name": "Saludo y Menú Principal",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "hola",
@@ -25,13 +26,36 @@
         "info"
       ],
       "response": "¡Hola! 👋 Te damos la bienvenida a *Mi Tienda Virtual*.\n\n¿En qué podemos ayudarte hoy? Escribe el número o la palabra clave:\n\n1️⃣ *Catálogo* - Ver nuestros productos\n2️⃣ *Precios* - Lista de precios y promociones\n3️⃣ *Pagos* - Métodos de pago y cuentas\n4️⃣ *Envíos* - Tiempos y cobertura\n5️⃣ *Asesor* - Hablar con un agente humano",
+      "media": null,
       "leadTag": "Interesado",
       "pauseBot": false
+    },
+    {
+      "id": "rule-receipt",
+      "name": "Recepción de Comprobante de Pago",
+      "enabled": true,
+      "triggerType": "media",
+      "mediaTypeFilter": "image",
+      "matchType": "contains_any",
+      "triggers": [
+        "comprobante",
+        "pago",
+        "ya pague",
+        "transferencia",
+        "nequi",
+        "daviplata",
+        "recibo"
+      ],
+      "response": "🧾 ¡Hemos recibido tu comprobante de pago exitosamente!\n\nNuestro equipo de tesorería lo está validando en el sistema para proceder con el alistamiento y despacho de tu pedido. En breve un asesor te confirmará el número de guía. ¡Muchas gracias por tu compra! 🎉",
+      "media": null,
+      "leadTag": "Comprobante Recibido",
+      "pauseBot": true
     },
     {
       "id": "rule-catalog",
       "name": "Catálogo de Productos",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "1",
@@ -43,6 +67,7 @@
         "catálogo"
       ],
       "response": "🛍️ *CATÁLOGO DE PRODUCTOS 2026*\n\nConoce toda nuestra colección y promociones de la temporada aquí:\n🔗 https://mitiendavirtual.ejemplo.com/catalogo\n\nSi te interesa algún producto en específico, indícanos el nombre o escribe *precios* para consultar la lista.",
+      "media": null,
       "leadTag": "Vio Catálogo",
       "pauseBot": false
     },
@@ -50,6 +75,7 @@
       "id": "rule-prices",
       "name": "Precios y Promociones",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "2",
@@ -62,6 +88,7 @@
         "descuento"
       ],
       "response": "💰 *LISTA DE PRECIOS & PROMOCIONES*\n\n• *Combo Básico:* $45.000 COP\n• *Combo Premium:* $85.000 COP\n• *Super Pack x3:* $120.000 COP *(¡Envío gratis!)*\n\n🎯 Escribe *pagos* para conocer las cuentas disponibles o *3* para concretar tu pedido.",
+      "media": null,
       "leadTag": "Cotizó",
       "pauseBot": false
     },
@@ -69,6 +96,7 @@
       "id": "rule-payments",
       "name": "Medios de Pago",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "3",
@@ -80,7 +108,8 @@
         "transferencia",
         "como pago"
       ],
-      "response": "💳 *MEDIOS DE PAGO DISPONIBLES*\n\nRecibimos pagos de forma segura por:\n\n📱 *Nequi / Daviplata:* 311 801 7673\n🏦 *Bancolombia (Ahorros):* 123-456789-01\n💳 *Tarjetas de Crédito / Débito:* Link de PSE disponible\n\nPor favor envía el comprobante por este chat para procesar tu orden de inmediato.",
+      "response": "💳 *MEDIOS DE PAGO DISPONIBLES*\n\nRecibimos pagos de forma segura por:\n\n📱 *Nequi / Daviplata:* 311 801 7673\n🏦 *Bancolombia (Ahorros):* 123-456789-01\n💳 *Tarjetas de Crédito / Débito:* Link de PSE disponible\n\nPor favor envía la foto o captura del comprobante por este chat para procesar tu orden de inmediato.",
+      "media": null,
       "leadTag": "Por Pagar",
       "pauseBot": false
     },
@@ -88,6 +117,7 @@
       "id": "rule-shipping",
       "name": "Información de Envíos",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "4",
@@ -99,6 +129,7 @@
         "entrega"
       ],
       "response": "🚚 *INFORMACIÓN DE ENVÍOS*\n\n• *Envíos locales:* 24 horas (Bogotá y ciudades principales)\n• *Envíos nacionales:* 2 a 4 días hábiles vía Servientrega o Coordinadora\n• *Costo de envío:* $10.000 COP (¡GRATIS por compras superiores a $100.000!)\n\n¿A qué ciudad o municipio requieres tu pedido?",
+      "media": null,
       "leadTag": "Interesado en Envío",
       "pauseBot": false
     },
@@ -106,6 +137,7 @@
       "id": "rule-human",
       "name": "Transferir a Asesor Humano",
       "enabled": true,
+      "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
         "5",
@@ -117,6 +149,7 @@
         "ayuda personal"
       ],
       "response": "👤 ¡Comprendido! He pausado las respuestas automáticas para este chat. Uno de nuestros asesores humanos te responderá en breve. ¡Muchas gracias por tu paciencia!",
+      "media": null,
       "leadTag": "Requiere Asesor",
       "pauseBot": true
     }
@@ -127,6 +160,7 @@
       "name": "Prueba de Bienvenida",
       "recipient": "573118017673",
       "message": "¡Hola! 👋 Te escribimos desde Mi Tienda Virtual para recordarte que tenemos promociones activas este mes. Escribe *menu* para conocerlas.",
+      "media": null,
       "scheduledTime": "2026-10-12T15:00:00.000Z",
       "status": "sent",
       "createdAt": "2026-10-12T13:30:00.000Z",
@@ -140,7 +174,8 @@
       "tag": "Requiere Asesor",
       "lastMessage": "4",
       "lastInteraction": "2026-10-12T18:51:51.678Z",
-      "humanPaused": true
+      "humanPaused": true,
+      "receivedFiles": []
     },
     {
       "phone": "573118017673",
@@ -148,7 +183,8 @@
       "tag": "Interesado",
       "lastMessage": "¡Hola Mundo!",
       "lastInteraction": "2026-10-12T13:25:00.000Z",
-      "humanPaused": false
+      "humanPaused": false,
+      "receivedFiles": []
     }
   ]
 }

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Sales Bot Studio - Panel de Control</title>
-  <meta name="description" content="Panel visual intuitivo para configurar flujos de respuesta, programar envíos y gestionar prospectos con WhatsApp Web para no programadores.">
+  <title>WhatsApp Sales Bot Studio - Panel de Control & Gestión de Medios</title>
+  <meta name="description" content="Panel visual intuitivo para configurar flujos de respuesta, enviar y recibir archivos, programar envíos y gestionar prospectos con WhatsApp Web.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
         </svg>
         <div class="brand-text">
           <h1>WhatsApp Sales Bot</h1>
-          <span class="brand-subtitle">Panel de Control & Automatización Comercial</span>
+          <span class="brand-subtitle">Panel de Control & Automatización con Medios</span>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@
       </button>
       <button class="tab-btn" data-tab="tab-leads">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-        Prospectos & Clientes
+        Prospectos & Archivos Recibidos
       </button>
       <button class="tab-btn" data-tab="tab-settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -114,7 +114,7 @@
       <div class="content-toolbar">
         <div>
           <h2>Rutas de Respuesta Automática</h2>
-          <p class="section-desc">Crea y personaliza cómo responde tu bot cuando un cliente escribe palabras clave específicas.</p>
+          <p class="section-desc">Crea y personaliza respuestas con texto, catálogos en PDF, imágenes y detección de comprobantes.</p>
         </div>
         <button id="btn-open-create-rule" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -135,12 +135,12 @@
         <div class="card card-form">
           <div class="card-header">
             <h3>⏰ Programar Nuevo Envío</h3>
-            <p>Configura un mensaje automático para ser enviado a una fecha y hora exacta.</p>
+            <p>Configura un mensaje automático o campaña con archivo adjunto a fecha y hora exacta.</p>
           </div>
           <form id="schedule-form" class="form-body">
             <div class="form-group">
               <label for="sched-name">Nombre de la campaña / recordatorio</label>
-              <input type="text" id="sched-name" placeholder="Ej: Recordatorio Promoción Fin de Mes" required>
+              <input type="text" id="sched-name" placeholder="Ej: Promoción Especial Fin de Mes" required>
             </div>
 
             <div class="form-group">
@@ -155,11 +155,21 @@
             </div>
 
             <div class="form-group">
-              <label for="sched-message">Mensaje a Enviar</label>
-              <textarea id="sched-message" rows="4" placeholder="Escribe tu mensaje comercial o recordatorio..." required></textarea>
-              <div class="format-helpers">
-                <span>Tips: usa <strong>*negrita*</strong>, <em>_cursiva_</em> y saltos de línea.</span>
+              <label for="sched-message">Mensaje o Leyenda (Caption)</label>
+              <textarea id="sched-message" rows="3" placeholder="Escribe tu mensaje o leyenda del archivo..."></textarea>
+            </div>
+
+            <!-- Adjuntar archivo a campaña programada -->
+            <div class="form-group">
+              <label>📎 Archivo Adjunto (Opcional: Folleto, PDF, Foto)</label>
+              <div class="file-dropzone" id="sched-dropzone">
+                <input type="file" id="sched-file-input" class="file-input-hidden">
+                <div class="dropzone-content">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  <span>Haz clic o arrastra un archivo aquí</span>
+                </div>
               </div>
+              <div id="sched-file-preview" class="file-preview-card hidden"></div>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">
@@ -188,15 +198,25 @@
       <div class="simulator-container">
         <div class="simulator-info">
           <h2>Simulador de Chat en Vivo</h2>
-          <p>Prueba tus flujos de venta y respuestas automáticas directamente aquí sin enviar mensajes reales a clientes.</p>
+          <p>Prueba cómo responde tu bot ante mensajes de texto o cuando un cliente envía un archivo o foto de comprobante.</p>
+          
           <div class="simulator-tips">
-            <h4>💡 Prueba escribiendo:</h4>
+            <h4>💡 Atajos de Prueba Rápida:</h4>
             <div class="quick-test-chips">
-              <button class="chip-btn" data-text="hola">hola</button>
-              <button class="chip-btn" data-text="catalogo">catalogo</button>
-              <button class="chip-btn" data-text="precios">precios</button>
-              <button class="chip-btn" data-text="pagos">pagos</button>
-              <button class="chip-btn" data-text="asesor">asesor</button>
+              <button class="chip-btn" data-text="hola">👋 hola</button>
+              <button class="chip-btn" data-text="catalogo">🛍️ catálogo</button>
+              <button class="chip-btn" data-text="precios">💰 precios</button>
+              <button class="chip-btn" data-text="pagos">💳 pagos</button>
+              <button class="chip-btn" data-text="asesor">👤 asesor</button>
+            </div>
+
+            <div class="sim-media-actions">
+              <button id="btn-sim-send-receipt" class="btn btn-outline-sm btn-sim-action">
+                🧾 Simular envío de Comprobante / Foto
+              </button>
+              <button id="btn-sim-send-pdf" class="btn btn-outline-sm btn-sim-action">
+                📄 Simular envío de Documento PDF
+              </button>
             </div>
           </div>
         </div>
@@ -216,7 +236,7 @@
 
           <div id="phone-chat-messages" class="phone-chat-body">
             <div class="msg-bubble bot-bubble">
-              ¡Hola! Escribe un mensaje para poner a prueba las reglas configuradas.
+              ¡Hola! Escribe un mensaje o presiona uno de los botones para probar la respuesta automática.
               <span class="msg-time">12:00</span>
             </div>
           </div>
@@ -235,8 +255,8 @@
     <section id="tab-quick-send" class="tab-content">
       <div class="card card-center-max">
         <div class="card-header">
-          <h2>🚀 Enviar Mensaje Directo de WhatsApp</h2>
-          <p>Envía un mensaje instantáneo o prueba tu "Hola Mundo" al contacto configurado sin esperar.</p>
+          <h2>🚀 Enviar Mensaje Directo & Archivos por WhatsApp</h2>
+          <p>Envía mensajes de texto, fotos, audios o catálogos en PDF inmediatamente a cualquier número.</p>
         </div>
 
         <form id="quick-send-form" class="form-body">
@@ -247,19 +267,32 @@
           </div>
 
           <div class="form-group">
-            <label for="quick-message">Mensaje</label>
-            <textarea id="quick-message" rows="5" placeholder="Escribe el mensaje a enviar..." required>¡Hola Mundo! Este es mi primer mensaje enviado desde el panel visual de mi Bot de WhatsApp 🚀</textarea>
+            <label for="quick-message">Mensaje o Leyenda (Caption)</label>
+            <textarea id="quick-message" rows="4" placeholder="Escribe el mensaje a enviar...">¡Hola! Te compartimos la información desde nuestro panel de WhatsApp 🚀</textarea>
+          </div>
+
+          <!-- Zona de Archivo Adjunto Directo -->
+          <div class="form-group">
+            <label>📎 Archivo Adjunto (Opcional: Imagen, PDF, Documento)</label>
+            <div class="file-dropzone" id="quick-dropzone">
+              <input type="file" id="quick-file-input" class="file-input-hidden">
+              <div class="dropzone-content">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <span>Haz clic o arrastra una imagen, PDF o catálogo aquí</span>
+              </div>
+            </div>
+            <div id="quick-file-preview" class="file-preview-card hidden"></div>
           </div>
 
           <div class="quick-presets">
             <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola Mundo! 🚀 Este es un mensaje de prueba desde mi Bot de WhatsApp.">Preset: Hola Mundo</button>
-            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! 👋 Te contactamos para confirmar tu pedido en Mi Tienda Virtual. ¿Todo en orden?">Preset: Confirmación de Pedido</button>
-            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! Tenemos un descuento especial del 20% para ti el día de hoy. Escribe *menu* para ver nuestro catálogo.">Preset: Descuento Comercial</button>
+            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! 👋 Te contactamos para confirmar tu pedido en Mi Tienda Virtual.">Preset: Confirmación</button>
+            <button type="button" class="btn btn-ghost-sm" data-msg="¡Hola! Adjuntamos el catálogo y la lista de promociones especiales del mes.">Preset: Catálogo</button>
           </div>
 
           <button type="submit" id="btn-submit-quick-send" class="btn btn-primary btn-block btn-lg">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            Enviar Mensaje Ahora por WhatsApp
+            Enviar Ahora por WhatsApp
           </button>
         </form>
 
@@ -267,12 +300,12 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 5: LEADS & PROSPECTOS ==================== -->
+    <!-- ==================== TAB 5: LEADS & ARCHIVOS RECIBIDOS ==================== -->
     <section id="tab-leads" class="tab-content">
       <div class="content-toolbar">
         <div>
-          <h2>Prospectos y Contactos</h2>
-          <p class="section-desc">Clientes que han interactuado con tu bot de WhatsApp y sus estados comerciales.</p>
+          <h2>Prospectos y Archivos Recibidos</h2>
+          <p class="section-desc">Historial de clientes, comprobantes de pago enviados y estado de atención.</p>
         </div>
       </div>
 
@@ -283,6 +316,7 @@
               <th>Contacto / Teléfono</th>
               <th>Estado / Etiqueta</th>
               <th>Último Mensaje</th>
+              <th>Archivos Recibidos</th>
               <th>Fecha</th>
               <th>Atención Humana</th>
               <th>Acción</th>
@@ -345,7 +379,7 @@
     </section>
   </main>
 
-  <!-- MODAL: CREAR / EDITAR REGLA -->
+  <!-- ==================== MODAL: CREAR / EDITAR RUTA ==================== -->
   <div id="rule-modal" class="modal-overlay hidden">
     <div class="modal-card">
       <div class="modal-header">
@@ -358,42 +392,79 @@
 
         <div class="form-group">
           <label for="rule-name">Nombre descriptivo de la ruta</label>
-          <input type="text" id="rule-name" placeholder="Ej: Precios de Zapatos, Garantías, etc." required>
+          <input type="text" id="rule-name" placeholder="Ej: Catálogo con PDF, Comprobante de Pago, Precios..." required>
         </div>
 
-        <div class="form-group">
-          <label for="rule-match-type">Tipo de Coincidencia</label>
+        <!-- Tipo de Disparador -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="rule-trigger-type">¿Cómo se activa esta ruta?</label>
+            <select id="rule-trigger-type">
+              <option value="text">💬 Por Palabras Clave en texto</option>
+              <option value="media">📥 Al Recibir un Archivo (Comprobante / Foto / PDF)</option>
+              <option value="both">🔄 Por Texto O por Archivo Recibido</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="group-media-filter">
+            <label for="rule-media-filter">Tipo de Archivo que activa la ruta</label>
+            <select id="rule-media-filter">
+              <option value="any">Cualquier tipo de archivo</option>
+              <option value="image">Solo Fotos / Imágenes (ej: Comprobante)</option>
+              <option value="document">Solo Documentos (PDF, Word, etc.)</option>
+              <option value="audio">Solo Audios / Notas de voz</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Palabras Clave -->
+        <div class="form-group" id="group-triggers">
+          <label for="rule-triggers">Palabras Clave (Separadas por comas)</label>
+          <input type="text" id="rule-triggers" placeholder="Ej: catalogo, fotos, modelos, productos">
+          <span class="field-help" id="rule-triggers-help">Si el mensaje del cliente contiene alguna de estas palabras, se activará la respuesta.</span>
+        </div>
+
+        <div class="form-group" id="group-match-type">
+          <label for="rule-match-type">Coincidencia de Palabras Clave</label>
           <select id="rule-match-type">
-            <option value="contains_any">Contiene alguna de las palabras clave (Recomendado)</option>
+            <option value="contains_any">Contiene alguna palabra clave (Recomendado)</option>
             <option value="exact">Coincidencia exacta (Solo si el mensaje es idéntico)</option>
             <option value="starts_with">Empieza con la palabra clave</option>
           </select>
         </div>
 
+        <!-- ARCHIVO ADJUNTO A ENVIAR EN ESTA RUTA -->
         <div class="form-group">
-          <label for="rule-triggers">Palabras Clave (Separadas por comas)</label>
-          <input type="text" id="rule-triggers" placeholder="Ej: precio, cuanto cuesta, costo, valor" required>
-          <span class="field-help">Si el cliente escribe cualquiera de estas palabras, se activará esta respuesta.</span>
+          <label>📎 Archivo Adjunto que el Bot Enviará (Opcional: Catálogo en PDF, Foto del producto, Folleto)</label>
+          <div class="file-dropzone" id="rule-dropzone">
+            <input type="file" id="rule-file-input" class="file-input-hidden">
+            <div class="dropzone-content">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <span>Haz clic o arrastra un archivo aquí (PDF, JPG, PNG, Audio, etc.)</span>
+            </div>
+          </div>
+          <div id="rule-file-preview" class="file-preview-card hidden"></div>
         </div>
 
+        <!-- RESPUESTA / CAPTION -->
         <div class="form-group">
-          <label for="rule-response">Respuesta Automática</label>
+          <label for="rule-response">Respuesta del Bot (o Leyenda del Archivo)</label>
           <div class="editor-quick-tools">
             <button type="button" class="tool-btn" data-wrap="*">Negrita *texto*</button>
             <button type="button" class="tool-btn" data-wrap="_">Cursiva _texto_</button>
             <button type="button" class="tool-btn" data-insert="🛍️">🛍️</button>
+            <button type="button" class="tool-btn" data-insert="🧾">🧾</button>
             <button type="button" class="tool-btn" data-insert="💰">💰</button>
             <button type="button" class="tool-btn" data-insert="🚚">🚚</button>
-            <button type="button" class="tool-btn" data-insert="📱">📱</button>
             <button type="button" class="tool-btn" data-insert="✅">✅</button>
           </div>
-          <textarea id="rule-response" rows="6" placeholder="Escribe la respuesta que recibirá el cliente..." required></textarea>
+          <textarea id="rule-response" rows="5" placeholder="Escribe el mensaje o texto que acompañará al archivo adjunto..."></textarea>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="rule-lead-tag">Etiqueta para el Prospecto</label>
-            <input type="text" id="rule-lead-tag" placeholder="Ej: Cotizó, Interesado, Por Pagar">
+            <input type="text" id="rule-lead-tag" placeholder="Ej: Vio Catálogo, Comprobante Recibido, etc.">
           </div>
 
           <div class="form-group form-checkbox-group">
@@ -410,6 +481,33 @@
           <button type="submit" class="btn btn-primary">Guardar Ruta de Respuesta</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: VISOR DE ARCHIVOS RECIBIDOS DEL LEAD ==================== -->
+  <div id="lead-files-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <div>
+          <h3 id="lead-modal-title">Archivos Recibidos</h3>
+          <span id="lead-modal-subtitle" class="lead-modal-subtitle"></span>
+        </div>
+        <button id="btn-close-lead-files" class="btn-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="lead-files-gallery" class="files-gallery-grid">
+          <!-- Tarjetas de archivos generadas dinámicamente -->
+        </div>
+      </div>
+
+      <div class="modal-actions" style="justify-content: space-between;">
+        <button type="button" id="btn-lead-quick-reply" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          Responder con Archivo o Mensaje
+        </button>
+        <button type="button" id="btn-close-lead-modal-btn" class="btn btn-secondary">Cerrar</button>
+      </div>
     </div>
   </div>
 
