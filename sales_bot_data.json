@@ -1,18 +1,19 @@
 {
   "settings": {
-    "businessName": "Mi Tienda Virtual",
+    "businessName": "Digital Pass",
     "botEnabled": true,
-    "simulateTyping": true,
-    "typingDelaySeconds": 2,
+    "simulateTyping": false,
+    "typingDelaySeconds": 1,
     "ignoreGroups": true,
     "humanTakeoverKeyword": "asesor",
-    "fallbackMessage": "¡Hola! Gracias por escribirnos. Nuestro bot no entendió tu mensaje. Puedes escribir *menu* para ver las opciones disponibles o escribir *asesor* para hablar con una persona del equipo."
+    "fallbackMessage": "¡Hola! Gracias por escribirnos. Nuestro bot no entendió tu mensaje. Puedes escribir *menu* para ver las opciones disponibles o escribir *asesor* para hablar con una persona del equipo.",
+    "geminiEnabled": true
   },
   "rules": [
     {
       "id": "rule-welcome",
       "name": "Saludo y Menú Principal",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -25,15 +26,16 @@
         "empezar",
         "info"
       ],
-      "response": "¡Hola! 👋 Te damos la bienvenida a *Mi Tienda Virtual*.\n\n¿En qué podemos ayudarte hoy? Escribe el número o la palabra clave:\n\n1️⃣ *Catálogo* - Ver nuestros productos\n2️⃣ *Precios* - Lista de precios y promociones\n3️⃣ *Pagos* - Métodos de pago y cuentas\n4️⃣ *Envíos* - Tiempos y cobertura\n5️⃣ *Asesor* - Hablar con un agente humano",
+      "response": "¡Hola! 👋 Te damos la bienvenida a DigitalPass.\n¿En qué podemos ayudarte hoy? Escribe el número o la palabra que corresponda a tu solicitud:\n\n1️⃣ *Catálogo* - Ver nuestros productos\n2️⃣ *Precios* - Lista de precios y promociones\n3️⃣ *Pagos* - Métodos de pago y cuentas\n4️⃣  *Asesor* - Hablar con un agente humano",
       "media": null,
       "leadTag": "Interesado",
-      "pauseBot": false
+      "pauseBot": false,
+      "mediaTypeFilter": "any"
     },
     {
       "id": "rule-receipt",
       "name": "Recepción de Comprobante de Pago",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "media",
       "mediaTypeFilter": "image",
       "matchType": "contains_any",
@@ -46,7 +48,7 @@
         "daviplata",
         "recibo"
       ],
-      "response": "🧾 ¡Hemos recibido tu comprobante de pago exitosamente!\n\nNuestro equipo de tesorería lo está validando en el sistema para proceder con el alistamiento y despacho de tu pedido. En breve un asesor te confirmará el número de guía. ¡Muchas gracias por tu compra! 🎉",
+      "response": "🧾 ¡Hemos recibido tu comprobante de pago exitosamente!\n\nNuestro equipo de tesorería lo está validando en el sistema para proceder con el alistamiento y despacho de tu pedido. En breve un asesor te confirmará la entrega de tu producto. ¡Muchas gracias por tu compra! 🎉",
       "media": null,
       "leadTag": "Comprobante Recibido",
       "pauseBot": true
@@ -54,7 +56,7 @@
     {
       "id": "rule-catalog",
       "name": "Catálogo de Productos",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -69,10 +71,10 @@
       "response": "🛍️ *CATÁLOGO DE PRODUCTOS 2026*\n\nConoce toda nuestra colección y promociones de la temporada\n\nSi te interesa algún producto de la imagen, indícanos el nombre o escribe *precios* para consultar la lista.",
       "media": {
         "success": true,
-        "url": "/uploads/rules/1791833134101_Gemini_Generated_Image_ipt80xipt80xipt8.jpg",
-        "filename": "Gemini_Generated_Image_ipt80xipt80xipt8.jpg",
-        "mimetype": "image/jpeg",
-        "size": 2213878
+        "url": "/uploads/rules/1791841790835_Catalogo_Oficial_Streaming_DigitalPass.pdf",
+        "filename": "Catalogo_Oficial_Streaming_DigitalPass.pdf",
+        "mimetype": "application/pdf",
+        "size": 20307526
       },
       "leadTag": "Vio Catálogo",
       "pauseBot": false,
@@ -81,7 +83,7 @@
     {
       "id": "rule-prices",
       "name": "Precios y Promociones",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -94,15 +96,22 @@
         "promocion",
         "descuento"
       ],
-      "response": "💰 *LISTA DE PRECIOS & PROMOCIONES*\n\n• *Combo Básico:* $45.000 COP\n• *Combo Premium:* $85.000 COP\n• *Super Pack x3:* $120.000 COP *(¡Envío gratis!)*\n\n🎯 Escribe *pagos* para conocer las cuentas disponibles o *3* para concretar tu pedido.",
-      "media": null,
+      "response": "",
+      "media": {
+        "success": true,
+        "url": "/uploads/rules/1791849926774_Gemini_Generated_Image_ugsagrugsagrugsa.jpg",
+        "filename": "Gemini_Generated_Image_ugsagrugsagrugsa.jpg",
+        "mimetype": "image/jpeg",
+        "size": 2949964
+      },
       "leadTag": "Cotizó",
-      "pauseBot": false
+      "pauseBot": false,
+      "mediaTypeFilter": "any"
     },
     {
       "id": "rule-payments",
       "name": "Medios de Pago",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -115,15 +124,16 @@
         "transferencia",
         "como pago"
       ],
-      "response": "💳 *MEDIOS DE PAGO DISPONIBLES*\n\nRecibimos pagos de forma segura por:\n\n📱 *Nequi / Daviplata:* 311 801 7673\n🏦 *Bancolombia (Ahorros):* 123-456789-01\n💳 *Tarjetas de Crédito / Débito:* Link de PSE disponible\n\nPor favor envía la foto o captura del comprobante por este chat para procesar tu orden de inmediato.",
+      "response": "💳 *MEDIOS DE PAGO DISPONIBLES*\n\nRecibimos pagos de forma segura por:\n\n📱 *Nequi / Daviplata:* 3144392932\n🏦* Davivienda (Ahorros): 4884557998-30\n🏦 *Bancolombia (Ahorros):446456117-37\n💳 *Tarjetas de Crédito / Débito:* Link de PSE disponible\n\nPor favor envía la foto o captura del comprobante por este chat para procesar tu orden de inmediato.",
       "media": null,
       "leadTag": "Por Pagar",
-      "pauseBot": false
+      "pauseBot": false,
+      "mediaTypeFilter": "any"
     },
     {
       "id": "rule-shipping",
       "name": "Información de Envíos",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -143,7 +153,7 @@
     {
       "id": "rule-human",
       "name": "Transferir a Asesor Humano",
-      "enabled": true,
+      "enabled": false,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -176,13 +186,88 @@
   ],
   "leads": [
     {
-      "phone": "167675556851809@lid",
-      "name": "Rubén Darío Villamil",
-      "tag": "Vio Catálogo",
-      "lastMessage": "Catálogo",
-      "lastInteraction": "2026-10-12T19:26:14.590Z",
+      "phone": "18958807736525@lid",
+      "name": "18958807736525@lid",
+      "tag": "Comprobante Recibido",
+      "lastMessage": "📎 [recibido_1792263509913.jpeg] 🔥 ¡CATÁLOGO ACTUALIZADO! 🔥\n\nYa puedes consultar nuestra nueva lista de precios, con productos, combos y precios sugeridos para tus ventas. 💰\n\n📋 Ingresa al catálogo oficial y revisa todas las novedades.\n\n👇 Haz clic en el botón para ver nuestra nueva lista de precios.",
+      "lastInteraction": "2026-10-17T18:58:29.921Z",
+      "humanPaused": true,
+      "receivedFiles": [
+        {
+          "id": "med-1792263509915",
+          "filename": "recibido_1792263509913.jpeg",
+          "mimetype": "image/jpeg",
+          "size": 291050,
+          "url": "/uploads/received/1792263509913_recibido_1792263509913.jpeg",
+          "receivedAt": "2026-10-17T18:58:29.915Z",
+          "caption": "🔥 ¡CATÁLOGO ACTUALIZADO! 🔥\n\nYa puedes consultar nuestra nueva lista de precios, con productos, combos y precios sugeridos para tus ventas. 💰\n\n📋 Ingresa al catálogo oficial y revisa todas las novedades.\n\n👇 Haz clic en el botón para ver nuestra nueva lista de precios."
+        }
+      ]
+    },
+    {
+      "phone": "186693705568491@lid",
+      "name": "Laura",
+      "tag": "Interesado",
+      "lastMessage": "Hola",
+      "lastInteraction": "2026-10-17T18:58:28.506Z",
       "humanPaused": false,
       "receivedFiles": []
+    },
+    {
+      "phone": "78971597271125@lid",
+      "name": "78971597271125@lid",
+      "tag": "Por Pagar",
+      "lastMessage": "57643 es tu código de confirmación de Facebook",
+      "lastInteraction": "2026-10-12T20:31:29.605Z",
+      "humanPaused": false,
+      "receivedFiles": []
+    },
+    {
+      "phone": "205608842211531@lid",
+      "name": "Oscar",
+      "tag": "Comprobante Recibido",
+      "lastMessage": "Pago",
+      "lastInteraction": "2026-10-13T00:16:36.932Z",
+      "humanPaused": true,
+      "receivedFiles": [
+        {
+          "id": "med-1791850592181",
+          "filename": "recibido_1791850592180.jpeg",
+          "mimetype": "image/jpeg",
+          "size": 99793,
+          "url": "/uploads/received/1791850592180_recibido_1791850592180.jpeg",
+          "receivedAt": "2026-10-13T00:16:32.181Z",
+          "caption": ""
+        },
+        {
+          "id": "med-1791850474475",
+          "filename": "recibido_1791850474474.jpeg",
+          "mimetype": "image/jpeg",
+          "size": 91730,
+          "url": "/uploads/received/1791850474474_recibido_1791850474474.jpeg",
+          "receivedAt": "2026-10-13T00:14:34.475Z",
+          "caption": ""
+        }
+      ]
+    },
+    {
+      "phone": "167675556851809@lid",
+      "name": "Rubén Darío Villamil",
+      "tag": "Interesado",
+      "lastMessage": "📎 [recibido_1792266447609.oga]",
+      "lastInteraction": "2026-10-17T19:47:27.610Z",
+      "humanPaused": false,
+      "receivedFiles": [
+        {
+          "id": "med-1792266447610",
+          "filename": "recibido_1792266447609.oga",
+          "mimetype": "audio/ogg; codecs=opus",
+          "size": 15371,
+          "url": "/uploads/received/1792266447609_recibido_1792266447609.oga",
+          "receivedAt": "2026-10-17T19:47:27.610Z",
+          "caption": ""
+        }
+      ]
     },
     {
       "phone": "573118017673",
@@ -192,6 +277,18 @@
       "lastInteraction": "2026-10-12T13:25:00.000Z",
       "humanPaused": false,
       "receivedFiles": []
+    }
+  ],
+  "library": [
+    {
+      "id": "doc_1792265249956",
+      "name": "Precios de nuestros productos y servicios",
+      "originalFilename": "DigitalPass_Lista_Precios_Oficial.docx",
+      "wordCount": 720,
+      "charCount": 5124,
+      "size": 32408,
+      "createdAt": "2026-10-17T19:27:29.957Z",
+      "active": true
     }
   ]
 }

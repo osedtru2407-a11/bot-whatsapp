@@ -4,6 +4,8 @@ const express = require('express');
 const QRCode = require('qrcode');
 const mime = require('mime');
 const { Client, LocalAuth, MessageMedia } = require('./index');
+const geminiService = require('./geminiService');
+const libraryService = require('./libraryService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,7 +35,9 @@ function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
             const raw = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(raw);
+            const parsed = JSON.parse(raw);
+            if (!parsed.library) parsed.library = [];
+            return parsed;
         }
     } catch (e) {
         console.error('Error al cargar datos:', e);
@@ -254,6 +258,39 @@ async function handleIncomingMessage(msg) {
 
         // 4. Enviar respuesta (Con archivo adjunto si la regla lo especifica)
         await sendRuleResponse(msg, matchedRule);
+
+    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && msg.body && msg.body.trim()) {
+        saveData(appData);
+        console.log(`🤖 Usando Gemini para responder a ${senderPhone}...`);
+        let chat = null;
+        try {
+            if (appData.settings.simulateTyping) {
+                try {
+                    chat = await msg.getChat();
+                    await chat.sendStateTyping();
+                } catch (e) {}
+            }
+
+            const businessName = appData.settings.businessName || 'Mi Negocio';
+            const aiReply = await geminiService.sendMessage(senderPhone, msg.body, businessName, appData.library || []);
+
+            if (chat) {
+                try {
+                    await chat.clearStateTyping();
+                } catch (e) {}
+            }
+
+            await msg.reply(aiReply);
+            console.log(`✅ Respuesta de Gemini enviada a ${senderPhone}`);
+        } catch (geminiErr) {
+            console.error('Error al responder con Gemini:', geminiErr.message || geminiErr);
+            if (chat) {
+                try { await chat.clearStateTyping(); } catch (e) {}
+            }
+            if (appData.settings.fallbackMessage) {
+                await msg.reply(appData.settings.fallbackMessage);
+            }
+        }
 
     } else if (appData.settings.fallbackMessage && (text.length > 1 || hasMedia)) {
         saveData(appData);
@@ -661,9 +698,10 @@ app.post('/api/leads/:phone/toggle-pause', (req, res) => {
     res.json({ success: true, humanPaused: lead.humanPaused });
 });
 
-// 9. Simulador en Vivo (Soporta texto y simulación de archivo recibido o enviado)
-app.post('/api/simulate', (req, res) => {
-    const text = (req.body.text || '').trim().toLowerCase();
+// 9. Simulador en Vivo (Soporta texto, simulación de archivo recibido y Gemini AI)
+app.post('/api/simulate', async (req, res) => {
+    const rawText = (req.body.text || '').trim();
+    const text = rawText.toLowerCase();
     const hasMedia = Boolean(req.body.hasMedia);
     const mediaMimetype = req.body.mediaMimetype || (hasMedia ? 'image/jpeg' : '');
 
@@ -677,12 +715,43 @@ app.post('/api/simulate', (req, res) => {
             leadTag: matched.leadTag,
             pauseBot: matched.pauseBot
         });
+    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && rawText) {
+        try {
+            const businessName = appData.settings.businessName || 'Mi Negocio';
+            const aiReply = await geminiService.sendMessage('simulator-session', rawText, businessName, appData.library || []);
+            res.json({
+                matched: false,
+                isGemini: true,
+                response: aiReply
+            });
+        } catch (err) {
+            console.error('Error en simulador con Gemini:', err.message);
+            res.json({
+                matched: false,
+                response: appData.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
+            });
+        }
     } else {
         res.json({
             matched: false,
             response: appData.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
         });
     }
+});
+
+// Endpoint para reiniciar la sesión del simulador o de un contacto
+app.post('/api/gemini/reset', (req, res) => {
+    const sessionId = req.body.sessionId || 'simulator-session';
+    geminiService.resetSession(sessionId);
+    res.json({ success: true, message: `Sesión de ${sessionId} reiniciada.` });
+});
+
+// Endpoint de estado de Gemini
+app.get('/api/gemini/status', (req, res) => {
+    res.json({
+        configured: geminiService.isConfigured(),
+        model: 'gemini-3.5-flash-lite'
+    });
 });
 
 // 10. Configuración General
@@ -694,6 +763,128 @@ app.post('/api/settings', (req, res) => {
     appData.settings = { ...appData.settings, ...req.body };
     saveData(appData);
     res.json(appData.settings);
+});
+
+// 11. Biblioteca de Contexto para Inteligencia Artificial (Conversión Word a Markdown)
+app.get('/api/library', (req, res) => {
+    appData.library = appData.library || [];
+    const stats = libraryService.getActiveLibraryContext(appData.library);
+    res.json({
+        documents: appData.library,
+        stats: {
+            totalDocuments: appData.library.length,
+            activeDocuments: stats.activeCount,
+            totalWords: stats.totalWords
+        }
+    });
+});
+
+app.post('/api/library/upload', async (req, res) => {
+    const { filename, data } = req.body;
+    if (!filename || !data) {
+        return res.status(400).json({ error: 'Faltan parámetros filename o data (base64)' });
+    }
+
+    try {
+        const rawBase64 = data.includes('base64,') ? data.split('base64,')[1] : data;
+        const buffer = Buffer.from(rawBase64, 'base64');
+        const customTitle = (req.body.name || '').trim();
+        console.log(`📚 Procesando documento subido: "${filename}" (${buffer.length} bytes)...`);
+        
+        // Convertir Word/texto a Markdown limpio sin etiquetas basura
+        const markdown = await libraryService.convertToMarkdown(buffer, filename);
+        const stats = libraryService.calculateStats(markdown);
+
+        const docId = 'doc_' + Date.now();
+        libraryService.saveMarkdownFile(docId, markdown);
+
+        const newDoc = {
+            id: docId,
+            name: customTitle || filename.replace(/\.[^/.]+$/, ""),
+            originalFilename: filename,
+            wordCount: stats.wordCount,
+            charCount: stats.charCount,
+            size: buffer.length,
+            createdAt: new Date().toISOString(),
+            active: true
+        };
+
+        appData.library = appData.library || [];
+        appData.library.unshift(newDoc);
+        saveData(appData);
+
+        // Reiniciar sesiones de Gemini para que tomen el nuevo contexto de inmediato
+        geminiService.clearAllSessions();
+
+        console.log(`✅ Documento "${filename}" convertido a Markdown limpio (${stats.wordCount} palabras).`);
+        res.json({
+            success: true,
+            document: newDoc,
+            preview: markdown.slice(0, 500)
+        });
+    } catch (err) {
+        console.error('Error procesando archivo para biblioteca:', err);
+        res.status(500).json({ error: err.message || 'Error procesando el archivo' });
+    }
+});
+
+app.get('/api/library/:id', (req, res) => {
+    appData.library = appData.library || [];
+    const doc = appData.library.find(d => d.id === req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
+
+    const content = libraryService.getMarkdownContent(doc.id);
+    res.json({
+        document: doc,
+        content
+    });
+});
+
+app.put('/api/library/:id', (req, res) => {
+    appData.library = appData.library || [];
+    const doc = appData.library.find(d => d.id === req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
+
+    const { content, name, active } = req.body;
+    if (content !== undefined) {
+        libraryService.saveMarkdownFile(doc.id, content);
+        const stats = libraryService.calculateStats(content);
+        doc.wordCount = stats.wordCount;
+        doc.charCount = stats.charCount;
+    }
+    if (name !== undefined) doc.name = name;
+    if (active !== undefined) doc.active = Boolean(active);
+
+    doc.updatedAt = new Date().toISOString();
+    saveData(appData);
+    geminiService.clearAllSessions();
+
+    res.json({ success: true, document: doc });
+});
+
+app.delete('/api/library/:id', (req, res) => {
+    appData.library = appData.library || [];
+    const index = appData.library.findIndex(d => d.id === req.params.id);
+    if (index === -1) return res.status(404).json({ error: 'Documento no encontrado' });
+
+    libraryService.deleteMarkdownFile(req.params.id);
+    appData.library.splice(index, 1);
+    saveData(appData);
+    geminiService.clearAllSessions();
+
+    res.json({ success: true });
+});
+
+app.post('/api/library/:id/toggle', (req, res) => {
+    appData.library = appData.library || [];
+    const doc = appData.library.find(d => d.id === req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
+
+    doc.active = !doc.active;
+    saveData(appData);
+    geminiService.clearAllSessions();
+
+    res.json({ success: true, active: doc.active });
 });
 
 // Iniciar Servidor Web

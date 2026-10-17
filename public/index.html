@@ -103,6 +103,11 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         Prospectos & Archivos Recibidos
       </button>
+      <button class="tab-btn" data-tab="tab-library">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        Biblioteca (Contexto IA)
+        <span id="tab-library-badge" class="badge-counter">0</span>
+      </button>
       <button class="tab-btn" data-tab="tab-settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         Configuración
@@ -217,6 +222,9 @@
               <button id="btn-sim-send-pdf" class="btn btn-outline-sm btn-sim-action">
                 📄 Simular envío de Documento PDF
               </button>
+              <button id="btn-sim-reset-chat" class="btn btn-outline-sm btn-sim-action">
+                🔄 Reiniciar Conversación
+              </button>
             </div>
           </div>
         </div>
@@ -329,6 +337,79 @@
       </div>
     </section>
 
+    <!-- ==================== TAB: BIBLIOTECA DE CONOCIMIENTO (WORD A MARKDOWN) ==================== -->
+    <section id="tab-library" class="tab-content">
+      <div class="content-toolbar">
+        <div>
+          <h2>📚 Biblioteca de Contexto para Gemini</h2>
+          <p class="section-desc">Sube tus documentos Word (.docx). El sistema extraerá el contenido y lo convertirá a Markdown puro en texto plano para alimentar a Gemini sin saturar tokens.</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: #93c5fd; font-weight: 600;">
+            📄 <span id="lib-total-docs">0</span> Docs Activos
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: #6ee7b7; font-weight: 600;">
+            🧠 <span id="lib-total-words">0</span> Palabras de Contexto
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-two-cols" style="grid-template-columns: 360px 1fr; gap: 20px;">
+        <!-- Tarjeta de Subida de Documentos Word -->
+        <div class="card card-form">
+          <div class="card-header">
+            <h3>📥 Subir Documento Word (.docx)</h3>
+            <p>El sistema elimina estilos y etiquetas pesadas de Word y genera texto plano Markdown.</p>
+          </div>
+          <form id="library-upload-form" class="form-body">
+            <div class="form-group">
+              <label>Archivo Word (.docx), Markdown (.md) o Texto (.txt)</label>
+              <div class="file-dropzone" id="library-dropzone" style="min-height: 130px;">
+                <input type="file" id="library-file-input" class="file-input-hidden" accept=".docx,.txt,.md">
+                <div class="dropzone-content">
+                  <span style="font-size: 32px; display: block; margin-bottom: 6px;">📄</span>
+                  <span style="font-weight: 600; color: #e2e8f0;">Arrastra tu archivo Word aquí</span>
+                  <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-top: 4px;">o haz clic para explorar tu equipo</span>
+                </div>
+              </div>
+              <div id="library-selected-preview" class="file-preview-card hidden" style="margin-top: 10px;"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="lib-doc-title">Título de Referencia del Documento</label>
+              <input type="text" id="lib-doc-title" placeholder="Ej: Catálogo Principal, Preguntas Frecuentes, Políticas...">
+            </div>
+
+            <div id="lib-upload-spinner" class="hidden" style="margin-bottom: 12px; font-size: 12.5px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+              <span class="spinner" style="display: inline-block; width: 14px; height: 14px;"></span>
+              <span>Extrayendo y convirtiendo Word a Markdown limpio...</span>
+            </div>
+
+            <button type="submit" id="btn-submit-library" class="btn btn-primary" style="width: 100%;">
+              ⚡ Convertir a Markdown y Cargar en Memoria
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Documentos en la Biblioteca -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3>Documentos Activos en el Contexto</h3>
+              <p>Gemini basa sus respuestas exclusivamente en estos textos.</p>
+            </div>
+            <button id="btn-refresh-library" class="btn btn-outline-sm" title="Refrescar lista">
+              🔄 Actualizar
+            </button>
+          </div>
+
+          <div id="library-list-container" style="display: flex; flex-direction: column; gap: 12px; max-height: 580px; overflow-y: auto; padding-right: 4px;">
+            <!-- Generado dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ==================== TAB 6: CONFIGURACIÓN ==================== -->
     <section id="tab-settings" class="tab-content">
       <div class="card card-center-max">
@@ -341,6 +422,24 @@
           <div class="form-group">
             <label for="set-biz-name">Nombre de tu Negocio / Tienda</label>
             <input type="text" id="set-biz-name" required>
+          </div>
+
+          <!-- Módulo Gemini AI -->
+          <div class="form-group" style="padding: 16px; border-radius: 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; color: #3b82f6; font-size: 14px;">🤖 Asistente Inteligente Gemini (gemini-3.5-flash-lite)</span>
+              <span id="gemini-status-tag" class="badge" style="background: #10b981; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">Conectado</span>
+            </div>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px 0;">
+              Cuando un cliente escribe un mensaje que no coincide con ninguna ruta fija, Gemini responderá de forma conversacional recordando el contexto de la charla.
+            </p>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="set-gemini-enabled">Respuestas Automáticas con Gemini</label>
+              <select id="set-gemini-enabled">
+                <option value="true">Activado (Conversación natural con IA)</option>
+                <option value="false">Desactivado (Usar solo mensaje de ayuda por defecto)</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-row">
@@ -507,6 +606,36 @@
           Responder con Archivo o Mensaje
         </button>
         <button type="button" id="btn-close-lead-modal-btn" class="btn btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: VISOR Y EDITOR DE MARKDOWN ==================== -->
+  <div id="library-view-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide" style="max-width: 850px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="lib-modal-title">Texto Plano Markdown (Sin etiquetas de Word)</h3>
+          <span id="lib-modal-subtitle" class="lead-modal-subtitle"></span>
+        </div>
+        <button id="btn-close-lib-modal" class="btn-close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background: rgba(59, 130, 246, 0.08); border-left: 3px solid #3b82f6; padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1;">
+          💡 <strong>Texto Optimizado:</strong> Este es el texto extraído sin formato pesado que Gemini utiliza como su fuente de conocimiento. Puedes editarlo o afinarlo directamente aquí.
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <input type="hidden" id="lib-modal-doc-id">
+          <textarea id="lib-modal-content" rows="16" style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.5; width: 100%; resize: vertical; background: #0b141a; color: #e2e8f0; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 12px;"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="justify-content: space-between;">
+        <button type="button" id="btn-lib-save-edits" class="btn btn-primary">
+          💾 Guardar Modificaciones
+        </button>
+        <button type="button" id="btn-close-lib-modal-btn" class="btn btn-secondary">Cerrar</button>
       </div>
     </div>
   </div>

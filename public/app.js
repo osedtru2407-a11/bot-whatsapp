@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSimulator();
   initQuickSend();
   initLeads();
+  initLibrary();
   initSettings();
   initModalTools();
 });
@@ -45,6 +46,7 @@ function initTabs() {
       if (targetId === 'tab-rules') loadRules();
       if (targetId === 'tab-scheduler') loadSchedules();
       if (targetId === 'tab-leads') loadLeads();
+      if (targetId === 'tab-library') loadLibrary();
       if (targetId === 'tab-settings') loadSettings();
     });
   });
@@ -714,7 +716,7 @@ function initSimulator() {
   const btnReceipt = document.getElementById('btn-sim-send-receipt');
   const btnPdf = document.getElementById('btn-sim-send-pdf');
 
-  function appendMessage({ text = '', isUser = false, media = null, userMediaIcon = null }) {
+  function appendMessage({ text = '', isUser = false, media = null, userMediaIcon = null, isGemini = false }) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const bubble = document.createElement('div');
     bubble.className = `msg-bubble ${isUser ? 'user-bubble' : 'bot-bubble'}`;
@@ -746,9 +748,12 @@ function initSimulator() {
       `;
     }
 
+    const geminiTag = isGemini ? '<div style="font-size: 10px; color: #3b82f6; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 4px;"><span>🤖</span> Gemini Flash Lite</div>' : '';
+
     bubble.innerHTML = `
+      ${geminiTag}
       ${mediaHtml}
-      ${text ? `<div>${escapeHtml(text)}</div>` : ''}
+      ${text ? `<div>${formatWhatsAppToHtml(text)}</div>` : ''}
       <span class="msg-time">${time}</span>
     `;
     chatBody.appendChild(bubble);
@@ -770,7 +775,8 @@ function initSimulator() {
         appendMessage({
           text: data.response,
           isUser: false,
-          media: data.media
+          media: data.media,
+          isGemini: Boolean(data.isGemini)
         });
       }, 500);
 
@@ -813,6 +819,28 @@ function initSimulator() {
         mediaMimetype: 'application/pdf',
         userIcon: '📄'
       });
+    });
+  }
+
+  const btnResetChat = document.getElementById('btn-sim-reset-chat');
+  if (btnResetChat) {
+    btnResetChat.addEventListener('click', async () => {
+      try {
+        await fetch('/api/gemini/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: 'simulator-session' })
+        });
+        chatBody.innerHTML = `
+          <div class="msg-bubble bot-bubble">
+            🔄 Conversación reiniciada. ¡Hola! ¿En qué te puedo colaborar hoy?
+            <span class="msg-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        `;
+        showToast('Conversación de Gemini reiniciada', 'info');
+      } catch (e) {
+        showToast('Error al reiniciar', 'error');
+      }
     });
   }
 }
@@ -1043,6 +1071,8 @@ function initSettings() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const businessName = document.getElementById('set-biz-name').value.trim();
+    const geminiSelect = document.getElementById('set-gemini-enabled');
+    const geminiEnabled = geminiSelect ? geminiSelect.value === 'true' : true;
     const simulateTyping = document.getElementById('set-simulate-typing').value === 'true';
     const typingDelaySeconds = parseInt(document.getElementById('set-delay-seconds').value, 10) || 2;
     const ignoreGroups = document.getElementById('set-ignore-groups').value === 'true';
@@ -1054,6 +1084,7 @@ function initSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           businessName,
+          geminiEnabled,
           simulateTyping,
           typingDelaySeconds,
           ignoreGroups,
@@ -1077,6 +1108,12 @@ async function loadSettings() {
     currentSettings = await res.json();
 
     document.getElementById('set-biz-name').value = currentSettings.businessName || '';
+    
+    const geminiSelect = document.getElementById('set-gemini-enabled');
+    if (geminiSelect) {
+      geminiSelect.value = String(currentSettings.geminiEnabled ?? true);
+    }
+
     document.getElementById('set-simulate-typing').value = String(currentSettings.simulateTyping ?? true);
     document.getElementById('set-delay-seconds').value = currentSettings.typingDelaySeconds || 2;
     document.getElementById('set-ignore-groups').value = String(currentSettings.ignoreGroups ?? true);
@@ -1084,6 +1121,23 @@ async function loadSettings() {
 
     const simName = document.getElementById('sim-business-name');
     if (simName) simName.textContent = currentSettings.businessName || 'Mi Tienda Virtual';
+
+    // Consultar estado de Gemini
+    try {
+      const geminiStatusRes = await fetch('/api/gemini/status');
+      const geminiStatusData = await geminiStatusRes.json();
+      const statusTag = document.getElementById('gemini-status-tag');
+      if (statusTag) {
+        if (geminiStatusData.configured) {
+          statusTag.textContent = 'Conectado';
+          statusTag.style.background = '#10b981';
+        } else {
+          statusTag.textContent = 'Sin clave';
+          statusTag.style.background = '#ef4444';
+        }
+      }
+    } catch (e) {}
+
   } catch (e) {
     console.error('Error cargando configuración:', e);
   }
@@ -1155,10 +1209,327 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function formatWhatsAppToHtml(str) {
+  if (!str) return '';
+  let safe = escapeHtml(str);
+  // Negrita WhatsApp (*texto* o **texto**)
+  safe = safe.replace(/\*\*([^*\n\r]+)\*\*/g, '<strong>$1</strong>');
+  safe = safe.replace(/\*([^*\n\r]+)\*/g, '<strong>$1</strong>');
+  // Cursiva WhatsApp (_texto_)
+  safe = safe.replace(/_([^_\n\r]+)_/g, '<em>$1</em>');
+  // Tachado WhatsApp (~texto~)
+  safe = safe.replace(/~([^~\n\r]+)~/g, '<del>$1</del>');
+  return safe;
+}
+
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// ==================== 12. BIBLIOTECA DE CONOCIMIENTO (WORD A MARKDOWN) ====================
+let currentLibraryFile = null;
+
+function initLibrary() {
+  const form = document.getElementById('library-upload-form');
+  const dropzone = document.getElementById('library-dropzone');
+  const fileInput = document.getElementById('library-file-input');
+  const preview = document.getElementById('library-selected-preview');
+  const titleInput = document.getElementById('lib-doc-title');
+  const spinner = document.getElementById('lib-upload-spinner');
+  const btnSubmit = document.getElementById('btn-submit-library');
+  const btnRefresh = document.getElementById('btn-refresh-library');
+
+  // Modal elements
+  const modal = document.getElementById('library-view-modal');
+  const btnCloseModal = document.getElementById('btn-close-lib-modal');
+  const btnCloseModalBtn = document.getElementById('btn-close-lib-modal-btn');
+  const btnSaveEdits = document.getElementById('btn-lib-save-edits');
+  const modalDocId = document.getElementById('lib-modal-doc-id');
+  const modalContent = document.getElementById('lib-modal-content');
+
+  const closeLibModal = () => modal.classList.add('hidden');
+  if (btnCloseModal) btnCloseModal.addEventListener('click', closeLibModal);
+  if (btnCloseModalBtn) btnCloseModalBtn.addEventListener('click', closeLibModal);
+
+  // Guardar modificaciones del modal
+  if (btnSaveEdits) {
+    btnSaveEdits.addEventListener('click', async () => {
+      const docId = modalDocId.value;
+      const content = modalContent.value;
+      if (!docId) return;
+
+      btnSaveEdits.disabled = true;
+      btnSaveEdits.textContent = 'Guardando...';
+      try {
+        const res = await fetch(`/api/library/${docId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        if (!res.ok) throw new Error('Error al guardar modificaciones');
+        showToast('Documento Markdown actualizado correctamente', 'success');
+        closeLibModal();
+        loadLibrary();
+      } catch (e) {
+        showToast(e.message, 'error');
+      } finally {
+        btnSaveEdits.disabled = false;
+        btnSaveEdits.textContent = '💾 Guardar Modificaciones';
+      }
+    });
+  }
+
+  // Dropzone drag & drop
+  if (dropzone && fileInput) {
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    ['dragleave', 'dragend'].forEach(type => {
+      dropzone.addEventListener(type, () => dropzone.classList.remove('dragover'));
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleSelectedLibraryFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files[0]) {
+        handleSelectedLibraryFile(fileInput.files[0]);
+      }
+    });
+  }
+
+  function handleSelectedLibraryFile(file) {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!['.docx', '.txt', '.md'].includes(ext)) {
+      showToast('Formato no compatible. Por favor sube archivos Word (.docx), Markdown (.md) o Texto (.txt)', 'error');
+      return;
+    }
+    currentLibraryFile = file;
+    if (!titleInput.value.trim()) {
+      titleInput.value = file.name.replace(/\.[^/.]+$/, "");
+    }
+
+    preview.classList.remove('hidden');
+    preview.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">📄</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 600; color: #fff;">${escapeHtml(file.name)}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${formatBytes(file.size)}</div>
+          </div>
+        </div>
+        <button type="button" id="btn-remove-lib-file" class="btn-close" style="font-size: 18px;" title="Quitar archivo">&times;</button>
+      </div>
+    `;
+
+    document.getElementById('btn-remove-lib-file').onclick = (e) => {
+      e.stopPropagation();
+      currentLibraryFile = null;
+      fileInput.value = '';
+      preview.classList.add('hidden');
+      preview.innerHTML = '';
+    };
+  }
+
+  // Enviar formulario
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentLibraryFile) {
+        showToast('Por favor selecciona o arrastra un archivo Word (.docx)', 'error');
+        return;
+      }
+
+      const customTitle = titleInput.value.trim();
+
+      btnSubmit.disabled = true;
+      spinner.classList.remove('hidden');
+
+      try {
+        const base64Data = await readFileAsBase64(currentLibraryFile);
+        const res = await fetch('/api/library/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: currentLibraryFile.name,
+            data: base64Data,
+            name: customTitle
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al procesar el documento');
+
+        showToast(`Documento convertido a Markdown: ${data.document.wordCount} palabras añadidas a la memoria`, 'success');
+        
+        // Limpiar formulario
+        form.reset();
+        currentLibraryFile = null;
+        fileInput.value = '';
+        preview.classList.add('hidden');
+        preview.innerHTML = '';
+
+        loadLibrary();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btnSubmit.disabled = false;
+        spinner.classList.add('hidden');
+      }
+    });
+  }
+
+  if (btnRefresh) {
+    btnRefresh.addEventListener('click', () => {
+      loadLibrary();
+      showToast('Lista de biblioteca actualizada', 'info');
+    });
+  }
+
+  loadLibrary();
+}
+
+async function loadLibrary() {
+  const container = document.getElementById('library-list-container');
+  const badge = document.getElementById('tab-library-badge');
+  const totalDocsEl = document.getElementById('lib-total-docs');
+  const totalWordsEl = document.getElementById('lib-total-words');
+
+  if (!container) return;
+
+  try {
+    const res = await fetch('/api/library');
+    const data = await res.json();
+    const docs = data.documents || [];
+    const stats = data.stats || { activeDocuments: 0, totalWords: 0 };
+
+    if (badge) badge.textContent = stats.activeDocuments;
+    if (totalDocsEl) totalDocsEl.textContent = stats.activeDocuments;
+    if (totalWordsEl) totalWordsEl.textContent = Number(stats.totalWords).toLocaleString('es-CO');
+
+    if (!docs.length) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted); border: 2px dashed var(--border-subtle); border-radius: 8px;">
+          <div style="font-size: 38px; margin-bottom: 8px;">📚</div>
+          <div style="font-weight: 600; color: #fff; font-size: 14px;">La biblioteca está vacía</div>
+          <p style="font-size: 12px; margin-top: 4px;">Sube tus documentos Word (.docx) a la izquierda para que Gemini aprenda las respuestas de tu negocio sin dar información falsa.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = docs.map(doc => {
+      const dateStr = doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+      const isWord = (doc.originalFilename || '').endsWith('.docx');
+      const isActive = doc.active !== false;
+
+      return `
+        <div class="library-card ${isActive ? '' : 'disabled'}" data-id="${doc.id}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 22px;">${isWord ? '📘' : '📑'}</span>
+              <div>
+                <strong style="font-size: 14px; color: #fff;">${escapeHtml(doc.name || doc.originalFilename)}</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(doc.originalFilename)}</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label class="switch switch-sm" title="Activar/Desactivar para Gemini">
+                <input type="checkbox" class="lib-toggle-switch" data-id="${doc.id}" ${isActive ? 'checked' : ''}>
+                <span class="slider round"></span>
+              </label>
+              <span style="font-size: 11px; color: ${isActive ? 'var(--wa-teal)' : 'var(--text-muted)'}; font-weight: 600;">
+                ${isActive ? 'Activo en IA' : 'Pausado'}
+              </span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 11.5px; color: var(--text-dim); margin-top: 4px;">
+            <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">📊 <strong>${doc.wordCount || 0}</strong> palabras</span>
+            <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">🔤 <strong>${doc.charCount || 0}</strong> caracteres</span>
+            <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">💾 ${formatBytes(doc.size || 0)}</span>
+            <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">📅 ${dateStr}</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+            <button class="btn btn-outline-sm btn-view-markdown" data-id="${doc.id}">
+              👁️ Ver / Editar Markdown Limpio
+            </button>
+            <button class="icon-btn delete-btn btn-delete-doc" data-id="${doc.id}" title="Eliminar de la biblioteca">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Toggle active event
+    container.querySelectorAll('.lib-toggle-switch').forEach(sw => {
+      sw.addEventListener('change', async () => {
+        const id = sw.getAttribute('data-id');
+        try {
+          const r = await fetch(`/api/library/${id}/toggle`, { method: 'POST' });
+          const res = await r.json();
+          showToast(res.active ? 'Documento activado para Gemini' : 'Documento pausado', 'info');
+          loadLibrary();
+        } catch (e) {
+          showToast('Error al cambiar estado', 'error');
+        }
+      });
+    });
+
+    // Delete doc event
+    container.querySelectorAll('.btn-delete-doc').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        if (!confirm('¿Deseas eliminar este documento de la biblioteca? Gemini ya no tendrá acceso a esta información.')) return;
+        try {
+          await fetch(`/api/library/${id}`, { method: 'DELETE' });
+          showToast('Documento eliminado de la memoria', 'info');
+          loadLibrary();
+        } catch (e) {
+          showToast('Error al eliminar documento', 'error');
+        }
+      });
+    });
+
+    // View / Edit markdown modal event
+    container.querySelectorAll('.btn-view-markdown').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        try {
+          const res = await fetch(`/api/library/${id}`);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+
+          document.getElementById('lib-modal-doc-id').value = data.document.id;
+          document.getElementById('lib-modal-title').textContent = data.document.name || data.document.originalFilename;
+          document.getElementById('lib-modal-subtitle').textContent = `Archivo original: ${data.document.originalFilename} (${data.document.wordCount} palabras convertidas a texto plano)`;
+          document.getElementById('lib-modal-content').value = data.content || '';
+
+          document.getElementById('library-view-modal').classList.remove('hidden');
+        } catch (e) {
+          showToast('Error al cargar documento: ' + e.message, 'error');
+        }
+      });
+    });
+
+  } catch (err) {
+    container.innerHTML = `<div style="color: var(--accent-rose);">Error cargando biblioteca: ${err.message}</div>`;
+  }
 }
