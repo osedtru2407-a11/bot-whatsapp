@@ -6,6 +6,9 @@ const mime = require('mime');
 const { Client, LocalAuth, MessageMedia } = require('./index');
 const geminiService = require('./geminiService');
 const libraryService = require('./libraryService');
+const { initDb } = require('./db');
+const dataStore = require('./dataStore');
+const authService = require('./authService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +35,36 @@ app.use('/api', (req, res, next) => {
     next();
 });
 
+// Middleware de autenticación opcional para poblar req.user si viene Bearer Token
+function optionalAuth(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7).trim();
+        try {
+            const decoded = authService.verifyToken(token);
+            req.user = decoded;
+        } catch (e) {}
+    }
+    next();
+}
+
+// Middleware de autenticación requerida
+function requireAuth(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Acceso no autorizado. Inicia sesión.' });
+    }
+    const token = authHeader.slice(7).trim();
+    try {
+        const decoded = authService.verifyToken(token);
+        req.user = decoded;
+        next();
+    } catch (e) {
+        return res.status(401).json({ error: 'Sesión expirada o token inválido. Inicia sesión nuevamente.' });
+    }
+}
+
+app.use('/api', optionalAuth);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // =========================================================================
@@ -169,6 +202,18 @@ function initCompanyWhatsAppClient(companyId) {
     // Para las demás empresas, usamos clientId: companyId (se guarda en .wwebjs_auth/session-<companyId>)
     const authClientId = (companyId === 'default') ? null : companyId;
 
+    // Limpieza preventiva de lockfile huérfano si una sesión previa cerró de forma anómala
+    const sessionDir = path.join(__dirname, '.wwebjs_auth', (companyId === 'default' ? 'session' : `session-${companyId}`));
+    const lockfilePath = path.join(sessionDir, 'lockfile');
+    if (fs.existsSync(lockfilePath)) {
+        try {
+            fs.unlinkSync(lockfilePath);
+            console.log(`[Empresa: ${company.name}] 🧹 Lockfile huérfano liberado correctamente.`);
+        } catch (e) {
+            console.warn(`[Empresa: ${company.name}] ⚠️ Archivo de sesión ocupado o en uso: ${e.message}`);
+        }
+    }
+
     const clientInstance = new Client({
         authStrategy: new LocalAuth({
             clientId: authClientId,
@@ -271,6 +316,14 @@ function getCleanCaption(body) {
         return '';
     }
     return trimmed;
+}
+
+// Persistir lead en PostgreSQL de manera asíncrona
+function persistLead(companyId, lead) {
+    saveData(appData);
+    if (companyId && lead) {
+        dataStore.upsertLeadInDb(companyId, lead).catch(e => console.error(`[DB] Error guardando lead ${lead.phone}:`, e.message));
+    }
 }
 
 // =========================================================================
@@ -393,7 +446,7 @@ async function handleIncomingMessage(companyId, msg) {
 
     if (lead.humanPaused) {
         console.log(`[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`);
-        saveData(appData);
+        persistLead(companyId, lead);
         return;
     }
 
@@ -416,7 +469,7 @@ async function handleIncomingMessage(companyId, msg) {
         }
 
         lead.lastSentRuleId = matchedRule.id;
-        saveData(appData);
+        persistLead(companyId, lead);
 
         // Simular escritura natural
         if (company.settings.simulateTyping) {
@@ -433,7 +486,7 @@ async function handleIncomingMessage(companyId, msg) {
         await sendRuleResponse(companyId, msg, matchedRule);
 
     } else if (company.settings.geminiEnabled !== false && geminiService.isConfigured() && libraryService.hasActiveKnowledge(company.library) && (text.length > 0 || rawAudioMedia)) {
-        saveData(appData);
+        persistLead(companyId, lead);
         if (rawAudioMedia) {
             console.log(`[${company.name}] 🎙️ Escuchando nota de voz de ${senderPhone} con Gemini (Base de conocimiento activa)...`);
         } else {
@@ -473,7 +526,7 @@ async function handleIncomingMessage(companyId, msg) {
                         : aiReply.replace(/\n/g, ' ').slice(0, 70);
                     lead.lastInteraction = new Date().toISOString();
                     lead.lastSentRuleId = 'gemini';
-                    saveData(appData);
+                    persistLead(companyId, lead);
                 }
             }
         } catch (geminiErr) {
@@ -485,7 +538,7 @@ async function handleIncomingMessage(companyId, msg) {
                 await msg.reply(company.settings.fallbackMessage);
                 if (lead) {
                     lead.lastSentRuleId = 'fallback';
-                    saveData(appData);
+                    persistLead(companyId, lead);
                 }
             }
         }
@@ -494,7 +547,7 @@ async function handleIncomingMessage(companyId, msg) {
         if (lead) {
             lead.lastSentRuleId = 'fallback';
         }
-        saveData(appData);
+        persistLead(companyId, lead);
         if (company.settings.simulateTyping) {
             try {
                 const chat = await msg.getChat();
@@ -507,7 +560,7 @@ async function handleIncomingMessage(companyId, msg) {
         await msg.reply(company.settings.fallbackMessage);
         console.log(`[${company.name}] 💬 Respuesta por defecto enviada a ${senderPhone} (sin coincidencia de regla y biblioteca sin datos activos para Gemini)`);
     } else {
-        saveData(appData);
+        persistLead(companyId, lead);
     }
 }
 
@@ -767,12 +820,130 @@ function resolveCompany(req, res, next) {
 }
 
 // =========================================================================
-// RUTAS DE GESTIÓN DE EMPRESAS (MULTI-TENANT)
+// RUTAS DE AUTENTICACIÓN & CONTROL DE ACCESO
 // =========================================================================
 
-// Listar todas las empresas con sus métricas y estado del bot
-app.get('/api/companies', (req, res) => {
-    const list = appData.companies.map(c => {
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const result = await authService.login(email, password);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { fullName, email, password, companyName } = req.body;
+        const result = await authService.register(fullName, email, password, companyName);
+        // Recargar datos multi-empresa
+        appData = await dataStore.loadAllAppData();
+        initCompanyWhatsAppClient(result.company.id);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+    try {
+        const targetCompId = req.query.companyId || req.headers['x-company-id'] || appData.activeCompanyId;
+        const context = await authService.getUserContext(req.user.id, targetCompId);
+        res.json({ success: true, ...context });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/auth/change-password', requireAuth, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const result = await authService.changePassword(req.user.id, currentPassword, newPassword);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// =========================================================================
+// RUTAS DE GESTIÓN DE EQUIPO Y ROLES POR EMPRESA
+// =========================================================================
+
+app.get('/api/companies/:id/team', requireAuth, async (req, res) => {
+    try {
+        const members = await authService.getTeamMembers(req.params.id);
+        const roles = await authService.getCompanyRoles(req.params.id);
+        res.json({ success: true, members, roles });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/companies/:id/team/members', requireAuth, async (req, res) => {
+    try {
+        const result = await authService.addTeamMember(req.params.id, req.user.id, req.body);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.put('/api/companies/:id/team/members/:userId', requireAuth, async (req, res) => {
+    try {
+        const result = await authService.updateTeamMemberRole(req.params.id, req.user.id, req.params.userId, req.body.roleId);
+        res.json({ success: true, member: result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.delete('/api/companies/:id/team/members/:userId', requireAuth, async (req, res) => {
+    try {
+        const result = await authService.removeTeamMember(req.params.id, req.user.id, req.params.userId);
+        res.json({ success: true, ...result });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.get('/api/companies/:id/roles', requireAuth, async (req, res) => {
+    try {
+        const roles = await authService.getCompanyRoles(req.params.id);
+        res.json({ success: true, roles });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/companies/:id/roles', requireAuth, async (req, res) => {
+    try {
+        const role = await authService.createCustomRole(req.params.id, req.body);
+        res.json({ success: true, role });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// =========================================================================
+// RUTAS DE GESTIÓN DE EMPRESAS (MULTI-TENANT CON PERSISTENCIA EN DB)
+// =========================================================================
+
+// Listar empresas disponibles para el usuario
+app.get('/api/companies', async (req, res) => {
+    let allowedCompanyIds = null;
+    if (req.user && req.user.id) {
+        try {
+            const userComps = await authService.getUserCompanies(req.user.id);
+            allowedCompanyIds = new Set(userComps.map(c => c.id));
+        } catch (e) {}
+    }
+
+    const filtered = allowedCompanyIds 
+        ? appData.companies.filter(c => allowedCompanyIds.has(c.id))
+        : appData.companies;
+
+    const list = filtered.map(c => {
         const holder = companyClients.get(c.id);
         return {
             id: c.id,
@@ -788,6 +959,7 @@ app.get('/api/companies', (req, res) => {
             pendingSchedulesCount: (c.schedules || []).filter(s => s.status === 'pending').length
         };
     });
+
     res.json({
         activeCompanyId: appData.activeCompanyId,
         companies: list
@@ -795,7 +967,7 @@ app.get('/api/companies', (req, res) => {
 });
 
 // Crear una nueva empresa con su propio bot y entorno aislado
-app.post('/api/companies', (req, res) => {
+app.post('/api/companies', async (req, res) => {
     try {
         const name = (req.body.name || '').trim();
         if (!name) {
@@ -804,10 +976,14 @@ app.post('/api/companies', (req, res) => {
 
         const id = 'comp_' + Date.now();
         const newCompany = createDefaultCompany(name, id);
+        newCompany.createdBy = req.user ? req.user.id : null;
 
         appData.companies.push(newCompany);
         appData.activeCompanyId = id;
         saveData(appData);
+
+        // Persistir en PostgreSQL
+        await dataStore.createCompanyInDb(id, name, req.user ? req.user.id : null);
 
         // Inicializar bot exclusivo para esta empresa
         initCompanyWhatsAppClient(id);
@@ -820,7 +996,7 @@ app.post('/api/companies', (req, res) => {
 });
 
 // Actualizar nombre de empresa
-app.put('/api/companies/:id', (req, res) => {
+app.put('/api/companies/:id', async (req, res) => {
     const comp = appData.companies.find(c => c.id === req.params.id);
     if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
 
@@ -835,6 +1011,8 @@ app.put('/api/companies/:id', (req, res) => {
                     comp.settings.fallbackMessage = comp.settings.fallbackMessage.split(oldName).join(cleanName);
                 }
             }
+            // Persistir en PostgreSQL
+            await dataStore.updateCompanyNameInDb(req.params.id, cleanName).catch(e => console.error('Error actualizando empresa en DB:', e));
         }
     }
 
@@ -871,6 +1049,8 @@ app.delete('/api/companies/:id', async (req, res) => {
     }
 
     saveData(appData);
+    await dataStore.deleteCompanyFromDb(toDeleteId).catch(e => console.error('Error eliminando empresa en DB:', e));
+
     res.json({ success: true, activeCompanyId: appData.activeCompanyId });
 });
 
@@ -1014,7 +1194,7 @@ app.get('/api/rules', resolveCompany, (req, res) => {
     res.json(req.company.rules || []);
 });
 
-app.post('/api/rules', resolveCompany, (req, res) => {
+app.post('/api/rules', resolveCompany, async (req, res) => {
     const { name, triggers, response, matchType, leadTag, pauseBot, triggerType, mediaTypeFilter, media, parentRuleId } = req.body;
     if (!name || (!response && !media)) {
         return res.status(400).json({ error: 'Campos requeridos: name y (response o archivo adjunto)' });
@@ -1038,10 +1218,12 @@ app.post('/api/rules', resolveCompany, (req, res) => {
     if (!req.company.rules) req.company.rules = [];
     req.company.rules.push(newRule);
     saveData(appData);
+    await dataStore.saveRuleInDb(req.companyId, newRule).catch(e => console.error('Error guardando regla en DB:', e));
+
     res.json(newRule);
 });
 
-app.put('/api/rules/:id', resolveCompany, (req, res) => {
+app.put('/api/rules/:id', resolveCompany, async (req, res) => {
     if (!req.company.rules) req.company.rules = [];
     const index = req.company.rules.findIndex(r => r.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Regla no encontrada' });
@@ -1057,13 +1239,17 @@ app.put('/api/rules/:id', resolveCompany, (req, res) => {
         id: req.params.id 
     };
     saveData(appData);
+    await dataStore.saveRuleInDb(req.companyId, req.company.rules[index]).catch(e => console.error('Error actualizando regla en DB:', e));
+
     res.json(req.company.rules[index]);
 });
 
-app.delete('/api/rules/:id', resolveCompany, (req, res) => {
+app.delete('/api/rules/:id', resolveCompany, async (req, res) => {
     if (!req.company.rules) req.company.rules = [];
     req.company.rules = req.company.rules.filter(r => r.id !== req.params.id);
     saveData(appData);
+    await dataStore.deleteRuleFromDb(req.companyId, req.params.id).catch(e => console.error('Error eliminando regla en DB:', e));
+
     res.json({ success: true });
 });
 
@@ -1072,7 +1258,7 @@ app.get('/api/schedules', resolveCompany, (req, res) => {
     res.json(req.company.schedules || []);
 });
 
-app.post('/api/schedules', resolveCompany, (req, res) => {
+app.post('/api/schedules', resolveCompany, async (req, res) => {
     const { name, recipient, message, scheduledTime, media } = req.body;
     if (!recipient || (!message && !media) || !scheduledTime) {
         return res.status(400).json({ error: 'recipient, scheduledTime y (message o media) son obligatorios' });
@@ -1092,13 +1278,17 @@ app.post('/api/schedules', resolveCompany, (req, res) => {
     if (!req.company.schedules) req.company.schedules = [];
     req.company.schedules.unshift(newSchedule);
     saveData(appData);
+    await dataStore.saveScheduleInDb(req.companyId, newSchedule).catch(e => console.error('Error guardando envío en DB:', e));
+
     res.json(newSchedule);
 });
 
-app.delete('/api/schedules/:id', resolveCompany, (req, res) => {
+app.delete('/api/schedules/:id', resolveCompany, async (req, res) => {
     if (!req.company.schedules) req.company.schedules = [];
     req.company.schedules = req.company.schedules.filter(s => s.id !== req.params.id);
     saveData(appData);
+    await dataStore.deleteScheduleFromDb(req.companyId, req.params.id).catch(e => console.error('Error eliminando envío en DB:', e));
+
     res.json({ success: true });
 });
 
@@ -1135,6 +1325,8 @@ app.post('/api/schedules/:id/send-now', resolveCompany, async (req, res) => {
         item.status = 'sent';
         item.sentAt = new Date().toISOString();
         saveData(appData);
+        await dataStore.saveScheduleInDb(req.companyId, item).catch(e => console.error('Error actualizando envío en DB:', e));
+
         res.json({ success: true, message: 'Mensaje enviado de inmediato' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -1146,13 +1338,15 @@ app.get('/api/leads', resolveCompany, (req, res) => {
     res.json(req.company.leads || []);
 });
 
-app.post('/api/leads/:phone/toggle-pause', resolveCompany, (req, res) => {
+app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
     if (!req.company.leads) req.company.leads = [];
     const lead = req.company.leads.find(l => l.phone === req.params.phone);
     if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
 
     lead.humanPaused = !lead.humanPaused;
     saveData(appData);
+    await dataStore.upsertLeadInDb(req.companyId, lead).catch(e => console.error('Error actualizando pausa de lead en DB:', e));
+
     res.json({ success: true, humanPaused: lead.humanPaused });
 });
 
@@ -1237,12 +1431,14 @@ app.get('/api/settings', resolveCompany, (req, res) => {
     res.json(req.company.settings || {});
 });
 
-app.post('/api/settings', resolveCompany, (req, res) => {
+app.post('/api/settings', resolveCompany, async (req, res) => {
     req.company.settings = { ...req.company.settings, ...req.body };
     if (req.body.businessName) {
         req.company.name = req.body.businessName;
     }
     saveData(appData);
+    await dataStore.saveCompanySettingsInDb(req.companyId, req.company.settings).catch(e => console.error('Error guardando configuración en DB:', e));
+
     res.json(req.company.settings);
 });
 
@@ -1293,6 +1489,7 @@ app.post('/api/library/upload', resolveCompany, async (req, res) => {
         if (!req.company.library) req.company.library = [];
         req.company.library.unshift(newDoc);
         saveData(appData);
+        await dataStore.saveLibraryDocInDb(req.companyId, newDoc).catch(e => console.error('Error guardando doc en DB:', e));
 
         geminiService.clearAllSessions();
 
@@ -1317,7 +1514,7 @@ app.get('/api/library/:id', resolveCompany, (req, res) => {
     res.json({ document: doc, content });
 });
 
-app.put('/api/library/:id', resolveCompany, (req, res) => {
+app.put('/api/library/:id', resolveCompany, async (req, res) => {
     req.company.library = req.company.library || [];
     const doc = req.company.library.find(d => d.id === req.params.id);
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
@@ -1334,12 +1531,13 @@ app.put('/api/library/:id', resolveCompany, (req, res) => {
 
     doc.updatedAt = new Date().toISOString();
     saveData(appData);
+    await dataStore.saveLibraryDocInDb(req.companyId, doc).catch(e => console.error('Error actualizando doc en DB:', e));
     geminiService.clearAllSessions();
 
     res.json({ success: true, document: doc });
 });
 
-app.delete('/api/library/:id', resolveCompany, (req, res) => {
+app.delete('/api/library/:id', resolveCompany, async (req, res) => {
     req.company.library = req.company.library || [];
     const index = req.company.library.findIndex(d => d.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Documento no encontrado' });
@@ -1347,28 +1545,41 @@ app.delete('/api/library/:id', resolveCompany, (req, res) => {
     libraryService.deleteMarkdownFile(req.params.id);
     req.company.library.splice(index, 1);
     saveData(appData);
+    await dataStore.deleteLibraryDocFromDb(req.companyId, req.params.id).catch(e => console.error('Error eliminando doc en DB:', e));
     geminiService.clearAllSessions();
 
     res.json({ success: true });
 });
 
-app.post('/api/library/:id/toggle', resolveCompany, (req, res) => {
+app.post('/api/library/:id/toggle', resolveCompany, async (req, res) => {
     req.company.library = req.company.library || [];
     const doc = req.company.library.find(d => d.id === req.params.id);
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
 
     doc.active = !doc.active;
     saveData(appData);
+    await dataStore.saveLibraryDocInDb(req.companyId, doc).catch(e => console.error('Error actualizando toggle doc en DB:', e));
     geminiService.clearAllSessions();
 
     res.json({ success: true, active: doc.active });
 });
 
 // =========================================================================
-// INICIAR SERVIDOR WEB Y CLIENTES MULTI-EMPRESA
+// INICIAR SERVIDOR WEB Y CLIENTES MULTI-EMPRESA CON POSTGRESQL
 // =========================================================================
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+    try {
+        await initDb();
+        const dbData = await dataStore.loadAllAppData();
+        if (dbData && dbData.companies && dbData.companies.length > 0) {
+            appData = dbData;
+            console.log(`🗄️ Datos cargados exitosamente desde PostgreSQL (${appData.companies.length} empresas registradas)`);
+        }
+    } catch (err) {
+        console.error('⚠️ Aviso cargando datos iniciales de PostgreSQL:', err.message);
+    }
+
     console.log(`======================================================`);
     console.log(`🚀 Panel Visual del Bot de Ventas Multi-Empresa corriendo en:`);
     console.log(`👉 http://localhost:${PORT}`);
@@ -1376,3 +1587,26 @@ app.listen(PORT, () => {
     console.log(`======================================================`);
     initAllCompanyClients();
 });
+
+// Manejo de apagado seguro (Graceful Shutdown)
+let isShuttingDown = false;
+async function gracefulShutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log(`\n🛑 Señal ${signal} detectada. Cerrando instancias de WhatsApp de forma segura...`);
+    const closePromises = [];
+    for (const [compKey, holder] of companyClients.entries()) {
+        if (holder && holder.client) {
+            console.log(`Cerrando cliente de WhatsApp [${compKey}]...`);
+            closePromises.push(holder.client.destroy().catch(e => console.warn(`Error cerrando cliente ${compKey}:`, e.message)));
+        }
+    }
+    try {
+        await Promise.all(closePromises);
+    } catch (e) {}
+    console.log('✅ Clientes cerrados correctamente. Servidor detenido.');
+    process.exit(0);
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
