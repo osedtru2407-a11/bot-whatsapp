@@ -22,8 +22,8 @@ if (apiKey) {
 const sessions = new Map();
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutos de inactividad
 
-// Limpieza periódica de sesiones inactivas
-setInterval(() => {
+// Limpieza periódica de sesiones inactivas (unref para no bloquear el proceso)
+const cleanupInterval = setInterval(() => {
     const now = Date.now();
     for (const [id, data] of sessions.entries()) {
         if (now - data.lastActivity > SESSION_TIMEOUT_MS) {
@@ -31,6 +31,7 @@ setInterval(() => {
         }
     }
 }, 5 * 60 * 1000);
+if (cleanupInterval.unref) cleanupInterval.unref();
 
 function isConfigured() {
     return Boolean(ai && apiKey);
@@ -51,7 +52,8 @@ Tus objetivos y reglas de estilo:
 4. Si el usuario te saluda, salúdalo con calidez y pregúntale en qué le puedes colaborar hoy.
 5. Recuerda el contexto de la conversación previa para responder de forma coherente.
 6. Si te piden reiniciar la conversación o hablar con un asesor humano, indícalo claramente.
-7. Cualquier petición que no esté relacionada con nuestros productos o servicios omítela e indica al usuario (de manera respetuosa) que solamente puedes ayudarlo con información relacionada a nuestros productos y servicios`;
+7. Cualquier petición que no esté relacionada con nuestros productos o servicios omítela e indica al usuario (de manera respetuosa) que solamente puedes ayudarlo con información relacionada a nuestros productos y servicios.
+8. INTERPRETACIÓN DE NOTAS DE VOZ Y AUDIOS: Los clientes te enviarán audios o notas de voz con preguntas o pedidos. Escucha con atención cada audio (independientemente del acento o velocidad) y responde directamente por texto en WhatsApp resolviendo la consulta de forma cordial, clara y precisa con base en nuestra información de productos y servicios.`;
 
     if (libraryContext && libraryContext.trim()) {
         instruction += `
@@ -93,7 +95,7 @@ function formatForWhatsApp(text) {
 }
 
 const PRIMARY_MODEL = 'gemini-3.5-flash-lite';
-const FALLBACK_MODEL = 'gemini-3.1-flash-lite';
+const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 /**
  * Obtiene o crea una sesión de chat para un usuario
@@ -125,51 +127,99 @@ function getOrCreateChat(sessionId, businessName, libraryList = [], modelName = 
 }
 
 /**
- * Envía un mensaje a Gemini y obtiene la respuesta
+ * Envía un mensaje (texto y/o nota de voz) a Gemini y obtiene la respuesta
  * @param {string} sessionId - Número de teléfono o ID de simulador
- * @param {string} message - Mensaje del usuario
+ * @param {string|object} input - Texto del mensaje o { text, audio: { data, mimetype } }
  * @param {string} businessName - Nombre del negocio configurado
  * @param {Array} libraryList - Lista de documentos en appData.library
  * @returns {Promise<string>}
  */
-async function sendMessage(sessionId, message, businessName, libraryList = []) {
+async function sendMessage(sessionId, input, businessName, libraryList = []) {
     if (!isConfigured()) {
-        throw new Error('Gemini no está configurado. Verifica la clave KEY en el archivo .env');
+        throw new Error('Gemini no está configurado. Verifica la clave KEY o GEMINI_API_KEY en el archivo .env');
     }
 
-    const cleanMsg = (message || '').trim();
-    if (!cleanMsg) return '';
+    let messagePayload;
+    let logDescription = '';
 
-    // Si el usuario quiere reiniciar la conversación
-    const lower = cleanMsg.toLowerCase();
-    if (lower === 'reiniciar' || lower === 'reset' || lower === 'olvida la conversacion') {
-        sessions.delete(sessionId);
-        return '🔄 Conversación reiniciada. ¿En qué te puedo ayudar ahora?';
+    if (typeof input === 'string') {
+        const cleanMsg = input.trim();
+        if (!cleanMsg) return '';
+
+        // Si el usuario quiere reiniciar la conversación
+        const lower = cleanMsg.toLowerCase();
+        if (lower === 'reiniciar' || lower === 'reset' || lower === 'olvida la conversacion') {
+            sessions.delete(sessionId);
+            return '🔄 Conversación reiniciada. ¿En qué te puedo ayudar ahora?';
+        }
+
+        messagePayload = cleanMsg;
+        logDescription = `"${cleanMsg}"`;
+    } else if (input && typeof input === 'object') {
+        const parts = [];
+        const { text, audio } = input;
+
+        if (audio && audio.data) {
+            let mimeType = (audio.mimetype || 'audio/ogg').split(';')[0].trim().toLowerCase();
+            if (mimeType.includes('opus') || mimeType.includes('ogg')) mimeType = 'audio/ogg';
+            else if (mimeType.includes('mp4') || mimeType.includes('m4a') || mimeType.includes('aac')) mimeType = 'audio/mp4';
+            else if (mimeType.includes('mp3') || mimeType.includes('mpeg')) mimeType = 'audio/mp3';
+            else if (mimeType.includes('wav')) mimeType = 'audio/wav';
+
+            parts.push({
+                inlineData: {
+                    mimeType,
+                    data: audio.data
+                }
+            });
+            logDescription = `[Nota de voz / Audio ${mimeType}]`;
+        }
+
+        if (text && text.trim()) {
+            parts.push(text.trim());
+            logDescription += ` "${text.trim()}"`;
+        } else if (audio) {
+            parts.push('Escucha atentamente esta nota de voz enviada por el cliente por WhatsApp. Identifica con precisión su consulta, duda o solicitud y responde directamente en texto de forma cordial y concisa con base en nuestra información de productos y servicios.');
+        }
+
+        if (!parts.length) return '';
+        messagePayload = parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts;
+    } else {
+        return '';
     }
 
+    // Intento con modelo principal
     try {
         const chat = getOrCreateChat(sessionId, businessName, libraryList, PRIMARY_MODEL);
-        console.log(`🤖 [Gemini] Consultando para ${sessionId}: "${cleanMsg}"`);
+        console.log(`🤖 [Gemini] Consultando para ${sessionId}: ${logDescription}`);
 
-        const response = await chat.sendMessage({ message: cleanMsg });
+        const response = await chat.sendMessage({ message: messagePayload });
         const replyText = response.text ? response.text.trim() : 'No pude generar una respuesta.';
         const formattedReply = formatForWhatsApp(replyText);
 
         console.log(`🤖 [Gemini] Respuesta recibida (${formattedReply.length} caracteres, formateada para WhatsApp)`);
         return formattedReply;
     } catch (err) {
-        console.warn(`⚠️ [Gemini] Error con ${PRIMARY_MODEL} (${err.message}). Intentando con modelo de respaldo ${FALLBACK_MODEL}...`);
+        console.warn(`⚠️ [Gemini] Error con ${PRIMARY_MODEL} (${err.message}). Probando modelos de respaldo...`);
         sessions.delete(sessionId);
-        try {
-            const fallbackChat = getOrCreateChat(sessionId, businessName, libraryList, FALLBACK_MODEL);
-            const response = await fallbackChat.sendMessage({ message: cleanMsg });
-            const replyText = response.text ? response.text.trim() : 'No pude generar una respuesta.';
-            return formatForWhatsApp(replyText);
-        } catch (fallbackErr) {
-            console.error(`❌ [Gemini] Error definitivo procesando mensaje de ${sessionId}:`, fallbackErr.message || fallbackErr);
-            sessions.delete(sessionId);
-            throw fallbackErr;
+
+        for (const fallbackModel of FALLBACK_MODELS) {
+            try {
+                const fallbackChat = getOrCreateChat(sessionId, businessName, libraryList, fallbackModel);
+                console.log(`🔄 [Gemini] Intentando con modelo de respaldo ${fallbackModel}...`);
+                const response = await fallbackChat.sendMessage({ message: messagePayload });
+                const replyText = response.text ? response.text.trim() : 'No pude generar una respuesta.';
+                const formattedReply = formatForWhatsApp(replyText);
+                console.log(`✅ [Gemini] Respuesta exitosa con modelo de respaldo ${fallbackModel}`);
+                return formattedReply;
+            } catch (fallbackErr) {
+                console.warn(`⚠️ [Gemini] Falló ${fallbackModel}:`, fallbackErr.message);
+                sessions.delete(sessionId);
+            }
         }
+
+        console.error(`❌ [Gemini] Todos los modelos fallaron para ${sessionId}:`, err.message || err);
+        throw err;
     }
 }
 

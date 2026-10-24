@@ -715,14 +715,28 @@ function initSimulator() {
   const chips = document.querySelectorAll('.chip-btn');
   const btnReceipt = document.getElementById('btn-sim-send-receipt');
   const btnPdf = document.getElementById('btn-sim-send-pdf');
+  const btnAudio = document.getElementById('btn-sim-send-audio');
+  const btnUploadAudio = document.getElementById('btn-sim-upload-audio');
+  const fileInputAudio = document.getElementById('sim-audio-file-input');
+  const btnMic = document.getElementById('btn-sim-mic');
 
-  function appendMessage({ text = '', isUser = false, media = null, userMediaIcon = null, isGemini = false }) {
+  function appendMessage({ text = '', isUser = false, media = null, userMediaIcon = null, isGemini = false, audioUrl = null }) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const bubble = document.createElement('div');
     bubble.className = `msg-bubble ${isUser ? 'user-bubble' : 'bot-bubble'}`;
 
     let mediaHtml = '';
-    if (media && media.url) {
+    if (audioUrl) {
+      mediaHtml = `
+        <div class="sim-bubble-doc" style="margin-bottom: 6px;">
+          <span class="sim-bubble-doc-icon">🎤</span>
+          <div class="sim-bubble-doc-info" style="width: 100%;">
+            <span class="sim-bubble-doc-name">Nota de voz</span>
+            <audio controls src="${audioUrl}" style="width: 100%; height: 30px; margin-top: 4px;"></audio>
+          </div>
+        </div>
+      `;
+    } else if (media && media.url) {
       const isImg = (media.mimetype || '').startsWith('image/');
       if (isImg) {
         mediaHtml = `<div class="sim-bubble-media"><img src="${media.url}" alt="${escapeHtml(media.filename || 'Archivo')}"></div>`;
@@ -760,27 +774,39 @@ function initSimulator() {
     chatBody.scrollTop = chatBody.scrollHeight;
   }
 
-  async function triggerSimulation({ text = '', hasMedia = false, mediaMimetype = '', userIcon = null }) {
-    appendMessage({ text, isUser: true, userMediaIcon: userIcon });
+  async function triggerSimulation({ text = '', hasMedia = false, mediaMimetype = '', userIcon = null, audio = null, audioUrl = null }) {
+    appendMessage({ text, isUser: true, userMediaIcon: userIcon, audioUrl });
+
+    // Indicador visual de espera
+    const thinkingBubble = document.createElement('div');
+    thinkingBubble.className = 'msg-bubble bot-bubble';
+    thinkingBubble.style.opacity = '0.85';
+    thinkingBubble.innerHTML = `<span style="font-size: 11.5px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px;">
+      <span class="spinner" style="width: 12px; height: 12px; border-width: 2px;"></span>
+      ${audio ? '🎙️ Escuchando y procesando nota de voz con IA...' : 'Escribiendo respuesta...'}
+    </span>`;
+    chatBody.appendChild(thinkingBubble);
+    chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
       const res = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, hasMedia, mediaMimetype })
+        body: JSON.stringify({ text, hasMedia, mediaMimetype, audio })
       });
       const data = await res.json();
 
-      setTimeout(() => {
-        appendMessage({
-          text: data.response,
-          isUser: false,
-          media: data.media,
-          isGemini: Boolean(data.isGemini)
-        });
-      }, 500);
+      if (thinkingBubble.parentNode) thinkingBubble.remove();
+
+      appendMessage({
+        text: data.response,
+        isUser: false,
+        media: data.media,
+        isGemini: Boolean(data.isGemini)
+      });
 
     } catch (e) {
+      if (thinkingBubble.parentNode) thinkingBubble.remove();
       appendMessage({ text: 'Error conectando con el simulador.', isUser: false });
     }
   }
@@ -819,6 +845,70 @@ function initSimulator() {
         mediaMimetype: 'application/pdf',
         userIcon: '📄'
       });
+    });
+  }
+
+  if (btnAudio) {
+    btnAudio.addEventListener('click', async () => {
+      try {
+        const audioUrl = '/uploads/received/1792266447609_recibido_1792266447609.oga';
+        const res = await fetch(audioUrl);
+        if (!res.ok) throw new Error('Audio de muestra no disponible');
+        const blob = await res.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result || '').split('base64,')[1];
+          triggerSimulation({
+            text: '',
+            hasMedia: true,
+            mediaMimetype: 'audio/ogg',
+            userIcon: '🎤',
+            audio: {
+              data: base64,
+              mimetype: 'audio/ogg'
+            },
+            audioUrl: audioUrl
+          });
+        };
+        reader.readAsDataURL(blob);
+      } catch (err) {
+        showToast('No se pudo cargar el audio de prueba: ' + err.message, 'error');
+      }
+    });
+  }
+
+  const triggerAudioUpload = () => {
+    if (fileInputAudio) fileInputAudio.click();
+  };
+
+  if (btnUploadAudio) btnUploadAudio.addEventListener('click', triggerAudioUpload);
+  if (btnMic) btnMic.addEventListener('click', triggerAudioUpload);
+
+  if (fileInputAudio) {
+    fileInputAudio.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const fullDataUrl = reader.result;
+        const cleanBase64 = fullDataUrl.includes('base64,') ? fullDataUrl.split('base64,')[1] : fullDataUrl;
+        const mimeType = file.type || 'audio/ogg';
+
+        triggerSimulation({
+          text: '',
+          hasMedia: true,
+          mediaMimetype: mimeType,
+          userIcon: '🎤',
+          audio: {
+            data: cleanBase64,
+            mimetype: mimeType
+          },
+          audioUrl: URL.createObjectURL(file)
+        });
+      };
+      reader.readAsDataURL(file);
+      fileInputAudio.value = '';
     });
   }
 

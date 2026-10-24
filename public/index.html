@@ -222,6 +222,13 @@
               <button id="btn-sim-send-pdf" class="btn btn-outline-sm btn-sim-action">
                 📄 Simular envío de Documento PDF
               </button>
+              <button id="btn-sim-send-audio" class="btn btn-outline-sm btn-sim-action" style="border-color: #3b82f6; color: #3b82f6;">
+                🎤 Simular Nota de Voz (Audio)
+              </button>
+              <input type="file" id="sim-audio-file-input" accept="audio/*,.oga,.ogg,.mp3,.m4a,.wav" style="display:none">
+              <button id="btn-sim-upload-audio" class="btn btn-outline-sm btn-sim-action">
+                🎵 Subir / Probar Audio Propio
+              </button>
               <button id="btn-sim-reset-chat" class="btn btn-outline-sm btn-sim-action">
                 🔄 Reiniciar Conversación
               </button>
@@ -238,20 +245,23 @@
             <div class="avatar-circle">🤖</div>
             <div class="chat-header-info">
               <span class="chat-name" id="sim-business-name">Mi Tienda Virtual</span>
-              <span class="chat-status">en línea (Bot)</span>
+              <span class="chat-status">en línea (Bot con IA)</span>
             </div>
           </div>
 
           <div id="phone-chat-messages" class="phone-chat-body">
             <div class="msg-bubble bot-bubble">
-              ¡Hola! Escribe un mensaje o presiona uno de los botones para probar la respuesta automática.
+              ¡Hola! Escribe un mensaje o envía un audio para probar la respuesta inteligente de la IA.
               <span class="msg-time">12:00</span>
             </div>
           </div>
 
           <form id="phone-chat-input-form" class="phone-chat-footer">
             <input type="text" id="phone-chat-input" placeholder="Escribe un mensaje de prueba..." autocomplete="off">
-            <button type="submit" class="btn-send-sim">
+            <button type="button" id="btn-sim-mic" class="btn-audio-sim" title="Simular o subir nota de voz">
+              🎤
+            </button>
+            <button type="submit" class="btn-send-sim" title="Enviar mensaje">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
           </form>
@@ -427,11 +437,11 @@
           <!-- Módulo Gemini AI -->
           <div class="form-group" style="padding: 16px; border-radius: 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <span style="font-weight: 700; color: #3b82f6; font-size: 14px;">🤖 Asistente Inteligente Gemini (gemini-3.5-flash-lite)</span>
+              <span style="font-weight: 700; color: #3b82f6; font-size: 14px;">🤖 Asistente Inteligente Gemini (Texto & Notas de Voz)</span>
               <span id="gemini-status-tag" class="badge" style="background: #10b981; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">Conectado</span>
             </div>
             <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px 0;">
-              Cuando un cliente escribe un mensaje que no coincide con ninguna ruta fija, Gemini responderá de forma conversacional recordando el contexto de la charla.
+              Cuando un cliente escribe un mensaje o envía una <strong>nota de voz / audio</strong> que no coincide con una ruta fija, Gemini interpretará la solicitud auditiva o textual y responderá de forma conversacional recordando el contexto de la charla y consultando la biblioteca.
             </p>
             <div class="form-group" style="margin-bottom: 0;">
               <label for="set-gemini-enabled">Respuestas Automáticas con Gemini</label>

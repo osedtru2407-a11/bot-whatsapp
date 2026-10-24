@@ -144,7 +144,17 @@ function initWhatsAppClient() {
     });
 }
 
-// Lógica del Bot de Ventas al recibir un mensaje (Texto o Archivo)
+// Limpieza de leyenda de mensaje (evita que miniaturas base64 se interpreten como texto)
+function getCleanCaption(body) {
+    if (!body || typeof body !== 'string') return '';
+    const trimmed = body.trim();
+    if (trimmed.startsWith('/9j/') || trimmed.startsWith('data:image') || (!trimmed.includes(' ') && trimmed.length > 80)) {
+        return '';
+    }
+    return trimmed;
+}
+
+// Lógica del Bot de Ventas al recibir un mensaje (Texto o Archivo/Nota de voz)
 async function handleIncomingMessage(msg) {
     if (!appData.settings.botEnabled) return;
     if (msg.fromMe) return;
@@ -153,16 +163,34 @@ async function handleIncomingMessage(msg) {
     if (appData.settings.ignoreGroups && msg.from.includes('@g.us')) return;
 
     const senderPhone = msg.from.replace('@c.us', '').replace('@g.us', '');
-    const text = (msg.body || '').trim().toLowerCase();
+    const cleanText = getCleanCaption(msg.body);
+    const text = cleanText.toLowerCase();
 
-    // 1. Descargar y registrar archivo si el mensaje contiene media
+    // 1. Detectar si es mensaje de voz / audio o archivo adjunto
+    const isAudioType = msg.type === 'ptt' || msg.type === 'audio';
+    const hasMedia = Boolean(msg.hasMedia || isAudioType);
+
     let receivedMedia = null;
-    if (msg.hasMedia) {
+    let rawAudioMedia = null;
+
+    if (hasMedia) {
         try {
-            console.log(`📥 Descargando archivo adjunto recibido de ${senderPhone}...`);
-            const downloaded = await msg.downloadMedia();
-            if (downloaded) {
-                const ext = mime.getExtension(downloaded.mimetype) || 'bin';
+            console.log(`📥 Descargando archivo recibido de ${senderPhone}... (tipo: ${msg.type})`);
+
+            // Reintentos automáticos para asegurar que WhatsApp Web haya completado la descarga/desencriptado
+            let downloaded = null;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    downloaded = await msg.downloadMedia();
+                    if (downloaded && downloaded.data) break;
+                } catch (e) {
+                    console.warn(`Intento ${attempt + 1} de descarga de media:`, e.message);
+                }
+                await new Promise(r => setTimeout(r, 600));
+            }
+
+            if (downloaded && downloaded.data) {
+                const ext = mime.getExtension(downloaded.mimetype) || (isAudioType ? 'oga' : 'bin');
                 const originalName = downloaded.filename || `recibido_${Date.now()}.${ext}`;
                 const cleanOriginal = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
                 const uniqueFilename = `${Date.now()}_${cleanOriginal}`;
@@ -177,29 +205,51 @@ async function handleIncomingMessage(msg) {
                     size: downloaded.filesize || (downloaded.data ? Math.round(downloaded.data.length * 0.75) : 0),
                     url: `/uploads/received/${uniqueFilename}`,
                     receivedAt: new Date().toISOString(),
-                    caption: msg.body || ''
+                    caption: cleanText
                 };
                 console.log(`✅ Archivo recibido guardado: ${receivedMedia.url} (${downloaded.mimetype})`);
+
+                const isAudio = isAudioType || (downloaded.mimetype || '').startsWith('audio/') || (downloaded.mimetype || '').includes('ogg');
+                if (isAudio) {
+                    rawAudioMedia = {
+                        data: downloaded.data,
+                        mimetype: downloaded.mimetype || 'audio/ogg; codecs=opus'
+                    };
+                }
+            } else {
+                console.warn(`⚠️ No se pudo descargar el archivo adjunto de ${senderPhone}`);
             }
         } catch (err) {
             console.error('Error descargando archivo adjunto de WhatsApp:', err);
         }
     }
 
+    // Si era nota de voz y falló la descarga
+    if (isAudioType && !rawAudioMedia) {
+        console.warn(`⚠️ La nota de voz de ${senderPhone} no se pudo procesar.`);
+        if (appData.settings.fallbackMessage) {
+            await msg.reply('Disculpa, no pude escuchar tu nota de voz en este momento. ¿Podrías enviarla nuevamente o escribir tu consulta en texto?');
+        }
+        return;
+    }
+
     // Si no hay texto ni archivo recibido, nada por hacer
-    if (!text && !receivedMedia) return;
+    if (!text && !receivedMedia && !rawAudioMedia) return;
 
     // 2. Buscar o registrar lead / prospecto
     let lead = appData.leads.find(l => l.phone === senderPhone);
-    const displayMsg = receivedMedia 
-        ? (msg.body ? `📎 [${receivedMedia.filename}] ${msg.body}` : `📎 [${receivedMedia.filename}]`) 
-        : msg.body;
+    const isAudioMsg = Boolean(rawAudioMedia || isAudioType || (receivedMedia && (receivedMedia.mimetype || '').startsWith('audio/')));
+    const displayMsg = isAudioMsg 
+        ? (cleanText ? `🎤 [Nota de voz] ${cleanText}` : `🎤 [Nota de voz / Audio]`)
+        : (receivedMedia 
+            ? (cleanText ? `📎 [${receivedMedia.filename}] ${cleanText}` : `📎 [${receivedMedia.filename}]`) 
+            : cleanText);
 
     if (!lead) {
         lead = {
             phone: senderPhone,
             name: msg._data?.notifyName || senderPhone,
-            tag: receivedMedia ? 'Comprobante/Archivo Enviado' : 'Nuevo',
+            tag: isAudioMsg ? 'Audio / Nota de voz' : (receivedMedia ? 'Comprobante/Archivo Enviado' : 'Nuevo'),
             lastMessage: displayMsg,
             lastInteraction: new Date().toISOString(),
             humanPaused: false,
@@ -227,9 +277,9 @@ async function handleIncomingMessage(msg) {
     }
 
     // 3. Buscar regla coincidente (considerando texto y/o tipo de archivo)
-    const hasMedia = Boolean(receivedMedia);
-    const mediaMimetype = receivedMedia ? receivedMedia.mimetype : '';
-    const matchedRule = matchRule(text, appData.rules, hasMedia, mediaMimetype);
+    const hasMediaFlag = Boolean(receivedMedia);
+    const mediaMimetype = receivedMedia ? receivedMedia.mimetype : (isAudioType ? 'audio/ogg' : '');
+    const matchedRule = matchRule(text, appData.rules, hasMediaFlag, mediaMimetype);
 
     if (matchedRule) {
         console.log(`Regla activada: "${matchedRule.name}" para contacto ${senderPhone}`);
@@ -259,9 +309,14 @@ async function handleIncomingMessage(msg) {
         // 4. Enviar respuesta (Con archivo adjunto si la regla lo especifica)
         await sendRuleResponse(msg, matchedRule);
 
-    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && msg.body && msg.body.trim()) {
+    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && (text.length > 0 || rawAudioMedia)) {
         saveData(appData);
-        console.log(`🤖 Usando Gemini para responder a ${senderPhone}...`);
+        if (rawAudioMedia) {
+            console.log(`🎙️ Escuchando y procesando nota de voz de ${senderPhone} con Gemini...`);
+        } else {
+            console.log(`🤖 Usando Gemini para responder a ${senderPhone}...`);
+        }
+
         let chat = null;
         try {
             if (appData.settings.simulateTyping) {
@@ -272,7 +327,12 @@ async function handleIncomingMessage(msg) {
             }
 
             const businessName = appData.settings.businessName || 'Mi Negocio';
-            const aiReply = await geminiService.sendMessage(senderPhone, msg.body, businessName, appData.library || []);
+            const geminiInput = rawAudioMedia ? {
+                text: cleanText,
+                audio: rawAudioMedia
+            } : cleanText;
+
+            const aiReply = await geminiService.sendMessage(senderPhone, geminiInput, businessName, appData.library || []);
 
             if (chat) {
                 try {
@@ -280,8 +340,18 @@ async function handleIncomingMessage(msg) {
                 } catch (e) {}
             }
 
-            await msg.reply(aiReply);
-            console.log(`✅ Respuesta de Gemini enviada a ${senderPhone}`);
+            if (aiReply) {
+                await msg.reply(aiReply);
+                console.log(`✅ Respuesta de Gemini enviada a ${senderPhone}`);
+
+                if (lead) {
+                    lead.lastMessage = isAudioMsg 
+                        ? `🎤 [Nota de voz]: "${aiReply.replace(/\n/g, ' ').slice(0, 70)}..."`
+                        : aiReply.replace(/\n/g, ' ').slice(0, 70);
+                    lead.lastInteraction = new Date().toISOString();
+                    saveData(appData);
+                }
+            }
         } catch (geminiErr) {
             console.error('Error al responder con Gemini:', geminiErr.message || geminiErr);
             if (chat) {
@@ -292,7 +362,7 @@ async function handleIncomingMessage(msg) {
             }
         }
 
-    } else if (appData.settings.fallbackMessage && (text.length > 1 || hasMedia)) {
+    } else if (appData.settings.fallbackMessage && (text.length > 1 || hasMediaFlag)) {
         saveData(appData);
         if (appData.settings.simulateTyping) {
             try {
@@ -340,6 +410,7 @@ async function sendRuleResponse(msg, rule) {
 // Algoritmo de coincidencia de reglas (Soporta Texto, Archivos o Ambos)
 function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
     const activeRules = rules.filter(r => r.enabled !== false);
+    const isAudioMedia = mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg');
 
     for (const rule of activeRules) {
         const triggerType = rule.triggerType || 'text'; // 'text', 'media', 'both'
@@ -350,7 +421,10 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
             let mediaMatches = false;
 
             if (filter === 'any') {
-                mediaMatches = true;
+                // Las reglas genéricas no deben interceptar notas de voz dirigidas a la IA
+                if (!isAudioMedia) {
+                    mediaMatches = true;
+                }
             } else if (filter === 'image' && mediaMimetype.startsWith('image/')) {
                 mediaMatches = true;
             } else if (filter === 'document' && (
@@ -362,7 +436,7 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
                 mediaMimetype.includes('octet-stream')
             )) {
                 mediaMatches = true;
-            } else if (filter === 'audio' && (mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg'))) {
+            } else if (filter === 'audio' && isAudioMedia) {
                 mediaMatches = true;
             }
 
@@ -698,14 +772,17 @@ app.post('/api/leads/:phone/toggle-pause', (req, res) => {
     res.json({ success: true, humanPaused: lead.humanPaused });
 });
 
-// 9. Simulador en Vivo (Soporta texto, simulación de archivo recibido y Gemini AI)
+// 9. Simulador en Vivo (Soporta texto, simulación de archivo recibido, notas de voz y Gemini AI)
 app.post('/api/simulate', async (req, res) => {
     const rawText = (req.body.text || '').trim();
     const text = rawText.toLowerCase();
     const hasMedia = Boolean(req.body.hasMedia);
     const mediaMimetype = req.body.mediaMimetype || (hasMedia ? 'image/jpeg' : '');
+    const audio = req.body.audio; // { data: base64, mimetype }
 
-    const matched = matchRule(text, appData.rules, hasMedia, mediaMimetype);
+    const isAudioSim = Boolean(audio || (mediaMimetype && (mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg'))));
+
+    const matched = matchRule(text, appData.rules, hasMedia || isAudioSim, mediaMimetype || (isAudioSim ? 'audio/ogg' : ''));
     if (matched) {
         res.json({
             matched: true,
@@ -715,10 +792,15 @@ app.post('/api/simulate', async (req, res) => {
             leadTag: matched.leadTag,
             pauseBot: matched.pauseBot
         });
-    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && rawText) {
+    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && (rawText || audio)) {
         try {
             const businessName = appData.settings.businessName || 'Mi Negocio';
-            const aiReply = await geminiService.sendMessage('simulator-session', rawText, businessName, appData.library || []);
+            const geminiInput = audio ? {
+                text: rawText,
+                audio: audio
+            } : rawText;
+
+            const aiReply = await geminiService.sendMessage('simulator-session', geminiInput, businessName, appData.library || []);
             res.json({
                 matched: false,
                 isGemini: true,
@@ -750,7 +832,8 @@ app.post('/api/gemini/reset', (req, res) => {
 app.get('/api/gemini/status', (req, res) => {
     res.json({
         configured: geminiService.isConfigured(),
-        model: 'gemini-3.5-flash-lite'
+        model: 'gemini-3.5-flash-lite',
+        supportsAudio: true
     });
 });
 
