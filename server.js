@@ -23,37 +23,101 @@ const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 // Aumentar límites para permitir subida de archivos (imágenes, PDFs de catálogo, etc.)
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
+// Desactivar caché del navegador para todas las rutas API
+app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Estado global del cliente WhatsApp
-let clientStatus = 'initializing'; // initializing, qr_ready, authenticated, ready, disconnected
-let currentQrDataUrl = null;
-let clientInfo = null;
+// =========================================================================
+// GESTIÓN DE PERSISTENCIA Y MULTI-EMPRESA
+// =========================================================================
 
-// Cargar o inicializar datos de persistencia
+function createDefaultCompany(name = 'Digital Pass', id = 'default') {
+    return {
+        id,
+        name,
+        settings: {
+            businessName: name,
+            botEnabled: true,
+            simulateTyping: true,
+            typingDelaySeconds: 2,
+            ignoreGroups: true,
+            fallbackMessage: `¡Hola! Gracias por comunicarte con ${name}. Escribe *menu* para ver las opciones disponibles.`,
+            geminiEnabled: true
+        },
+        rules: [],
+        schedules: [],
+        leads: [],
+        library: []
+    };
+}
+
 function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
             const raw = fs.readFileSync(DATA_FILE, 'utf8');
             const parsed = JSON.parse(raw);
-            if (!parsed.library) parsed.library = [];
-            return parsed;
+
+            // Migración automática: De sistema mono-empresa plano a sistema multi-empresa
+            if (parsed && !parsed.companies && parsed.rules) {
+                console.log('🔄 Migrando datos existentes a formato multi-empresa...');
+                const defaultCompany = {
+                    id: 'default',
+                    name: parsed.settings?.businessName || 'Digital Pass',
+                    settings: parsed.settings || {
+                        businessName: "Digital Pass",
+                        botEnabled: true,
+                        simulateTyping: true,
+                        typingDelaySeconds: 2,
+                        ignoreGroups: true,
+                        fallbackMessage: "Escribe *menu* para ver las opciones disponibles.",
+                        geminiEnabled: true
+                    },
+                    rules: parsed.rules || [],
+                    schedules: parsed.schedules || [],
+                    leads: parsed.leads || [],
+                    library: parsed.library || []
+                };
+
+                const multiData = {
+                    activeCompanyId: 'default',
+                    companies: [defaultCompany]
+                };
+                saveData(multiData);
+                return multiData;
+            }
+
+            // Si ya tiene el esquema multi-empresa
+            if (parsed && Array.isArray(parsed.companies)) {
+                if (parsed.companies.length === 0) {
+                    parsed.companies.push(createDefaultCompany());
+                }
+                if (!parsed.activeCompanyId) {
+                    parsed.activeCompanyId = parsed.companies[0].id;
+                }
+                parsed.companies.forEach(comp => {
+                    if (!comp.rules) comp.rules = [];
+                    if (!comp.schedules) comp.schedules = [];
+                    if (!comp.leads) comp.leads = [];
+                    if (!comp.library) comp.library = [];
+                    if (!comp.settings) comp.settings = { businessName: comp.name || 'Mi Negocio', botEnabled: true };
+                });
+                return parsed;
+            }
         }
     } catch (e) {
         console.error('Error al cargar datos:', e);
     }
+
     return {
-        settings: {
-            businessName: "Mi Negocio",
-            botEnabled: true,
-            simulateTyping: true,
-            typingDelaySeconds: 2,
-            ignoreGroups: true,
-            fallbackMessage: "Escribe *menu* para ver las opciones disponibles."
-        },
-        rules: [],
-        schedules: [],
-        leads: []
+        activeCompanyId: 'default',
+        companies: [createDefaultCompany()]
     };
 }
 
@@ -67,84 +131,139 @@ function saveData(data) {
 
 let appData = loadData();
 
-// Inicializar cliente de WhatsApp
-let client = null;
+// =========================================================================
+// GESTOR DE CLIENTES WHATSAPP MULTI-INSTANCIA
+// =========================================================================
 
-function initWhatsAppClient() {
-    console.log('Iniciando cliente WhatsApp...');
-    clientStatus = 'initializing';
-    currentQrDataUrl = null;
+// Mapa de instancias de WhatsApp por empresa: Map<companyId, { client, status, qrCode, clientInfo }>
+const companyClients = new Map();
 
-    client = new Client({
-        authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
+function initCompanyWhatsAppClient(companyId) {
+    const company = appData.companies.find(c => c.id === companyId);
+    if (!company) {
+        console.warn(`[Multi-Bot] No se encontró la empresa con ID: ${companyId}`);
+        return;
+    }
+
+    // Detener instancia previa si existe
+    if (companyClients.has(companyId)) {
+        const existing = companyClients.get(companyId);
+        if (existing && existing.client) {
+            try {
+                existing.client.destroy().catch(() => {});
+            } catch (e) {}
+        }
+    }
+
+    const state = {
+        client: null,
+        status: 'initializing',
+        qrCode: null,
+        clientInfo: null
+    };
+    companyClients.set(companyId, state);
+
+    console.log(`[Empresa: ${company.name} (${companyId})] Iniciando cliente WhatsApp...`);
+
+    // Para la empresa 'default', usamos clientId: null para reutilizar la sesión existente en .wwebjs_auth/session
+    // Para las demás empresas, usamos clientId: companyId (se guarda en .wwebjs_auth/session-<companyId>)
+    const authClientId = (companyId === 'default') ? null : companyId;
+
+    const clientInstance = new Client({
+        authStrategy: new LocalAuth({
+            clientId: authClientId,
+            dataPath: path.join(__dirname, '.wwebjs_auth')
+        }),
         puppeteer: {
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         }
     });
 
-    client.on('qr', async (qr) => {
-        console.log('Nuevo código QR recibido');
-        clientStatus = 'qr_ready';
+    state.client = clientInstance;
+
+    clientInstance.on('qr', async (qr) => {
+        console.log(`[Empresa: ${company.name}] Nuevo código QR recibido`);
+        state.status = 'qr_ready';
         try {
-            currentQrDataUrl = await QRCode.toDataURL(qr, {
+            state.qrCode = await QRCode.toDataURL(qr, {
                 width: 320,
                 margin: 2,
                 color: { dark: '#0b141a', light: '#ffffff' }
             });
         } catch (err) {
-            console.error('Error generando QR DataURL:', err);
+            console.error(`[Empresa: ${company.name}] Error generando QR DataURL:`, err);
         }
     });
 
-    client.on('authenticated', () => {
-        console.log('Cliente autenticado correctamente');
-        clientStatus = 'authenticated';
-        currentQrDataUrl = null;
+    clientInstance.on('authenticated', () => {
+        console.log(`[Empresa: ${company.name}] Autenticado correctamente`);
+        state.status = 'authenticated';
+        state.qrCode = null;
     });
 
-    client.on('auth_failure', (msg) => {
-        console.error('Fallo de autenticación:', msg);
-        clientStatus = 'auth_failure';
+    clientInstance.on('auth_failure', (msg) => {
+        console.error(`[Empresa: ${company.name}] Fallo de autenticación:`, msg);
+        state.status = 'auth_failure';
     });
 
-    client.on('ready', async () => {
-        console.log('Cliente WhatsApp LISTO para enviar y recibir mensajes y archivos');
-        clientStatus = 'ready';
-        currentQrDataUrl = null;
+    clientInstance.on('ready', async () => {
+        console.log(`[Empresa: ${company.name}] WhatsApp LISTO para enviar y recibir`);
+        state.status = 'ready';
+        state.qrCode = null;
         try {
-            clientInfo = {
-                pushname: client.info.pushname || 'Bot',
-                wid: client.info.wid.user,
-                platform: client.info.platform
+            state.clientInfo = {
+                pushname: clientInstance.info?.pushname || company.name,
+                wid: clientInstance.info?.wid?.user || 'Conectado',
+                platform: clientInstance.info?.platform || 'web'
             };
         } catch (e) {
-            clientInfo = { pushname: 'Bot', wid: 'Conectado' };
+            state.clientInfo = { pushname: company.name, wid: 'Conectado' };
         }
     });
 
-    client.on('disconnected', (reason) => {
-        console.log('Cliente desconectado:', reason);
-        clientStatus = 'disconnected';
-        clientInfo = null;
-        currentQrDataUrl = null;
+    clientInstance.on('disconnected', (reason) => {
+        console.log(`[Empresa: ${company.name}] Desconectado:`, reason);
+        state.status = 'disconnected';
+        state.clientInfo = null;
+        state.qrCode = null;
     });
 
-    client.on('message', async (msg) => {
+    clientInstance.on('message', async (msg) => {
         try {
-            await handleIncomingMessage(msg);
+            await handleIncomingMessage(companyId, msg);
         } catch (err) {
-            console.error('Error procesando mensaje entrante:', err);
+            console.error(`[Empresa: ${company.name}] Error procesando mensaje entrante:`, err);
         }
     });
 
-    client.initialize().catch((err) => {
-        console.error('Error en client.initialize():', err);
-        clientStatus = 'error';
+    clientInstance.initialize().catch((err) => {
+        console.error(`[Empresa: ${company.name}] Error en client.initialize():`, err);
+        state.status = 'error';
     });
 }
 
-// Limpieza de leyenda de mensaje (evita que miniaturas base64 se interpreten como texto)
+async function stopCompanyWhatsAppClient(companyId) {
+    if (companyClients.has(companyId)) {
+        const holder = companyClients.get(companyId);
+        if (holder && holder.client) {
+            try {
+                await holder.client.destroy();
+            } catch (e) {
+                console.error(`Error deteniendo cliente de empresa ${companyId}:`, e.message);
+            }
+        }
+        companyClients.delete(companyId);
+    }
+}
+
+function initAllCompanyClients() {
+    for (const comp of appData.companies) {
+        initCompanyWhatsAppClient(comp.id);
+    }
+}
+
+// Limpieza de leyenda de mensaje
 function getCleanCaption(body) {
     if (!body || typeof body !== 'string') return '';
     const trimmed = body.trim();
@@ -154,19 +273,23 @@ function getCleanCaption(body) {
     return trimmed;
 }
 
-// Lógica del Bot de Ventas al recibir un mensaje (Texto o Archivo/Nota de voz)
-async function handleIncomingMessage(msg) {
-    if (!appData.settings.botEnabled) return;
+// =========================================================================
+// LÓGICA DE ATENCIÓN AUTOMÁTICA POR EMPRESA
+// =========================================================================
+
+async function handleIncomingMessage(companyId, msg) {
+    const company = appData.companies.find(c => c.id === companyId);
+    if (!company) return;
+    if (!company.settings || !company.settings.botEnabled) return;
     if (msg.fromMe) return;
 
-    // Ignorar mensajes de grupos si está configurado
-    if (appData.settings.ignoreGroups && msg.from.includes('@g.us')) return;
+    if (company.settings.ignoreGroups && msg.from.includes('@g.us')) return;
 
     const senderPhone = msg.from.replace('@c.us', '').replace('@g.us', '');
     const cleanText = getCleanCaption(msg.body);
     const text = cleanText.toLowerCase();
 
-    // 1. Detectar si es mensaje de voz / audio o archivo adjunto
+    // 1. Detectar si es nota de voz o archivo adjunto
     const isAudioType = msg.type === 'ptt' || msg.type === 'audio';
     const hasMedia = Boolean(msg.hasMedia || isAudioType);
 
@@ -175,16 +298,15 @@ async function handleIncomingMessage(msg) {
 
     if (hasMedia) {
         try {
-            console.log(`📥 Descargando archivo recibido de ${senderPhone}... (tipo: ${msg.type})`);
+            console.log(`[${company.name}] 📥 Descargando archivo recibido de ${senderPhone}... (tipo: ${msg.type})`);
 
-            // Reintentos automáticos para asegurar que WhatsApp Web haya completado la descarga/desencriptado
             let downloaded = null;
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
                     downloaded = await msg.downloadMedia();
                     if (downloaded && downloaded.data) break;
                 } catch (e) {
-                    console.warn(`Intento ${attempt + 1} de descarga de media:`, e.message);
+                    console.warn(`[${company.name}] Intento ${attempt + 1} de descarga:`, e.message);
                 }
                 await new Promise(r => setTimeout(r, 600));
             }
@@ -207,7 +329,7 @@ async function handleIncomingMessage(msg) {
                     receivedAt: new Date().toISOString(),
                     caption: cleanText
                 };
-                console.log(`✅ Archivo recibido guardado: ${receivedMedia.url} (${downloaded.mimetype})`);
+                console.log(`[${company.name}] ✅ Archivo recibido guardado: ${receivedMedia.url}`);
 
                 const isAudio = isAudioType || (downloaded.mimetype || '').startsWith('audio/') || (downloaded.mimetype || '').includes('ogg');
                 if (isAudio) {
@@ -217,27 +339,26 @@ async function handleIncomingMessage(msg) {
                     };
                 }
             } else {
-                console.warn(`⚠️ No se pudo descargar el archivo adjunto de ${senderPhone}`);
+                console.warn(`[${company.name}] ⚠️ No se pudo descargar el archivo adjunto de ${senderPhone}`);
             }
         } catch (err) {
-            console.error('Error descargando archivo adjunto de WhatsApp:', err);
+            console.error(`[${company.name}] Error descargando archivo adjunto:`, err);
         }
     }
 
-    // Si era nota de voz y falló la descarga
     if (isAudioType && !rawAudioMedia) {
-        console.warn(`⚠️ La nota de voz de ${senderPhone} no se pudo procesar.`);
-        if (appData.settings.fallbackMessage) {
+        console.warn(`[${company.name}] ⚠️ La nota de voz de ${senderPhone} no se pudo procesar.`);
+        if (company.settings.fallbackMessage) {
             await msg.reply('Disculpa, no pude escuchar tu nota de voz en este momento. ¿Podrías enviarla nuevamente o escribir tu consulta en texto?');
         }
         return;
     }
 
-    // Si no hay texto ni archivo recibido, nada por hacer
     if (!text && !receivedMedia && !rawAudioMedia) return;
 
-    // 2. Buscar o registrar lead / prospecto
-    let lead = appData.leads.find(l => l.phone === senderPhone);
+    // 2. Buscar o registrar lead para esta empresa específica
+    if (!company.leads) company.leads = [];
+    let lead = company.leads.find(l => l.phone === senderPhone);
     const isAudioMsg = Boolean(rawAudioMedia || isAudioType || (receivedMedia && (receivedMedia.mimetype || '').startsWith('audio/')));
     const displayMsg = isAudioMsg 
         ? (cleanText ? `🎤 [Nota de voz] ${cleanText}` : `🎤 [Nota de voz / Audio]`)
@@ -256,7 +377,7 @@ async function handleIncomingMessage(msg) {
             humanPaused: false,
             receivedFiles: []
         };
-        appData.leads.unshift(lead);
+        company.leads.unshift(lead);
     } else {
         lead.lastMessage = displayMsg;
         lead.lastInteraction = new Date().toISOString();
@@ -270,21 +391,20 @@ async function handleIncomingMessage(msg) {
         lead.receivedFiles.unshift(receivedMedia);
     }
 
-    // Si el contacto está pausado por atención humana
     if (lead.humanPaused) {
-        console.log(`Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`);
+        console.log(`[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`);
         saveData(appData);
         return;
     }
 
-    // 3. Buscar regla coincidente (considerando texto y/o tipo de archivo y contexto del último mensaje del bot)
+    // 3. Buscar regla coincidente en las rutas de esta empresa
     const hasMediaFlag = Boolean(receivedMedia);
     const mediaMimetype = receivedMedia ? receivedMedia.mimetype : (isAudioType ? 'audio/ogg' : '');
     const context = { lastSentRuleId: lead ? lead.lastSentRuleId : null };
-    const matchedRule = matchRule(text, appData.rules, hasMediaFlag, mediaMimetype, context);
+    const matchedRule = matchRule(text, company.rules || [], hasMediaFlag, mediaMimetype, context);
 
     if (matchedRule) {
-        console.log(`Regla activada: "${matchedRule.name}" para contacto ${senderPhone}`);
+        console.log(`[${company.name}] Regla activada: "${matchedRule.name}" para ${senderPhone}`);
 
         if (matchedRule.leadTag) {
             lead.tag = matchedRule.leadTag;
@@ -292,60 +412,60 @@ async function handleIncomingMessage(msg) {
 
         if (matchedRule.pauseBot) {
             lead.humanPaused = true;
-            console.log(`Bot pausado para ${senderPhone} debido a la regla "${matchedRule.name}".`);
+            console.log(`[${company.name}] Bot pausado para ${senderPhone} debido a la regla "${matchedRule.name}".`);
         }
 
         lead.lastSentRuleId = matchedRule.id;
         saveData(appData);
 
         // Simular escritura natural
-        if (appData.settings.simulateTyping) {
+        if (company.settings.simulateTyping) {
             try {
                 const chat = await msg.getChat();
                 await chat.sendStateTyping();
-                const delayMs = (appData.settings.typingDelaySeconds || 2) * 1000;
+                const delayMs = (company.settings.typingDelaySeconds || 2) * 1000;
                 await new Promise(r => setTimeout(r, delayMs));
                 await chat.clearStateTyping();
             } catch (e) {}
         }
 
-        // 4. Enviar respuesta (Con archivo adjunto si la regla lo especifica)
-        await sendRuleResponse(msg, matchedRule);
+        // 4. Enviar respuesta con el cliente de WhatsApp de esta empresa
+        await sendRuleResponse(companyId, msg, matchedRule);
 
-    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && (text.length > 0 || rawAudioMedia)) {
+    } else if (company.settings.geminiEnabled !== false && geminiService.isConfigured() && libraryService.hasActiveKnowledge(company.library) && (text.length > 0 || rawAudioMedia)) {
         saveData(appData);
         if (rawAudioMedia) {
-            console.log(`🎙️ Escuchando y procesando nota de voz de ${senderPhone} con Gemini...`);
+            console.log(`[${company.name}] 🎙️ Escuchando nota de voz de ${senderPhone} con Gemini (Base de conocimiento activa)...`);
         } else {
-            console.log(`🤖 Usando Gemini para responder a ${senderPhone}...`);
+            console.log(`[${company.name}] 🤖 Usando Gemini para responder a ${senderPhone} (Base de conocimiento activa)...`);
         }
 
         let chat = null;
         try {
-            if (appData.settings.simulateTyping) {
+            if (company.settings.simulateTyping) {
                 try {
                     chat = await msg.getChat();
                     await chat.sendStateTyping();
                 } catch (e) {}
             }
 
-            const businessName = appData.settings.businessName || 'Mi Negocio';
+            const businessName = company.settings.businessName || company.name || 'Mi Negocio';
             const geminiInput = rawAudioMedia ? {
                 text: cleanText,
                 audio: rawAudioMedia
             } : cleanText;
 
-            const aiReply = await geminiService.sendMessage(senderPhone, geminiInput, businessName, appData.library || []);
+            // Sesión de Gemini aislada por empresa y remitente
+            const sessionKey = `${companyId}_${senderPhone}`;
+            const aiReply = await geminiService.sendMessage(sessionKey, geminiInput, businessName, company.library || []);
 
             if (chat) {
-                try {
-                    await chat.clearStateTyping();
-                } catch (e) {}
+                try { await chat.clearStateTyping(); } catch (e) {}
             }
 
             if (aiReply) {
                 await msg.reply(aiReply);
-                console.log(`✅ Respuesta de Gemini enviada a ${senderPhone}`);
+                console.log(`[${company.name}] ✅ Respuesta de Gemini enviada a ${senderPhone}`);
 
                 if (lead) {
                     lead.lastMessage = isAudioMsg 
@@ -357,12 +477,12 @@ async function handleIncomingMessage(msg) {
                 }
             }
         } catch (geminiErr) {
-            console.error('Error al responder con Gemini:', geminiErr.message || geminiErr);
+            console.error(`[${company.name}] Error al responder con Gemini:`, geminiErr.message || geminiErr);
             if (chat) {
                 try { await chat.clearStateTyping(); } catch (e) {}
             }
-            if (appData.settings.fallbackMessage) {
-                await msg.reply(appData.settings.fallbackMessage);
+            if (company.settings.fallbackMessage) {
+                await msg.reply(company.settings.fallbackMessage);
                 if (lead) {
                     lead.lastSentRuleId = 'fallback';
                     saveData(appData);
@@ -370,27 +490,29 @@ async function handleIncomingMessage(msg) {
             }
         }
 
-    } else if (appData.settings.fallbackMessage && (text.length > 1 || hasMediaFlag)) {
+    } else if (company.settings.fallbackMessage && (text.length > 0 || hasMediaFlag || isAudioMsg)) {
         if (lead) {
             lead.lastSentRuleId = 'fallback';
         }
         saveData(appData);
-        if (appData.settings.simulateTyping) {
+        if (company.settings.simulateTyping) {
             try {
                 const chat = await msg.getChat();
                 await chat.sendStateTyping();
-                await new Promise(r => setTimeout(r, 1500));
+                const delayMs = (company.settings.typingDelaySeconds || 2) * 1000;
+                await new Promise(r => setTimeout(r, delayMs));
                 await chat.clearStateTyping();
             } catch (e) {}
         }
-        await msg.reply(appData.settings.fallbackMessage);
+        await msg.reply(company.settings.fallbackMessage);
+        console.log(`[${company.name}] 💬 Respuesta por defecto enviada a ${senderPhone} (sin coincidencia de regla y biblioteca sin datos activos para Gemini)`);
     } else {
         saveData(appData);
     }
 }
 
-// Función auxiliar para responder con texto y/o archivo adjunto
-async function sendRuleResponse(msg, rule) {
+// Envío de respuesta con soporte de medios
+async function sendRuleResponse(companyId, msg, rule) {
     let mediaToSend = null;
 
     if (rule.media && rule.media.url) {
@@ -408,9 +530,12 @@ async function sendRuleResponse(msg, rule) {
         }
     }
 
-    if (mediaToSend) {
+    const holder = companyClients.get(companyId);
+    const clientInstance = holder ? holder.client : null;
+
+    if (mediaToSend && clientInstance) {
         console.log(`📤 Enviando archivo adjunto "${rule.media.filename || 'archivo'}" a ${msg.from}...`);
-        await client.sendMessage(msg.from, mediaToSend, {
+        await clientInstance.sendMessage(msg.from, mediaToSend, {
             caption: rule.response || undefined
         });
     } else {
@@ -427,45 +552,29 @@ function normalizeAccents(str) {
 }
 
 /**
- * Evalúa si un trigger (palabra clave o número de opción) coincide con el texto del mensaje.
- * - Si el trigger es puramente numérico (ej: "3", "1", "2"):
- *   Representa una opción de menú/submenú y SOLAMENTE coincide si:
- *   1) El último mensaje enviado al usuario corresponde a la regla padre (rule.parentRuleId o por defecto 'rule-welcome').
- *   2) El usuario escribió ese número solo (ej: "3", "3.", "#3", "opcion 3", "el 3", "3️⃣").
- *   NUNCA se activa si el bot no envió previamente ese menú específico (ej: si el chatbot preguntó cantidades "3"
- *   o si está en medio de una conversación general o en otro submenú diferente), ni si forma parte de otro número ("365", "30").
- * - Si el trigger es texto (ej: "pagos", "nequi", "como pago", "suscripciones"):
- *   Evalúa según el matchType ('exact', 'starts_with', 'contains_any') respetando límites de palabra
- *   y normalizando tildes para evitar falsos positivos (ej: 'pago' no se activa con 'apagon').
+ * Evalúa si un trigger coincide con el texto del mensaje considerando submenús y palabras clave.
  */
 function checkTriggerMatch(text, trigger, matchType = 'contains_any', context = {}, rule = {}) {
     const rawText = (text || '').trim();
     const rawTrigger = (trigger || '').trim();
     if (!rawText || !rawTrigger) return false;
 
-    // Normalizar espacios múltiples
     const lowerText = rawText.toLowerCase().replace(/\s+/g, ' ');
     const lowerTrigger = rawTrigger.toLowerCase().replace(/\s+/g, ' ');
 
-    // Caso 1: El trigger es un número puro (ej: '1', '2', '3', etc.)
+    // Caso 1: El trigger es un número puro (ej: '1', '2', '3')
     const isNumericTrigger = /^\d+$/.test(lowerTrigger);
 
     if (isNumericTrigger) {
-        // REGLA FUNDAMENTAL DE SUBMENÚS:
-        // Si la regla tiene un parentRuleId definido, SOLAMENTE coincide si el último mensaje del bot fue esa regla padre.
-        // Si la regla NO tiene parentRuleId, por compatibilidad con menús principales requiere 'rule-welcome'.
         const requiredParentId = rule.parentRuleId || 'rule-welcome';
         if (!context || context.lastSentRuleId !== requiredParentId) {
             return false;
         }
 
-        // A. Mensaje que contiene solo el número (limpiando posibles signos comunes como #, ., !, ?, paréntesis, emojis)
-        // Por ejemplo: '3', ' 3 ', '3.', '#3', '(3)', '3!', '3️⃣'
         const cleanNoEmojis = lowerText.replace(/[\uFE0F\u20E3]/g, '');
         const cleanNoPunct = cleanNoEmojis.replace(/^[#\s([<]+|[.\s!?:)\]>]+$/g, '');
         if (cleanNoPunct === lowerTrigger) return true;
 
-        // B. Elección explícita de la opción del menú (ej: 'opcion 3', 'opción 3', 'el 3', 'la 3', 'numero 3', 'n° 3')
         const escaped = escapeRegExp(lowerTrigger);
         const menuOptionRegex = new RegExp(
             '^(?:(?:hola|buenas|por\\s+favor)?\\s*(?:opci[oó]n|n[uú]mero|num|n°|no\\.?|item|el|la)?\\s*#?\\s*)' +
@@ -475,11 +584,10 @@ function checkTriggerMatch(text, trigger, matchType = 'contains_any', context = 
         );
         if (menuOptionRegex.test(cleanNoEmojis)) return true;
 
-        // Si no es el número solo ni opción explícita (ej: 'office 365', 'tienen office 365?', '365 días'), NO coincide.
         return false;
     }
 
-    // Caso 2: Palabras clave de texto. Normalización de tildes (ej: 'catalogo' coincide con 'catálogo')
+    // Caso 2: Palabras clave de texto
     const normText = normalizeAccents(lowerText);
     const normTrigger = normalizeAccents(lowerTrigger);
 
@@ -494,21 +602,18 @@ function checkTriggerMatch(text, trigger, matchType = 'contains_any', context = 
         return startsRegex.test(normText);
     }
 
-    // Default: 'contains_any'
-    // Comprobamos con límites de palabra para evitar falsos positivos
-    // (ej: 'pago' no debe coincidir con 'apagon', pero 'como pago' sí debe coincidir con 'hola como pago')
     const escaped = escapeRegExp(normTrigger);
     const wordBoundaryRegex = new RegExp('(?<![\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'iu');
     return wordBoundaryRegex.test(normText);
 }
 
-// Algoritmo de coincidencia de reglas (Soporta Texto, Archivos o Ambos con Contexto de Estado de Conversación y Submenús)
+// Algoritmo de coincidencia de reglas
 function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = {}) {
     const activeRules = rules.filter(r => r.enabled !== false);
     const isAudioMedia = mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg');
     const lastSentRuleId = context.lastSentRuleId || null;
 
-    // Prioridad 1: Reglas contextuales cuyo parentRuleId coincide exactamente con el último menú enviado (submenús)
+    // Prioridad 1: Submenús contextuales cuyo parentRuleId coincide con el último menú enviado
     // Prioridad 2: Reglas globales
     const sortedRules = [...activeRules].sort((a, b) => {
         const aMatchesContext = Boolean(a.parentRuleId && a.parentRuleId === lastSentRuleId);
@@ -519,17 +624,15 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = 
     });
 
     for (const rule of sortedRules) {
-        const triggerType = rule.triggerType || 'text'; // 'text', 'media', 'both'
+        const triggerType = rule.triggerType || 'text';
 
         // A. Coincidencia por archivo recibido
         if (hasMedia && (triggerType === 'media' || triggerType === 'both' || rule.matchType === 'on_media')) {
-            const filter = rule.mediaTypeFilter || 'any'; // 'any', 'image', 'document', 'audio'
+            const filter = rule.mediaTypeFilter || 'any';
             let mediaMatches = false;
 
             if (filter === 'any') {
-                if (!isAudioMedia) {
-                    mediaMatches = true;
-                }
+                if (!isAudioMedia) mediaMatches = true;
             } else if (filter === 'image' && mediaMimetype.startsWith('image/')) {
                 mediaMatches = true;
             } else if (filter === 'document' && (
@@ -547,9 +650,7 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = 
 
             if (mediaMatches) {
                 const triggers = (rule.triggers || []).map(t => t.trim().toLowerCase()).filter(Boolean);
-                if (!triggers.length || !text) {
-                    return rule;
-                }
+                if (!triggers.length || !text) return rule;
                 const matchType = rule.matchType || 'contains_any';
                 if (triggers.some(t => checkTriggerMatch(text, t, matchType, context, rule))) {
                     return rule;
@@ -574,50 +675,56 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = 
     return null;
 }
 
-// Motor de Programación de Mensajes (Revisa cada 10 segundos)
-setInterval(async () => {
-    if (clientStatus !== 'ready' || !client) return;
+// =========================================================================
+// MOTOR DE PROGRAMACIÓN DE ENVÍOS MULTI-EMPRESA
+// =========================================================================
 
+setInterval(async () => {
     const now = new Date();
     let hasChanges = false;
 
-    for (const item of appData.schedules) {
-        if (item.status === 'pending') {
-            const scheduledDate = new Date(item.scheduledTime);
-            if (scheduledDate <= now) {
-                console.log(`⏰ Ejecutando envío programado a ${item.recipient}: "${(item.message || '').slice(0, 30)}..."`);
-                try {
-                    const cleanPhone = item.recipient.replace(/\D/g, '');
-                    const chatId = `${cleanPhone}@c.us`;
+    for (const company of (appData.companies || [])) {
+        const holder = companyClients.get(company.id);
+        if (!holder || holder.status !== 'ready' || !holder.client) continue;
 
-                    if (item.media && item.media.url) {
-                        const relPath = item.media.url.startsWith('/') ? item.media.url.slice(1) : item.media.url;
-                        const fullPath = path.join(__dirname, 'public', relPath);
-                        let mediaInstance = null;
-                        if (fs.existsSync(fullPath)) {
-                            mediaInstance = MessageMedia.fromFilePath(fullPath);
-                        } else if (item.media.url.startsWith('http')) {
-                            mediaInstance = await MessageMedia.fromUrl(item.media.url);
-                        }
+        for (const item of (company.schedules || [])) {
+            if (item.status === 'pending') {
+                const scheduledDate = new Date(item.scheduledTime);
+                if (scheduledDate <= now) {
+                    console.log(`[${company.name}] ⏰ Ejecutando envío programado a ${item.recipient}: "${(item.message || '').slice(0, 30)}..."`);
+                    try {
+                        const cleanPhone = item.recipient.replace(/\D/g, '');
+                        const chatId = `${cleanPhone}@c.us`;
 
-                        if (mediaInstance) {
-                            await client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
+                        if (item.media && item.media.url) {
+                            const relPath = item.media.url.startsWith('/') ? item.media.url.slice(1) : item.media.url;
+                            const fullPath = path.join(__dirname, 'public', relPath);
+                            let mediaInstance = null;
+                            if (fs.existsSync(fullPath)) {
+                                mediaInstance = MessageMedia.fromFilePath(fullPath);
+                            } else if (item.media.url.startsWith('http')) {
+                                mediaInstance = await MessageMedia.fromUrl(item.media.url);
+                            }
+
+                            if (mediaInstance) {
+                                await holder.client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
+                            } else {
+                                await holder.client.sendMessage(chatId, item.message || '');
+                            }
                         } else {
-                            await client.sendMessage(chatId, item.message || '');
+                            await holder.client.sendMessage(chatId, item.message);
                         }
-                    } else {
-                        await client.sendMessage(chatId, item.message);
-                    }
 
-                    item.status = 'sent';
-                    item.sentAt = new Date().toISOString();
-                    console.log(`✅ Envío programado exitoso a ${cleanPhone}`);
-                } catch (err) {
-                    console.error(`❌ Error en envío programado a ${item.recipient}:`, err);
-                    item.status = 'failed';
-                    item.error = err.message || 'Error al enviar';
+                        item.status = 'sent';
+                        item.sentAt = new Date().toISOString();
+                        console.log(`[${company.name}] ✅ Envío programado exitoso a ${cleanPhone}`);
+                    } catch (err) {
+                        console.error(`[${company.name}] ❌ Error en envío programado a ${item.recipient}:`, err);
+                        item.status = 'failed';
+                        item.error = err.message || 'Error al enviar';
+                    }
+                    hasChanges = true;
                 }
-                hasChanges = true;
             }
         }
     }
@@ -627,22 +734,167 @@ setInterval(async () => {
     }
 }, 10000);
 
-// --- RUTAS DE API ---
+// =========================================================================
+// MIDDLEWARE DE RESOLUCIÓN DE EMPRESA
+// =========================================================================
 
-// 1. Estado del cliente WhatsApp
-app.get('/api/status', (req, res) => {
+function resolveCompany(req, res, next) {
+    const rawQueryId = req.query.companyId;
+    const rawHeaderId = req.headers['x-company-id'];
+    const rawBodyId = req.body?.companyId;
+
+    let requestedId = null;
+    if (rawQueryId && rawQueryId !== 'undefined' && rawQueryId !== 'null' && typeof rawQueryId === 'string' && rawQueryId.trim()) {
+        requestedId = rawQueryId.trim();
+    } else if (rawHeaderId && rawHeaderId !== 'undefined' && rawHeaderId !== 'null' && typeof rawHeaderId === 'string' && rawHeaderId.trim()) {
+        requestedId = rawHeaderId.trim();
+    } else if (rawBodyId && rawBodyId !== 'undefined' && rawBodyId !== 'null' && typeof rawBodyId === 'string' && rawBodyId.trim()) {
+        requestedId = rawBodyId.trim();
+    } else {
+        requestedId = appData.activeCompanyId || 'default';
+    }
+
+    let company = appData.companies.find(c => c.id === requestedId);
+    if (!company) {
+        company = appData.companies.find(c => c.id === appData.activeCompanyId) || appData.companies[0];
+    }
+    if (!company) {
+        return res.status(404).json({ error: 'No se encontró la empresa solicitada en el sistema.' });
+    }
+    req.company = company;
+    req.companyId = company.id;
+    next();
+}
+
+// =========================================================================
+// RUTAS DE GESTIÓN DE EMPRESAS (MULTI-TENANT)
+// =========================================================================
+
+// Listar todas las empresas con sus métricas y estado del bot
+app.get('/api/companies', (req, res) => {
+    const list = appData.companies.map(c => {
+        const holder = companyClients.get(c.id);
+        return {
+            id: c.id,
+            name: c.name,
+            isActive: c.id === appData.activeCompanyId,
+            status: holder ? holder.status : 'disconnected',
+            phone: holder?.clientInfo?.wid || null,
+            pushname: holder?.clientInfo?.pushname || null,
+            botEnabled: c.settings?.botEnabled !== false,
+            rulesCount: (c.rules || []).length,
+            leadsCount: (c.leads || []).length,
+            libraryCount: (c.library || []).length,
+            pendingSchedulesCount: (c.schedules || []).filter(s => s.status === 'pending').length
+        };
+    });
     res.json({
-        status: clientStatus,
-        qrCode: currentQrDataUrl,
-        clientInfo,
-        botEnabled: appData.settings.botEnabled,
-        rulesCount: appData.rules.length,
-        leadsCount: appData.leads.length,
-        pendingSchedulesCount: appData.schedules.filter(s => s.status === 'pending').length
+        activeCompanyId: appData.activeCompanyId,
+        companies: list
     });
 });
 
-// 2. Subida de Archivos (Para enviar en rutas, campañas o envío rápido)
+// Crear una nueva empresa con su propio bot y entorno aislado
+app.post('/api/companies', (req, res) => {
+    try {
+        const name = (req.body.name || '').trim();
+        if (!name) {
+            return res.status(400).json({ error: 'El nombre de la empresa es obligatorio' });
+        }
+
+        const id = 'comp_' + Date.now();
+        const newCompany = createDefaultCompany(name, id);
+
+        appData.companies.push(newCompany);
+        appData.activeCompanyId = id;
+        saveData(appData);
+
+        // Inicializar bot exclusivo para esta empresa
+        initCompanyWhatsAppClient(id);
+
+        res.json({ success: true, company: newCompany, activeCompanyId: id });
+    } catch (e) {
+        console.error('Error creando empresa:', e);
+        res.status(500).json({ error: e.message || 'Error al crear la empresa' });
+    }
+});
+
+// Actualizar nombre de empresa
+app.put('/api/companies/:id', (req, res) => {
+    const comp = appData.companies.find(c => c.id === req.params.id);
+    if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
+
+    if (req.body.name) {
+        const cleanName = req.body.name.trim();
+        if (cleanName) {
+            const oldName = comp.name;
+            comp.name = cleanName;
+            if (comp.settings) {
+                comp.settings.businessName = cleanName;
+                if (comp.settings.fallbackMessage && oldName && comp.settings.fallbackMessage.includes(oldName)) {
+                    comp.settings.fallbackMessage = comp.settings.fallbackMessage.split(oldName).join(cleanName);
+                }
+            }
+        }
+    }
+
+    saveData(appData);
+    res.json({ success: true, company: comp });
+});
+
+// Seleccionar empresa activa
+app.post('/api/companies/:id/select', (req, res) => {
+    const comp = appData.companies.find(c => c.id === req.params.id);
+    if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
+
+    appData.activeCompanyId = comp.id;
+    saveData(appData);
+    res.json({ success: true, activeCompanyId: comp.id, name: comp.name });
+});
+
+// Eliminar una empresa (no se permite si es la única)
+app.delete('/api/companies/:id', async (req, res) => {
+    if (appData.companies.length <= 1) {
+        return res.status(400).json({ error: 'No es posible eliminar la única empresa registrada.' });
+    }
+
+    const index = appData.companies.findIndex(c => c.id === req.params.id);
+    if (index === -1) return res.status(404).json({ error: 'Empresa no encontrada' });
+
+    const toDeleteId = req.params.id;
+
+    await stopCompanyWhatsAppClient(toDeleteId);
+
+    appData.companies.splice(index, 1);
+    if (appData.activeCompanyId === toDeleteId) {
+        appData.activeCompanyId = appData.companies[0].id;
+    }
+
+    saveData(appData);
+    res.json({ success: true, activeCompanyId: appData.activeCompanyId });
+});
+
+// =========================================================================
+// RUTAS OPERATIVAS (AISLADAS POR EMPRESA VIA resolveCompany)
+// =========================================================================
+
+// 1. Estado del cliente WhatsApp de la empresa seleccionada
+app.get('/api/status', resolveCompany, (req, res) => {
+    const holder = companyClients.get(req.companyId);
+    res.json({
+        companyId: req.company.id,
+        companyName: req.company.name,
+        status: holder ? holder.status : 'disconnected',
+        qrCode: holder ? holder.qrCode : null,
+        clientInfo: holder ? holder.clientInfo : null,
+        botEnabled: req.company.settings.botEnabled,
+        rulesCount: (req.company.rules || []).length,
+        leadsCount: (req.company.leads || []).length,
+        pendingSchedulesCount: (req.company.schedules || []).filter(s => s.status === 'pending').length
+    });
+});
+
+// 2. Subida de Archivos
 app.post('/api/upload', (req, res) => {
     try {
         const { filename, mimetype, data, folder } = req.body;
@@ -655,7 +907,6 @@ app.post('/api/upload', (req, res) => {
         const uniqueFilename = `${Date.now()}_${cleanName}`;
         const savePath = path.join(UPLOADS_DIR, targetFolder, uniqueFilename);
 
-        // Remover encabezado "data:*/*;base64," si viene del FileReader
         const cleanBase64 = data.includes(';base64,') ? data.split(';base64,').pop() : data;
         const buffer = Buffer.from(cleanBase64, 'base64');
         fs.writeFileSync(savePath, buffer);
@@ -676,35 +927,54 @@ app.post('/api/upload', (req, res) => {
     }
 });
 
-// 3. Reiniciar o reconectar cliente
-app.post('/api/bot/restart', async (req, res) => {
+// 3. Reiniciar cliente WhatsApp de la empresa seleccionada
+app.post('/api/bot/restart', resolveCompany, async (req, res) => {
     try {
-        if (client) {
-            await client.destroy().catch(() => {});
-        }
-        initWhatsAppClient();
-        res.json({ success: true, message: 'Reiniciando cliente...' });
+        await stopCompanyWhatsAppClient(req.companyId);
+        initCompanyWhatsAppClient(req.companyId);
+        res.json({ success: true, message: `Reiniciando cliente de WhatsApp para ${req.company.name}...` });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// 4. Activar/Desactivar bot general
-app.post('/api/bot/toggle', (req, res) => {
-    appData.settings.botEnabled = !appData.settings.botEnabled;
-    saveData(appData);
-    res.json({ botEnabled: appData.settings.botEnabled });
+// Desvincular / Cerrar sesión de WhatsApp de la empresa para permitir vincular un número nuevo
+app.post('/api/bot/disconnect', resolveCompany, async (req, res) => {
+    try {
+        await stopCompanyWhatsAppClient(req.companyId);
+        const authClientId = (req.companyId === 'default') ? null : req.companyId;
+        const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
+        if (fs.existsSync(sessionDir)) {
+            try {
+                fs.rmSync(sessionDir, { recursive: true, force: true });
+            } catch (err) {
+                console.warn('Aviso limpiando carpeta de sesión:', err.message);
+            }
+        }
+        initCompanyWhatsAppClient(req.companyId);
+        res.json({ success: true, message: `Sesión de WhatsApp cerrada para ${req.company.name}. Generando nuevo código QR...` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
-// 5. Enviar mensaje directo / prueba inmediata (con soporte de archivo adjunto)
-app.post('/api/send', async (req, res) => {
+// 4. Activar/Desactivar bot de la empresa seleccionada
+app.post('/api/bot/toggle', resolveCompany, (req, res) => {
+    req.company.settings.botEnabled = !req.company.settings.botEnabled;
+    saveData(appData);
+    res.json({ botEnabled: req.company.settings.botEnabled });
+});
+
+// 5. Enviar mensaje directo / prueba inmediata con el WhatsApp de la empresa seleccionada
+app.post('/api/send', resolveCompany, async (req, res) => {
     const { phone, message, media } = req.body;
     if (!phone || (!message && !media)) {
         return res.status(400).json({ error: 'Faltan parámetros phone y (message o media)' });
     }
 
-    if (clientStatus !== 'ready' || !client) {
-        return res.status(503).json({ error: 'WhatsApp no está conectado todavía. Escanea el código QR primero.' });
+    const holder = companyClients.get(req.companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+        return res.status(503).json({ error: `El WhatsApp de ${req.company.name} no está conectado todavía. Escanea el código QR primero.` });
     }
 
     try {
@@ -724,12 +994,12 @@ app.post('/api/send', async (req, res) => {
             }
 
             if (mediaInstance) {
-                result = await client.sendMessage(chatId, mediaInstance, { caption: message || undefined });
+                result = await holder.client.sendMessage(chatId, mediaInstance, { caption: message || undefined });
             } else {
-                result = await client.sendMessage(chatId, message || '');
+                result = await holder.client.sendMessage(chatId, message || '');
             }
         } else {
-            result = await client.sendMessage(chatId, message);
+            result = await holder.client.sendMessage(chatId, message);
         }
 
         res.json({ success: true, message: `Mensaje entregado a ${cleanPhone}`, id: result.id?._serialized });
@@ -739,12 +1009,12 @@ app.post('/api/send', async (req, res) => {
     }
 });
 
-// 6. CRUD de Reglas / Rutas de Respuesta (con soporte para archivos adjuntos y triggers de medios)
-app.get('/api/rules', (req, res) => {
-    res.json(appData.rules);
+// 6. CRUD de Reglas / Rutas de Respuesta de la empresa seleccionada
+app.get('/api/rules', resolveCompany, (req, res) => {
+    res.json(req.company.rules || []);
 });
 
-app.post('/api/rules', (req, res) => {
+app.post('/api/rules', resolveCompany, (req, res) => {
     const { name, triggers, response, matchType, leadTag, pauseBot, triggerType, mediaTypeFilter, media, parentRuleId } = req.body;
     if (!name || (!response && !media)) {
         return res.status(400).json({ error: 'Campos requeridos: name y (response o archivo adjunto)' });
@@ -755,51 +1025,54 @@ app.post('/api/rules', (req, res) => {
         name,
         enabled: true,
         parentRuleId: parentRuleId || null,
-        triggerType: triggerType || 'text', // 'text', 'media', 'both'
-        mediaTypeFilter: mediaTypeFilter || 'any', // 'any', 'image', 'document', 'audio'
+        triggerType: triggerType || 'text',
+        mediaTypeFilter: mediaTypeFilter || 'any',
         matchType: matchType || 'contains_any',
         triggers: Array.isArray(triggers) ? triggers : (triggers ? triggers.split(',').map(s => s.trim()) : []),
         response: response || '',
-        media: media || null, // { url, filename, mimetype, size }
+        media: media || null,
         leadTag: leadTag || 'Interesado',
         pauseBot: Boolean(pauseBot)
     };
 
-    appData.rules.push(newRule);
+    if (!req.company.rules) req.company.rules = [];
+    req.company.rules.push(newRule);
     saveData(appData);
     res.json(newRule);
 });
 
-app.put('/api/rules/:id', (req, res) => {
-    const index = appData.rules.findIndex(r => r.id === req.params.id);
+app.put('/api/rules/:id', resolveCompany, (req, res) => {
+    if (!req.company.rules) req.company.rules = [];
+    const index = req.company.rules.findIndex(r => r.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Regla no encontrada' });
 
     const updatedParentRuleId = req.body.parentRuleId !== undefined 
         ? (req.body.parentRuleId || null) 
-        : appData.rules[index].parentRuleId;
+        : req.company.rules[index].parentRuleId;
 
-    appData.rules[index] = { 
-        ...appData.rules[index], 
+    req.company.rules[index] = { 
+        ...req.company.rules[index], 
         ...req.body, 
         parentRuleId: updatedParentRuleId,
         id: req.params.id 
     };
     saveData(appData);
-    res.json(appData.rules[index]);
+    res.json(req.company.rules[index]);
 });
 
-app.delete('/api/rules/:id', (req, res) => {
-    appData.rules = appData.rules.filter(r => r.id !== req.params.id);
+app.delete('/api/rules/:id', resolveCompany, (req, res) => {
+    if (!req.company.rules) req.company.rules = [];
+    req.company.rules = req.company.rules.filter(r => r.id !== req.params.id);
     saveData(appData);
     res.json({ success: true });
 });
 
-// 7. CRUD de Programación de Envíos
-app.get('/api/schedules', (req, res) => {
-    res.json(appData.schedules);
+// 7. CRUD de Programación de Envíos de la empresa seleccionada
+app.get('/api/schedules', resolveCompany, (req, res) => {
+    res.json(req.company.schedules || []);
 });
 
-app.post('/api/schedules', (req, res) => {
+app.post('/api/schedules', resolveCompany, (req, res) => {
     const { name, recipient, message, scheduledTime, media } = req.body;
     if (!recipient || (!message && !media) || !scheduledTime) {
         return res.status(400).json({ error: 'recipient, scheduledTime y (message o media) son obligatorios' });
@@ -816,23 +1089,27 @@ app.post('/api/schedules', (req, res) => {
         createdAt: new Date().toISOString()
     };
 
-    appData.schedules.unshift(newSchedule);
+    if (!req.company.schedules) req.company.schedules = [];
+    req.company.schedules.unshift(newSchedule);
     saveData(appData);
     res.json(newSchedule);
 });
 
-app.delete('/api/schedules/:id', (req, res) => {
-    appData.schedules = appData.schedules.filter(s => s.id !== req.params.id);
+app.delete('/api/schedules/:id', resolveCompany, (req, res) => {
+    if (!req.company.schedules) req.company.schedules = [];
+    req.company.schedules = req.company.schedules.filter(s => s.id !== req.params.id);
     saveData(appData);
     res.json({ success: true });
 });
 
-app.post('/api/schedules/:id/send-now', async (req, res) => {
-    const item = appData.schedules.find(s => s.id === req.params.id);
+app.post('/api/schedules/:id/send-now', resolveCompany, async (req, res) => {
+    if (!req.company.schedules) req.company.schedules = [];
+    const item = req.company.schedules.find(s => s.id === req.params.id);
     if (!item) return res.status(404).json({ error: 'Envío no encontrado' });
 
-    if (clientStatus !== 'ready' || !client) {
-        return res.status(503).json({ error: 'WhatsApp no está conectado aún' });
+    const holder = companyClients.get(req.companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+        return res.status(503).json({ error: `WhatsApp de ${req.company.name} no está conectado aún.` });
     }
 
     try {
@@ -847,12 +1124,12 @@ app.post('/api/schedules/:id/send-now', async (req, res) => {
                 mediaInstance = MessageMedia.fromFilePath(fullPath);
             }
             if (mediaInstance) {
-                await client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
+                await holder.client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
             } else {
-                await client.sendMessage(chatId, item.message || '');
+                await holder.client.sendMessage(chatId, item.message || '');
             }
         } else {
-            await client.sendMessage(chatId, item.message);
+            await holder.client.sendMessage(chatId, item.message);
         }
 
         item.status = 'sent';
@@ -864,13 +1141,14 @@ app.post('/api/schedules/:id/send-now', async (req, res) => {
     }
 });
 
-// 8. Leads / Contactos y Archivos Recibidos
-app.get('/api/leads', (req, res) => {
-    res.json(appData.leads);
+// 8. Leads / Contactos y Archivos de la empresa seleccionada
+app.get('/api/leads', resolveCompany, (req, res) => {
+    res.json(req.company.leads || []);
 });
 
-app.post('/api/leads/:phone/toggle-pause', (req, res) => {
-    const lead = appData.leads.find(l => l.phone === req.params.phone);
+app.post('/api/leads/:phone/toggle-pause', resolveCompany, (req, res) => {
+    if (!req.company.leads) req.company.leads = [];
+    const lead = req.company.leads.find(l => l.phone === req.params.phone);
     if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
 
     lead.humanPaused = !lead.humanPaused;
@@ -878,23 +1156,24 @@ app.post('/api/leads/:phone/toggle-pause', (req, res) => {
     res.json({ success: true, humanPaused: lead.humanPaused });
 });
 
-// Variable en memoria para rastrear el estado de conversación del simulador en vivo
-let simulatorLastSentRuleId = null;
+// 9. Simulador en Vivo de la empresa seleccionada
+const simulatorLastSentRuleId = new Map(); // Map<companyId, lastSentRuleId>
 
-// 9. Simulador en Vivo (Soporta texto, simulación de archivo recibido, notas de voz y Gemini AI)
-app.post('/api/simulate', async (req, res) => {
+app.post('/api/simulate', resolveCompany, async (req, res) => {
     const rawText = (req.body.text || '').trim();
     const text = rawText.toLowerCase();
     const hasMedia = Boolean(req.body.hasMedia);
     const mediaMimetype = req.body.mediaMimetype || (hasMedia ? 'image/jpeg' : '');
-    const audio = req.body.audio; // { data: base64, mimetype }
+    const audio = req.body.audio;
 
     const isAudioSim = Boolean(audio || (mediaMimetype && (mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg'))));
 
-    const context = { lastSentRuleId: simulatorLastSentRuleId };
-    const matched = matchRule(text, appData.rules, hasMedia || isAudioSim, mediaMimetype || (isAudioSim ? 'audio/ogg' : ''), context);
+    const currentLastSent = simulatorLastSentRuleId.get(req.companyId) || null;
+    const context = { lastSentRuleId: currentLastSent };
+    const matched = matchRule(text, req.company.rules || [], hasMedia || isAudioSim, mediaMimetype || (isAudioSim ? 'audio/ogg' : ''), context);
+
     if (matched) {
-        simulatorLastSentRuleId = matched.id;
+        simulatorLastSentRuleId.set(req.companyId, matched.id);
         res.json({
             matched: true,
             ruleName: matched.name,
@@ -903,16 +1182,17 @@ app.post('/api/simulate', async (req, res) => {
             leadTag: matched.leadTag,
             pauseBot: matched.pauseBot
         });
-    } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && (rawText || audio)) {
-        simulatorLastSentRuleId = 'gemini';
+    } else if (req.company.settings.geminiEnabled !== false && geminiService.isConfigured() && libraryService.hasActiveKnowledge(req.company.library) && (rawText || audio)) {
+        simulatorLastSentRuleId.set(req.companyId, 'gemini');
         try {
-            const businessName = appData.settings.businessName || 'Mi Negocio';
+            const businessName = req.company.settings.businessName || req.company.name || 'Mi Negocio';
             const geminiInput = audio ? {
                 text: rawText,
                 audio: audio
             } : rawText;
 
-            const aiReply = await geminiService.sendMessage('simulator-session', geminiInput, businessName, appData.library || []);
+            const sessionKey = `sim_${req.companyId}`;
+            const aiReply = await geminiService.sendMessage(sessionKey, geminiInput, businessName, req.company.library || []);
             res.json({
                 matched: false,
                 isGemini: true,
@@ -922,63 +1202,66 @@ app.post('/api/simulate', async (req, res) => {
             console.error('Error en simulador con Gemini:', err.message);
             res.json({
                 matched: false,
-                response: appData.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
+                response: req.company.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
             });
         }
     } else {
-        simulatorLastSentRuleId = 'fallback';
+        simulatorLastSentRuleId.set(req.companyId, 'fallback');
         res.json({
             matched: false,
-            response: appData.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
+            response: req.company.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
         });
     }
 });
 
-// Endpoint para reiniciar la sesión del simulador o de un contacto
-app.post('/api/gemini/reset', (req, res) => {
-    const sessionId = req.body.sessionId || 'simulator-session';
+// Reinicio de sesión de Gemini
+app.post('/api/gemini/reset', resolveCompany, (req, res) => {
+    const sessionId = req.body.sessionId || `sim_${req.companyId}`;
     geminiService.resetSession(sessionId);
-    if (sessionId === 'simulator-session') {
-        simulatorLastSentRuleId = null;
+    if (sessionId === `sim_${req.companyId}` || sessionId === 'simulator-session') {
+        simulatorLastSentRuleId.delete(req.companyId);
     }
     res.json({ success: true, message: `Sesión de ${sessionId} reiniciada.` });
 });
 
-// Endpoint de estado de Gemini
 app.get('/api/gemini/status', (req, res) => {
     res.json({
         configured: geminiService.isConfigured(),
-        model: 'gemini-3.5-flash-lite',
+        model: 'gemini-2.5-flash',
         supportsAudio: true
     });
 });
 
-// 10. Configuración General
-app.get('/api/settings', (req, res) => {
-    res.json(appData.settings);
+// 10. Configuración General de la empresa seleccionada
+app.get('/api/settings', resolveCompany, (req, res) => {
+    res.json(req.company.settings || {});
 });
 
-app.post('/api/settings', (req, res) => {
-    appData.settings = { ...appData.settings, ...req.body };
+app.post('/api/settings', resolveCompany, (req, res) => {
+    req.company.settings = { ...req.company.settings, ...req.body };
+    if (req.body.businessName) {
+        req.company.name = req.body.businessName;
+    }
     saveData(appData);
-    res.json(appData.settings);
+    res.json(req.company.settings);
 });
 
-// 11. Biblioteca de Contexto para Inteligencia Artificial (Conversión Word a Markdown)
-app.get('/api/library', (req, res) => {
-    appData.library = appData.library || [];
-    const stats = libraryService.getActiveLibraryContext(appData.library);
+// 11. Biblioteca de Contexto de la empresa seleccionada
+app.get('/api/library', resolveCompany, (req, res) => {
+    req.company.library = req.company.library || [];
+    const stats = libraryService.getActiveLibraryContext(req.company.library);
     res.json({
-        documents: appData.library,
+        documents: req.company.library,
+        hasActiveKnowledge: libraryService.hasActiveKnowledge(req.company.library),
         stats: {
-            totalDocuments: appData.library.length,
+            totalDocuments: req.company.library.length,
             activeDocuments: stats.activeCount,
             totalWords: stats.totalWords
         }
     });
 });
 
-app.post('/api/library/upload', async (req, res) => {
+app.post('/api/library/upload', resolveCompany, async (req, res) => {
     const { filename, data } = req.body;
     if (!filename || !data) {
         return res.status(400).json({ error: 'Faltan parámetros filename o data (base64)' });
@@ -988,9 +1271,8 @@ app.post('/api/library/upload', async (req, res) => {
         const rawBase64 = data.includes('base64,') ? data.split('base64,')[1] : data;
         const buffer = Buffer.from(rawBase64, 'base64');
         const customTitle = (req.body.name || '').trim();
-        console.log(`📚 Procesando documento subido: "${filename}" (${buffer.length} bytes)...`);
+        console.log(`[${req.company.name}] 📚 Procesando documento para biblioteca: "${filename}" (${buffer.length} bytes)...`);
         
-        // Convertir Word/texto a Markdown limpio sin etiquetas basura
         const markdown = await libraryService.convertToMarkdown(buffer, filename);
         const stats = libraryService.calculateStats(markdown);
 
@@ -1008,14 +1290,13 @@ app.post('/api/library/upload', async (req, res) => {
             active: true
         };
 
-        appData.library = appData.library || [];
-        appData.library.unshift(newDoc);
+        if (!req.company.library) req.company.library = [];
+        req.company.library.unshift(newDoc);
         saveData(appData);
 
-        // Reiniciar sesiones de Gemini para que tomen el nuevo contexto de inmediato
         geminiService.clearAllSessions();
 
-        console.log(`✅ Documento "${filename}" convertido a Markdown limpio (${stats.wordCount} palabras).`);
+        console.log(`[${req.company.name}] ✅ Documento "${filename}" convertido a Markdown limpio (${stats.wordCount} palabras).`);
         res.json({
             success: true,
             document: newDoc,
@@ -1027,21 +1308,18 @@ app.post('/api/library/upload', async (req, res) => {
     }
 });
 
-app.get('/api/library/:id', (req, res) => {
-    appData.library = appData.library || [];
-    const doc = appData.library.find(d => d.id === req.params.id);
+app.get('/api/library/:id', resolveCompany, (req, res) => {
+    req.company.library = req.company.library || [];
+    const doc = req.company.library.find(d => d.id === req.params.id);
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
 
     const content = libraryService.getMarkdownContent(doc.id);
-    res.json({
-        document: doc,
-        content
-    });
+    res.json({ document: doc, content });
 });
 
-app.put('/api/library/:id', (req, res) => {
-    appData.library = appData.library || [];
-    const doc = appData.library.find(d => d.id === req.params.id);
+app.put('/api/library/:id', resolveCompany, (req, res) => {
+    req.company.library = req.company.library || [];
+    const doc = req.company.library.find(d => d.id === req.params.id);
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
 
     const { content, name, active } = req.body;
@@ -1061,22 +1339,22 @@ app.put('/api/library/:id', (req, res) => {
     res.json({ success: true, document: doc });
 });
 
-app.delete('/api/library/:id', (req, res) => {
-    appData.library = appData.library || [];
-    const index = appData.library.findIndex(d => d.id === req.params.id);
+app.delete('/api/library/:id', resolveCompany, (req, res) => {
+    req.company.library = req.company.library || [];
+    const index = req.company.library.findIndex(d => d.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Documento no encontrado' });
 
     libraryService.deleteMarkdownFile(req.params.id);
-    appData.library.splice(index, 1);
+    req.company.library.splice(index, 1);
     saveData(appData);
     geminiService.clearAllSessions();
 
     res.json({ success: true });
 });
 
-app.post('/api/library/:id/toggle', (req, res) => {
-    appData.library = appData.library || [];
-    const doc = appData.library.find(d => d.id === req.params.id);
+app.post('/api/library/:id/toggle', resolveCompany, (req, res) => {
+    req.company.library = req.company.library || [];
+    const doc = req.company.library.find(d => d.id === req.params.id);
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' });
 
     doc.active = !doc.active;
@@ -1086,11 +1364,15 @@ app.post('/api/library/:id/toggle', (req, res) => {
     res.json({ success: true, active: doc.active });
 });
 
-// Iniciar Servidor Web
+// =========================================================================
+// INICIAR SERVIDOR WEB Y CLIENTES MULTI-EMPRESA
+// =========================================================================
+
 app.listen(PORT, () => {
     console.log(`======================================================`);
-    console.log(`🚀 Panel Visual del Bot de Ventas corriendo en:`);
+    console.log(`🚀 Panel Visual del Bot de Ventas Multi-Empresa corriendo en:`);
     console.log(`👉 http://localhost:${PORT}`);
+    console.log(`🏢 Empresas registradas: ${appData.companies.length} (Activa: ${appData.companies.find(c => c.id === appData.activeCompanyId)?.name || 'Default'})`);
     console.log(`======================================================`);
-    initWhatsAppClient();
+    initAllCompanyClients();
 });

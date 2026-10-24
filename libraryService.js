@@ -128,11 +128,33 @@ function getActiveLibraryContext(libraryList = []) {
     };
 }
 
+/**
+ * Determina si la biblioteca de una empresa cuenta con al menos un documento activo con contenido real.
+ * Si la biblioteca está vacía o todos los documentos están inhabilitados o sin texto, retorna false.
+ * @param {Array} libraryList - Lista de documentos en company.library
+ * @returns {boolean}
+ */
+function hasActiveKnowledge(libraryList = []) {
+    if (!Array.isArray(libraryList) || libraryList.length === 0) {
+        return false;
+    }
+    const activeDocs = libraryList.filter(doc => doc && doc.active !== false);
+    if (!activeDocs.length) {
+        return false;
+    }
+    // Verificar que al menos uno de los documentos activos tenga texto
+    return activeDocs.some(doc => {
+        const content = getMarkdownContent(doc.id);
+        return Boolean(content && content.trim().length > 0);
+    });
+}
+
 module.exports = {
     convertToMarkdown,
     saveMarkdownFile,
     getMarkdownContent,
     deleteMarkdownFile,
     calculateStats,
-    getActiveLibraryContext
+    getActiveLibraryContext,
+    hasActiveKnowledge
 };

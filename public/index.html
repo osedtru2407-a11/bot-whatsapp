@@ -25,12 +25,45 @@
       </div>
     </div>
 
+    <!-- Selector y Administrador de Empresa Activa -->
+    <div class="header-company-section">
+      <div class="company-badge-icon" title="Empresa Activa">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 21h18M3 7v14M21 7v14M6 10h2M6 14h2M6 18h2M10 10h4M10 14h4M10 18h4M16 10h2M16 14h2M16 18h2M9 3h6v4H9z"/>
+        </svg>
+      </div>
+      <div class="company-select-container">
+        <span class="company-label">Empresa / Bot:</span>
+        <select id="company-select" class="company-select" aria-label="Seleccionar Empresa">
+          <!-- Opciones dinámicas de empresas -->
+        </select>
+      </div>
+      <button id="btn-add-company" class="btn btn-outline-sm btn-icon" title="Crear nueva empresa">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Nueva</span>
+      </button>
+      <button id="btn-manage-company" class="btn btn-outline-sm btn-icon-only" title="Configurar empresa actual">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
     <!-- Barra de Estado de Conexión -->
     <div class="header-right">
       <div id="connection-pill" class="connection-pill status-loading">
         <span class="status-dot"></span>
         <span id="connection-text">Iniciando...</span>
       </div>
+
+      <!-- Botón Destacado: Vincular WhatsApp / Código QR -->
+      <button id="btn-show-qr-modal" class="btn btn-qr-prominent" title="Vincular WhatsApp de esta empresa o ver Código QR">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span id="btn-show-qr-text">📱 Vincular WhatsApp / QR</span>
+      </button>
 
       <div class="bot-toggle-wrapper">
         <label class="switch">
@@ -47,37 +80,85 @@
     </div>
   </header>
 
-  <!-- Banner Flotante / Alerta de QR Code si se requiere escanear -->
-  <section id="qr-modal-banner" class="qr-banner-container hidden">
-    <div class="qr-card">
-      <div class="qr-header">
-        <div class="qr-badge">Escaneo Requerido</div>
-        <h2>Vincula tu WhatsApp en 3 pasos</h2>
-        <p>Apunta la cámara de WhatsApp de tu celular hacia este código QR para activar el bot:</p>
+  <!-- ==================== MODAL DE VINCULACIÓN WHATSAPP Y CÓDIGO QR ==================== -->
+  <div id="qr-modal-banner" class="modal-overlay hidden">
+    <div class="modal-card qr-modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 id="qr-modal-company-title">Vincular WhatsApp</h3>
+          <span id="qr-modal-company-subtitle" class="lead-modal-subtitle">Conecta el número de teléfono exclusivo para esta empresa</span>
+        </div>
+        <button id="btn-close-qr-modal" class="btn-close">&times;</button>
       </div>
 
-      <div class="qr-body">
-        <div class="qr-image-wrapper">
-          <img id="qr-image" src="" alt="Código QR de WhatsApp" />
-          <div id="qr-loading-spinner" class="spinner hidden"></div>
+      <div class="modal-body">
+        <!-- Estado 1: QR Listo para escanear -->
+        <div id="qr-view-scanning" class="qr-view-box">
+          <div class="qr-body">
+            <div class="qr-image-wrapper">
+              <img id="qr-image" src="" alt="Código QR de WhatsApp" />
+              <div id="qr-loading-spinner" class="spinner hidden"></div>
+            </div>
+            <div class="qr-steps">
+              <div class="step-item">
+                <span class="step-num">1</span>
+                <span>Abre <strong>WhatsApp</strong> en el celular de esta empresa.</span>
+              </div>
+              <div class="step-item">
+                <span class="step-num">2</span>
+                <span>Toca <strong>Menú (⋮)</strong> y selecciona <strong>Dispositivos vinculados</strong>.</span>
+              </div>
+              <div class="step-item">
+                <span class="step-num">3</span>
+                <span>Presiona <strong>Vincular un dispositivo</strong> y apunta tu cámara aquí.</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="qr-steps">
-          <div class="step-item">
-            <span class="step-num">1</span>
-            <span>Abre <strong>WhatsApp</strong> en tu celular.</span>
+
+        <!-- Estado 2: Ya Conectado -->
+        <div id="qr-view-connected" class="qr-view-box hidden">
+          <div class="qr-connected-card">
+            <div class="qr-connected-icon">✅</div>
+            <h4 id="qr-connected-title">¡WhatsApp Vinculado con Éxito!</h4>
+            <p id="qr-connected-desc">El bot de esta empresa ya está conectado y listo para atender mensajes y notas de voz.</p>
+            <div class="qr-phone-box">
+              <span>Número vinculado:</span>
+              <strong id="qr-connected-phone">+57 ...</strong>
+            </div>
+            <div id="qr-connected-auto-close-notice" class="qr-auto-close-notice hidden" style="font-size: 13px; color: var(--accent-emerald); margin-top: 12px; font-weight: 600;">
+              ✅ ¡Vinculado con éxito! Cerrando ventana en un momento...
+            </div>
+            <div style="margin-top: 18px;">
+              <button type="button" id="btn-disconnect-bot" class="btn btn-outline-sm" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);">
+                Desvincular y cambiar de número
+              </button>
+            </div>
           </div>
-          <div class="step-item">
-            <span class="step-num">2</span>
-            <span>Toca <strong>Ajustes / Menú (⋮)</strong> y selecciona <strong>Dispositivos vinculados</strong>.</span>
-          </div>
-          <div class="step-item">
-            <span class="step-num">3</span>
-            <span>Presiona <strong>Vincular un dispositivo</strong> y apunta tu cámara aquí.</span>
+        </div>
+
+        <!-- Estado 3: Iniciando / Generando QR -->
+        <div id="qr-view-loading" class="qr-view-box hidden">
+          <div class="qr-loading-box">
+            <div class="spinner"></div>
+            <h4>Generando Código QR...</h4>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">
+              Iniciando sesión aislada de WhatsApp Web para esta empresa. Por favor espera unos segundos.
+            </p>
           </div>
         </div>
       </div>
+
+      <div class="modal-actions" style="justify-content: space-between;">
+        <button type="button" id="btn-qr-force-regenerate" class="btn btn-secondary">
+          🔄 Regenerar Código QR
+        </button>
+        <button type="button" id="btn-close-qr-btn" class="btn btn-primary">
+          Cerrar
+        </button>
+      </div>
     </div>
-  </section>
+  </div>
 
   <!-- Contenedor Principal con Tabs de Navegación -->
   <main class="app-main">
@@ -656,6 +737,99 @@
         </button>
         <button type="button" id="btn-close-lib-modal-btn" class="btn btn-secondary">Cerrar</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CREAR NUEVA EMPRESA ==================== -->
+  <div id="modal-add-company" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h3>Nueva Empresa / Bot de WhatsApp</h3>
+          <span class="lead-modal-subtitle">Crea un entorno aislado con sus propias rutas, biblioteca y número</span>
+        </div>
+        <button id="btn-close-add-company" class="btn-close">&times;</button>
+      </div>
+
+      <form id="form-add-company">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="new-company-name">Nombre de la Empresa *</label>
+            <input type="text" id="new-company-name" required placeholder="Ej: TechStore Solutions, Asesorías SAS...">
+          </div>
+
+          <div style="background: rgba(37, 211, 102, 0.08); border-left: 3px solid var(--wa-primary); padding: 10px 14px; border-radius: 4px; font-size: 12.5px; color: #cbd5e1; line-height: 1.5;">
+            ✨ <strong>Aislamiento Total:</strong> Esta empresa tendrá su propia sesión de WhatsApp Web (código QR exclusivo), sus propias rutas de venta, sus prospectos y su biblioteca de documentos para la IA.
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-add-company" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Crear Empresa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: GESTIONAR EMPRESA ACTUAL ==================== -->
+  <div id="modal-manage-company" class="modal-overlay hidden">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="manage-company-title">Gestionar Empresa</h3>
+          <span id="manage-company-subtitle" class="lead-modal-subtitle">Configuración del entorno y sesión de WhatsApp</span>
+        </div>
+        <button id="btn-close-manage-company" class="btn-close">&times;</button>
+      </div>
+
+      <form id="form-manage-company">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="manage-company-name">Nombre de la Empresa</label>
+            <input type="text" id="manage-company-name" required>
+          </div>
+
+          <div class="form-group">
+            <label>Estado de WhatsApp de esta Empresa</label>
+            <div id="manage-company-status-box" style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 12px 14px; border-radius: 8px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color: var(--text-muted);">Estado:</span>
+                <span id="manage-company-status-badge" class="badge-status">Iniciando...</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);">Número Vinculado:</span>
+                <strong id="manage-company-phone" style="font-family: var(--font-mono); color: var(--accent-cyan);">No vinculado</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" id="btn-manage-open-qr" class="btn btn-primary" style="flex: 1;">
+              📱 Vincular / Ver Código QR
+            </button>
+            <button type="button" id="btn-manage-restart-bot" class="btn btn-outline-sm" style="flex: 1;">
+              🔄 Reiniciar Bot
+            </button>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 18px 0 14px 0;">
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="color: var(--accent-rose); font-weight: 600; font-size: 13px;">Zona de Peligro</div>
+              <div style="color: var(--text-dim); font-size: 11.5px;">Eliminar esta empresa y todos sus datos</div>
+            </div>
+            <button type="button" id="btn-delete-company" class="btn btn-remove-file">
+              Eliminar Empresa
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="btn-cancel-manage-company" class="btn btn-secondary">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
     </div>
   </div>
 

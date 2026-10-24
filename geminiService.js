@@ -139,6 +139,11 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
         throw new Error('Gemini no está configurado. Verifica la clave KEY o GEMINI_API_KEY en el archivo .env');
     }
 
+    // Regla estricta: Si la biblioteca está vacía o sin documentos activos, Gemini no debe operar para evitar alucinaciones
+    if (!libraryService.hasActiveKnowledge(libraryList)) {
+        throw new Error('La biblioteca no contiene documentos activos con información. Gemini no puede operar sin base de conocimiento autorizada.');
+    }
+
     let messagePayload;
     let logDescription = '';
 

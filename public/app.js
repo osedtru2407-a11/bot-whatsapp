@@ -10,7 +10,36 @@ let currentRuleAttachedMedia = null;
 let currentQuickSendMedia = null;
 let currentSchedMedia = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+// Soporte Multi-Empresa: Interceptor global de fetch para inyectar x-company-id y query parameter
+let currentCompanyId = localStorage.getItem('whatsapp_bot_company_id') || 'default';
+let currentCompanies = [];
+
+const originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+  options = options || {};
+  options.headers = options.headers || {};
+  if (options.headers instanceof Headers) {
+    if (!options.headers.has('x-company-id')) {
+      options.headers.set('x-company-id', currentCompanyId);
+    }
+  } else {
+    if (!options.headers['x-company-id']) {
+      options.headers['x-company-id'] = currentCompanyId;
+    }
+  }
+
+  // Garantizar aislamiento estricto por URL en endpoints /api/
+  if (typeof url === 'string' && url.startsWith('/api/') && !url.includes('companyId=')) {
+    const sep = url.includes('?') ? '&' : '?';
+    url = `${url}${sep}companyId=${encodeURIComponent(currentCompanyId)}`;
+  }
+
+  return originalFetch.call(this, url, options);
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCompanies();
+  initCompanyManager();
   initTabs();
   initConnectionMonitor();
   initDropzones();
@@ -23,6 +52,274 @@ document.addEventListener('DOMContentLoaded', () => {
   initSettings();
   initModalTools();
 });
+
+// ==================== 0. GESTIÓN MULTI-EMPRESA ====================
+async function loadCompanies() {
+  try {
+    const res = await fetch('/api/companies');
+    if (!res.ok) throw new Error('Error al cargar empresas');
+    const data = await res.json();
+    currentCompanies = data.companies || [];
+
+    // Priorizar sincronización con el servidor o localStorage
+    const savedId = localStorage.getItem('whatsapp_bot_company_id');
+    if (savedId && currentCompanies.some(c => c.id === savedId)) {
+      currentCompanyId = savedId;
+    } else if (data.activeCompanyId && currentCompanies.some(c => c.id === data.activeCompanyId)) {
+      currentCompanyId = data.activeCompanyId;
+      localStorage.setItem('whatsapp_bot_company_id', currentCompanyId);
+    } else if (currentCompanies.length > 0) {
+      currentCompanyId = currentCompanies[0].id;
+      localStorage.setItem('whatsapp_bot_company_id', currentCompanyId);
+    }
+
+    const select = document.getElementById('company-select');
+    if (!select) return;
+
+    select.innerHTML = '';
+    currentCompanies.forEach(comp => {
+      const opt = document.createElement('option');
+      opt.value = comp.id;
+      const phoneText = comp.phone ? ` (+${comp.phone})` : (comp.status === 'ready' ? ' (Conectado)' : ' (Sin vincular)');
+      opt.textContent = `${comp.name}${phoneText}`;
+      if (comp.id === currentCompanyId) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+
+    select.value = currentCompanyId;
+  } catch (err) {
+    console.error('Error en loadCompanies:', err);
+  }
+}
+
+function initCompanyManager() {
+  const select = document.getElementById('company-select');
+  const btnAdd = document.getElementById('btn-add-company');
+  const btnManage = document.getElementById('btn-manage-company');
+
+  const modalAdd = document.getElementById('modal-add-company');
+  const btnCloseAdd = document.getElementById('btn-close-add-company');
+  const btnCancelAdd = document.getElementById('btn-cancel-add-company');
+  const formAdd = document.getElementById('form-add-company');
+  const inputNewName = document.getElementById('new-company-name');
+
+  const modalManage = document.getElementById('modal-manage-company');
+  const btnCloseManage = document.getElementById('btn-close-manage-company');
+  const btnCancelManage = document.getElementById('btn-cancel-manage-company');
+  const formManage = document.getElementById('form-manage-company');
+  const inputManageName = document.getElementById('manage-company-name');
+  const manageStatusBadge = document.getElementById('manage-company-status-badge');
+  const managePhone = document.getElementById('manage-company-phone');
+  const btnRestartBot = document.getElementById('btn-manage-restart-bot');
+  const btnDeleteComp = document.getElementById('btn-delete-company');
+
+  if (select) {
+    select.addEventListener('change', async (e) => {
+      const newId = e.target.value;
+      if (!newId || newId === currentCompanyId) return;
+
+      // Cerrar modal de QR inmediatamente para evitar mostrar datos o estados cruzados
+      if (typeof window.closeQrModal === 'function') {
+        window.closeQrModal();
+      }
+
+      currentCompanyId = newId;
+      localStorage.setItem('whatsapp_bot_company_id', currentCompanyId);
+
+      // Limpiar datos visuales de teléfono en el modal de QR
+      const qrPhone = document.getElementById('qr-connected-phone');
+      if (qrPhone) qrPhone.textContent = '...';
+
+      try {
+        await fetch(`/api/companies/${currentCompanyId}/select`, { method: 'POST' });
+      } catch (e) {}
+
+      const comp = currentCompanies.find(c => c.id === currentCompanyId);
+      showToast(`Empresa activa: ${comp ? comp.name : currentCompanyId}`);
+
+      if (typeof window.refreshBotStatus === 'function') window.refreshBotStatus();
+      loadRules();
+      loadSchedules();
+      loadLeads();
+      loadLibrary();
+      loadSettings();
+    });
+  }
+
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      if (inputNewName) inputNewName.value = '';
+      if (modalAdd) modalAdd.classList.remove('hidden');
+    });
+  }
+
+  const closeAddModal = () => {
+    if (modalAdd) modalAdd.classList.add('hidden');
+  };
+  if (btnCloseAdd) btnCloseAdd.addEventListener('click', closeAddModal);
+  if (btnCancelAdd) btnCancelAdd.addEventListener('click', closeAddModal);
+
+  if (formAdd) {
+    formAdd.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = (inputNewName.value || '').trim();
+      if (!name) return;
+
+      try {
+        const res = await fetch('/api/companies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (!res.ok) throw new Error('Error creando empresa');
+        const data = await res.json();
+
+        currentCompanyId = data.activeCompanyId;
+        localStorage.setItem('whatsapp_bot_company_id', currentCompanyId);
+
+        closeAddModal();
+        await loadCompanies();
+
+        showToast(`Empresa "${name}" creada. Generando código QR...`);
+
+        if (typeof window.refreshBotStatus === 'function') window.refreshBotStatus();
+        loadRules();
+        loadSchedules();
+        loadLeads();
+        loadLibrary();
+        loadSettings();
+
+        // Abrir inmediatamente el modal de QR para vincular el número de WhatsApp en modo escaneo
+        if (typeof window.openQrModal === 'function') {
+          setTimeout(() => {
+            window.openQrModal(true);
+          }, 400);
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+  }
+
+  if (btnManage) {
+    btnManage.addEventListener('click', () => {
+      const comp = currentCompanies.find(c => c.id === currentCompanyId);
+      if (!comp) return;
+
+      const titleEl = document.getElementById('manage-company-title');
+      if (titleEl) titleEl.textContent = `Gestionar: ${comp.name}`;
+      if (inputManageName) inputManageName.value = comp.name;
+
+      if (manageStatusBadge) {
+        manageStatusBadge.className = `badge-status ${comp.status}`;
+        manageStatusBadge.textContent = comp.status === 'ready' ? 'Conectado' : (comp.status === 'qr_ready' ? 'Escanear QR' : comp.status);
+      }
+      if (managePhone) {
+        managePhone.textContent = comp.phone ? `+${comp.phone}` : 'No vinculado';
+      }
+
+      if (btnDeleteComp) {
+        btnDeleteComp.disabled = currentCompanies.length <= 1;
+        btnDeleteComp.title = currentCompanies.length <= 1 ? 'No puedes eliminar la única empresa' : 'Eliminar empresa';
+      }
+
+      const btnManageOpenQr = document.getElementById('btn-manage-open-qr');
+      if (btnManageOpenQr) {
+        btnManageOpenQr.onclick = () => {
+          closeManageModal();
+          if (typeof window.openQrModal === 'function') window.openQrModal();
+        };
+      }
+
+      if (modalManage) modalManage.classList.remove('hidden');
+    });
+  }
+
+  const closeManageModal = () => {
+    if (modalManage) modalManage.classList.add('hidden');
+  };
+  if (btnCloseManage) btnCloseManage.addEventListener('click', closeManageModal);
+  if (btnCancelManage) btnCancelManage.addEventListener('click', closeManageModal);
+
+  if (formManage) {
+    formManage.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newName = (inputManageName.value || '').trim();
+      if (!newName) return;
+
+      try {
+        const res = await fetch(`/api/companies/${currentCompanyId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newName })
+        });
+        if (!res.ok) throw new Error('Error al actualizar');
+        closeManageModal();
+        await loadCompanies();
+        loadSettings();
+        showToast('Empresa actualizada correctamente');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+  }
+
+  if (btnRestartBot) {
+    btnRestartBot.addEventListener('click', async () => {
+      try {
+        btnRestartBot.disabled = true;
+        btnRestartBot.textContent = 'Reiniciando...';
+        await fetch('/api/bot/restart', { method: 'POST' });
+        showToast('Reiniciando conexión WhatsApp de la empresa...');
+        setTimeout(() => {
+          btnRestartBot.disabled = false;
+          btnRestartBot.textContent = '🔄 Reiniciar Bot de esta Empresa';
+          if (typeof window.refreshBotStatus === 'function') window.refreshBotStatus();
+        }, 1500);
+      } catch (e) {
+        btnRestartBot.disabled = false;
+        btnRestartBot.textContent = '🔄 Reiniciar Bot de esta Empresa';
+      }
+    });
+  }
+
+  if (btnDeleteComp) {
+    btnDeleteComp.addEventListener('click', async () => {
+      const comp = currentCompanies.find(c => c.id === currentCompanyId);
+      const compName = comp ? comp.name : 'esta empresa';
+      if (!confirm(`¿Estás SEGURO de eliminar la empresa "${compName}"?\nSe borrarán todas sus rutas, biblioteca, prospectos y se cerrará su sesión de WhatsApp.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/companies/${currentCompanyId}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Error al eliminar');
+        }
+        const data = await res.json();
+        currentCompanyId = data.activeCompanyId;
+        localStorage.setItem('whatsapp_bot_company_id', currentCompanyId);
+
+        closeManageModal();
+        await loadCompanies();
+        showToast(`Empresa "${compName}" eliminada`);
+
+        if (typeof window.refreshBotStatus === 'function') window.refreshBotStatus();
+        loadRules();
+        loadSchedules();
+        loadLeads();
+        loadLibrary();
+        loadSettings();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+}
+
 
 // ==================== 1. NAVEGACIÓN POR PESTAÑAS ====================
 function initTabs() {
@@ -52,45 +349,271 @@ function initTabs() {
   });
 }
 
-// ==================== 2. MONITOREO DE CONEXIÓN Y QR ====================
+// ==================== 2. MONITOREO DE CONEXIÓN Y MODAL QR ====================
 function initConnectionMonitor() {
   const pill = document.getElementById('connection-pill');
   const pillText = document.getElementById('connection-text');
-  const qrBanner = document.getElementById('qr-modal-banner');
-  const qrImage = document.getElementById('qr-image');
   const botToggle = document.getElementById('bot-toggle');
   const botLabel = document.getElementById('bot-toggle-label');
   const btnReconnect = document.getElementById('btn-reconnect');
 
+  // Elementos del Modal QR y botón de cabecera
+  const btnShowQr = document.getElementById('btn-show-qr-modal');
+  const btnShowQrText = document.getElementById('btn-show-qr-text');
+  const qrModal = document.getElementById('qr-modal-banner');
+  const qrCompanyTitle = document.getElementById('qr-modal-company-title');
+  const qrCompanySubtitle = document.getElementById('qr-modal-company-subtitle');
+  const qrImage = document.getElementById('qr-image');
+  const qrViewScanning = document.getElementById('qr-view-scanning');
+  const qrViewConnected = document.getElementById('qr-view-connected');
+  const qrViewLoading = document.getElementById('qr-view-loading');
+  const qrConnectedPhone = document.getElementById('qr-connected-phone');
+  const qrConnectedTitle = document.getElementById('qr-connected-title');
+  const qrConnectedDesc = document.getElementById('qr-connected-desc');
+  const qrConnectedAutoClose = document.getElementById('qr-connected-auto-close-notice');
+  const btnCloseQrModal = document.getElementById('btn-close-qr-modal');
+  const btnCloseQrBtn = document.getElementById('btn-close-qr-btn');
+  const btnForceRegenerate = document.getElementById('btn-qr-force-regenerate');
+  const btnDisconnectBot = document.getElementById('btn-disconnect-bot');
+
+  let wasScanning = false;
+  let autoCloseTimer = null;
+
+  function openQrModal(isNewScan = false) {
+    const comp = currentCompanies.find(c => c.id === currentCompanyId);
+    if (qrCompanyTitle) {
+      qrCompanyTitle.textContent = `Vincular WhatsApp: ${comp ? comp.name : 'Empresa Actual'}`;
+    }
+    if (qrCompanySubtitle) {
+      qrCompanySubtitle.textContent = `Sesión exclusiva para "${comp ? comp.name : 'esta empresa'}"`;
+    }
+
+    // Limpiar estado visual anterior para no mostrar números de otras empresas
+    if (qrConnectedPhone) qrConnectedPhone.textContent = '...';
+    if (qrConnectedAutoClose) qrConnectedAutoClose.classList.add('hidden');
+    if (qrViewConnected) qrViewConnected.classList.add('hidden');
+    if (qrViewScanning) qrViewScanning.classList.add('hidden');
+    if (qrViewLoading) qrViewLoading.classList.remove('hidden');
+
+    if (autoCloseTimer) {
+      clearTimeout(autoCloseTimer);
+      autoCloseTimer = null;
+    }
+
+    wasScanning = isNewScan || false;
+
+    if (qrModal) qrModal.classList.remove('hidden');
+    checkStatus();
+  }
+
+  function closeQrModal() {
+    if (autoCloseTimer) {
+      clearTimeout(autoCloseTimer);
+      autoCloseTimer = null;
+    }
+    wasScanning = false;
+    if (qrConnectedAutoClose) qrConnectedAutoClose.classList.add('hidden');
+    if (qrModal) qrModal.classList.add('hidden');
+  }
+
+  window.openQrModal = openQrModal;
+  window.closeQrModal = closeQrModal;
+
+  if (btnShowQr) btnShowQr.addEventListener('click', () => openQrModal(false));
+  if (btnCloseQrModal) btnCloseQrModal.addEventListener('click', closeQrModal);
+  if (btnCloseQrBtn) btnCloseQrBtn.addEventListener('click', closeQrModal);
+
+  // Cerrar al hacer clic en el fondo oscuro exterior o presionar tecla Escape
+  if (qrModal) {
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) closeQrModal();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && qrModal && !qrModal.classList.contains('hidden')) {
+      closeQrModal();
+    }
+  });
+
+  if (btnForceRegenerate) {
+    btnForceRegenerate.addEventListener('click', async () => {
+      btnForceRegenerate.disabled = true;
+      btnForceRegenerate.textContent = 'Generando nuevo QR...';
+      wasScanning = true;
+      try {
+        await fetch(`/api/bot/restart?companyId=${encodeURIComponent(currentCompanyId)}`, { method: 'POST' });
+        showToast('Reiniciando bot y generando nuevo código QR...', 'info');
+        setTimeout(() => {
+          btnForceRegenerate.disabled = false;
+          btnForceRegenerate.textContent = '🔄 Regenerar Código QR';
+          checkStatus();
+        }, 2000);
+      } catch (e) {
+        btnForceRegenerate.disabled = false;
+        btnForceRegenerate.textContent = '🔄 Regenerar Código QR';
+      }
+    });
+  }
+
+  if (btnDisconnectBot) {
+    btnDisconnectBot.addEventListener('click', async () => {
+      const comp = currentCompanies.find(c => c.id === currentCompanyId);
+      const name = comp ? comp.name : 'esta empresa';
+      if (!confirm(`¿Deseas desvincular el WhatsApp de "${name}" para conectar un número diferente?`)) return;
+
+      btnDisconnectBot.disabled = true;
+      btnDisconnectBot.textContent = 'Desvinculando...';
+      wasScanning = true;
+      try {
+        await fetch(`/api/bot/disconnect?companyId=${encodeURIComponent(currentCompanyId)}`, { method: 'POST' });
+        showToast(`Sesión de "${name}" cerrada. Generando nuevo código QR...`, 'info');
+        setTimeout(() => {
+          btnDisconnectBot.disabled = false;
+          btnDisconnectBot.textContent = 'Desvincular y cambiar de número';
+          checkStatus();
+        }, 2000);
+      } catch (e) {
+        btnDisconnectBot.disabled = false;
+        btnDisconnectBot.textContent = 'Desvincular y cambiar de número';
+      }
+    });
+  }
+
   async function checkStatus() {
+    const targetCompanyId = currentCompanyId;
     try {
-      const res = await fetch('/api/status');
+      const res = await fetch(`/api/status?companyId=${encodeURIComponent(targetCompanyId)}&_t=${Date.now()}`);
       if (!res.ok) throw new Error('Error al consultar estado');
       const data = await res.json();
 
+      // PROTECCIÓN CRÍTICA CONTRA CONDICIONES DE CARRERA Y DATOS DE OTRAS EMPRESAS:
+      // Si la empresa activa en el cliente cambió mientras la petición estaba en vuelo, o si la respuesta pertenece a otra empresa, descartarla por completo.
+      if (data.companyId && data.companyId !== currentCompanyId) {
+        return;
+      }
+
+      const comp = currentCompanies.find(c => c.id === currentCompanyId);
+      if (comp) {
+        comp.status = data.status;
+        if (data.clientInfo?.wid && data.clientInfo.wid !== 'Conectado') {
+          comp.phone = data.clientInfo.wid;
+        }
+      }
+
+      // Actualizar opción de la empresa en el select para reflejar su teléfono real
+      const select = document.getElementById('company-select');
+      if (select && comp) {
+        const opt = select.querySelector(`option[value="${comp.id}"]`);
+        if (opt) {
+          const phoneText = comp.phone ? ` (+${comp.phone})` : (comp.status === 'ready' ? ' (Conectado)' : ' (Sin vincular)');
+          opt.textContent = `${comp.name}${phoneText}`;
+        }
+      }
+
       pill.className = 'connection-pill';
+
       if (data.status === 'ready') {
+        const phone = data.clientInfo?.wid && data.clientInfo.wid !== 'Conectado' ? ` (+${data.clientInfo.wid})` : '';
         pill.classList.add('status-ready');
-        const phone = data.clientInfo?.wid ? ` (+${data.clientInfo.wid})` : '';
         pillText.textContent = `Conectado${phone}`;
-        qrBanner.classList.add('hidden');
+
+        if (btnShowQr) {
+          btnShowQr.className = 'btn btn-qr-prominent is-connected';
+          if (btnShowQrText) btnShowQrText.textContent = `✅ ${phone || 'Conectado'}`;
+        }
+
+        if (qrViewConnected) qrViewConnected.classList.remove('hidden');
+        if (qrViewScanning) qrViewScanning.classList.add('hidden');
+        if (qrViewLoading) qrViewLoading.classList.add('hidden');
+
+        const phoneVal = (data.clientInfo?.wid && data.clientInfo.wid !== 'Conectado')
+          ? `+${data.clientInfo.wid}`
+          : (comp?.phone ? `+${comp.phone}` : 'Vinculado');
+        if (qrConnectedPhone) qrConnectedPhone.textContent = phoneVal;
+
+        if (qrConnectedTitle) qrConnectedTitle.textContent = '¡WhatsApp Vinculado con Éxito!';
+        if (qrConnectedDesc) {
+          qrConnectedDesc.textContent = `El bot de "${comp ? comp.name : data.companyName}" ya está conectado y listo para atender mensajes.`;
+        }
+
+        // AUTO-CIERRE: Si el modal estaba abierto esperando vinculación (escaneo en progreso)
+        const isModalVisible = qrModal && !qrModal.classList.contains('hidden');
+        if (isModalVisible && wasScanning) {
+          wasScanning = false;
+          if (qrConnectedAutoClose) {
+            qrConnectedAutoClose.classList.remove('hidden');
+            qrConnectedAutoClose.textContent = `✅ ¡WhatsApp de ${comp ? comp.name : 'la empresa'} vinculado con éxito! Cerrando ventana...`;
+          }
+          if (autoCloseTimer) clearTimeout(autoCloseTimer);
+          autoCloseTimer = setTimeout(() => {
+            closeQrModal();
+            showToast(`¡WhatsApp de ${comp ? comp.name : 'la empresa'} conectado correctamente!`, 'success');
+          }, 1800);
+        }
+
       } else if (data.status === 'qr_ready') {
+        wasScanning = true;
+        if (autoCloseTimer) {
+          clearTimeout(autoCloseTimer);
+          autoCloseTimer = null;
+        }
+
         pill.classList.add('status-qr');
         pillText.textContent = 'Escanear QR Requerido';
-        if (data.qrCode) {
-          qrImage.src = data.qrCode;
-          qrBanner.classList.remove('hidden');
+
+        if (btnShowQr) {
+          btnShowQr.className = 'btn btn-qr-prominent needs-scan';
+          if (btnShowQrText) btnShowQrText.textContent = '📱 Escanear Código QR';
         }
+
+        if (qrViewConnected) qrViewConnected.classList.add('hidden');
+        if (qrViewScanning) qrViewScanning.classList.remove('hidden');
+        if (qrViewLoading) qrViewLoading.classList.add('hidden');
+
+        if (data.qrCode && qrImage) {
+          qrImage.src = data.qrCode;
+        }
+
       } else if (data.status === 'authenticated') {
+        wasScanning = true;
         pill.classList.add('status-loading');
         pillText.textContent = 'Autenticado, sincronizando...';
-        qrBanner.classList.add('hidden');
+
+        if (btnShowQr) {
+          btnShowQr.className = 'btn btn-qr-prominent is-connected';
+          if (btnShowQrText) btnShowQrText.textContent = '⏳ Sincronizando...';
+        }
+
+        if (qrViewConnected) qrViewConnected.classList.add('hidden');
+        if (qrViewScanning) qrViewScanning.classList.add('hidden');
+        if (qrViewLoading) qrViewLoading.classList.remove('hidden');
+
       } else if (data.status === 'initializing') {
         pill.classList.add('status-loading');
         pillText.textContent = 'Iniciando WhatsApp Web...';
+
+        if (btnShowQr) {
+          btnShowQr.className = 'btn btn-qr-prominent';
+          if (btnShowQrText) btnShowQrText.textContent = '⏳ Generando QR...';
+        }
+
+        if (qrViewConnected) qrViewConnected.classList.add('hidden');
+        if (qrViewScanning) qrViewScanning.classList.add('hidden');
+        if (qrViewLoading) qrViewLoading.classList.remove('hidden');
+
       } else {
+        wasScanning = false;
         pill.classList.add('status-disconnected');
         pillText.textContent = 'Desconectado';
+
+        if (btnShowQr) {
+          btnShowQr.className = 'btn btn-qr-prominent needs-scan';
+          if (btnShowQrText) btnShowQrText.textContent = '📱 Vincular WhatsApp';
+        }
+
+        if (qrViewConnected) qrViewConnected.classList.add('hidden');
+        if (qrViewScanning) qrViewScanning.classList.add('hidden');
+        if (qrViewLoading) qrViewLoading.classList.remove('hidden');
       }
 
       botToggle.checked = Boolean(data.botEnabled);
@@ -104,9 +627,11 @@ function initConnectionMonitor() {
     } catch (err) {
       pill.className = 'connection-pill status-disconnected';
       pillText.textContent = 'Servidor sin responder';
+      if (btnShowQrText) btnShowQrText.textContent = '⚠️ Sin conexión';
     }
   }
 
+  window.refreshBotStatus = checkStatus;
   checkStatus();
   setInterval(checkStatus, 3000);
 
@@ -1544,12 +2069,22 @@ async function loadLibrary() {
           <div style="font-size: 38px; margin-bottom: 8px;">📚</div>
           <div style="font-weight: 600; color: #fff; font-size: 14px;">La biblioteca está vacía</div>
           <p style="font-size: 12px; margin-top: 4px;">Sube tus documentos Word (.docx) a la izquierda para que Gemini aprenda las respuestas de tu negocio sin dar información falsa.</p>
+          <div style="margin-top: 12px; font-size: 11.5px; color: #fca5a5; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 6px; padding: 6px 14px; display: inline-block;">
+            🛡️ <strong>Gemini inactivo para esta empresa:</strong> Se desactivó automáticamente para evitar invención de productos o servicios no autorizados.
+          </div>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = docs.map(doc => {
+    const allPausedBanner = stats.activeDocuments === 0 ? `
+      <div style="margin-bottom: 12px; font-size: 12px; color: #fbbf24; background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 6px; padding: 10px 14px; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 16px;">⚠️</span>
+        <span><strong>Todos los documentos están pausados:</strong> Gemini no responderá mensajes para esta empresa hasta que actives al menos un documento.</span>
+      </div>
+    ` : '';
+
+    container.innerHTML = allPausedBanner + docs.map(doc => {
       const dateStr = doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
       const isWord = (doc.originalFilename || '').endsWith('.docx');
       const isActive = doc.active !== false;
