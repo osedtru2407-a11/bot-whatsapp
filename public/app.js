@@ -10,14 +10,32 @@ let currentRuleAttachedMedia = null;
 let currentQuickSendMedia = null;
 let currentSchedMedia = null;
 
-// Soporte Multi-Empresa: Interceptor global de fetch para inyectar x-company-id y query parameter
+// Soporte Multi-Empresa & Autenticación
 let currentCompanyId = localStorage.getItem('whatsapp_bot_company_id') || 'default';
 let currentCompanies = [];
+let currentAuthToken = localStorage.getItem('whatsapp_bot_token') || null;
+let currentUser = null;
+let currentPermissions = new Set();
 
 const originalFetch = window.fetch;
 window.fetch = function(url, options = {}) {
   options = options || {};
   options.headers = options.headers || {};
+
+  // 1. Inyectar Token de Autenticación
+  if (currentAuthToken) {
+    if (options.headers instanceof Headers) {
+      if (!options.headers.has('authorization')) {
+        options.headers.set('authorization', `Bearer ${currentAuthToken}`);
+      }
+    } else {
+      if (!options.headers['authorization'] && !options.headers['Authorization']) {
+        options.headers['authorization'] = `Bearer ${currentAuthToken}`;
+      }
+    }
+  }
+
+  // 2. Inyectar Empresa Activa
   if (options.headers instanceof Headers) {
     if (!options.headers.has('x-company-id')) {
       options.headers.set('x-company-id', currentCompanyId);
@@ -28,16 +46,40 @@ window.fetch = function(url, options = {}) {
     }
   }
 
-  // Garantizar aislamiento estricto por URL en endpoints /api/
+  // 3. Garantizar aislamiento estricto por URL en endpoints /api/
   if (typeof url === 'string' && url.startsWith('/api/') && !url.includes('companyId=')) {
     const sep = url.includes('?') ? '&' : '?';
     url = `${url}${sep}companyId=${encodeURIComponent(currentCompanyId)}`;
   }
 
-  return originalFetch.call(this, url, options);
+  return originalFetch.call(this, url, options).then(res => {
+    if (res.status === 401 && !url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
+      showAuthModal(true);
+    }
+    return res;
+  });
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initAuthUI();
+  initModalTools();
+
+  const isAuth = await checkAuthStatus();
+  if (isAuth) {
+    showAuthModal(false);
+    await startApp();
+  } else {
+    showAuthModal(true);
+  }
+});
+
+let appInitialized = false;
+async function startApp() {
+  if (appInitialized) {
+    await loadCompanies();
+    return;
+  }
+  appInitialized = true;
   await loadCompanies();
   initCompanyManager();
   initTabs();
@@ -50,8 +92,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initLeads();
   initLibrary();
   initSettings();
-  initModalTools();
-});
+  initTeamManagement();
+}
 
 // ==================== 0. GESTIÓN MULTI-EMPRESA ====================
 async function loadCompanies() {
@@ -2184,4 +2226,603 @@ async function loadLibrary() {
   } catch (err) {
     container.innerHTML = `<div style="color: var(--accent-rose);">Error cargando biblioteca: ${err.message}</div>`;
   }
+}
+
+// =========================================================================
+// GESTIÓN DE AUTENTICACIÓN, SESIÓN Y ROLES
+// =========================================================================
+
+function showAuthModal(show = true) {
+  const modal = document.getElementById('auth-modal-overlay');
+  if (!modal) return;
+  if (show) {
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('login-identifier')?.focus();
+    }, 50);
+  } else {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+}
+
+function initAuthUI() {
+  const formLogin = document.getElementById('form-auth-login');
+  const loginErr = document.getElementById('login-error-alert');
+  const btnTogglePwd = document.getElementById('btn-toggle-login-pwd');
+  const loginPwdInput = document.getElementById('login-password');
+
+  // Alternar visibilidad de contraseña
+  btnTogglePwd?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (loginPwdInput.type === 'password') {
+      loginPwdInput.type = 'text';
+      btnTogglePwd.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        </svg>
+      `;
+      btnTogglePwd.title = "Ocultar contraseña";
+    } else {
+      loginPwdInput.type = 'password';
+      btnTogglePwd.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      `;
+      btnTogglePwd.title = "Mostrar contraseña";
+    }
+  });
+
+  // Enviar formulario de inicio de sesión
+  formLogin?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginErr.classList.add('hidden');
+    loginErr.textContent = '';
+    
+    const email = document.getElementById('login-identifier').value.trim();
+    const password = loginPwdInput.value;
+    const btnSubmit = document.getElementById('btn-submit-login');
+
+    if (!email || !password) {
+      loginErr.textContent = 'Por favor ingresa tu usuario y contraseña.';
+      loginErr.classList.remove('hidden');
+      return;
+    }
+
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `
+      <span class="auth-spinner"></span>
+      <span>Iniciando sesión...</span>
+    `;
+
+    try {
+      const res = await originalFetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Credenciales inválidas. Verifica tu usuario y contraseña.');
+
+      // Guardar token y usuario
+      currentAuthToken = data.token;
+      localStorage.setItem('whatsapp_bot_token', currentAuthToken);
+      currentUser = data.user;
+
+      // Ocultar modal de autenticación inmediatamente
+      showAuthModal(false);
+      showToast(`¡Bienvenido al panel, ${currentUser.fullName}!`, 'success');
+
+      // Cargar contexto y arrancar la aplicación
+      await checkAuthStatus();
+      await startApp();
+
+    } catch (err) {
+      loginErr.textContent = err.message;
+      loginErr.classList.remove('hidden');
+      showAuthModal(true);
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = `
+        <span>Ingresar al Panel</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      `;
+    }
+  });
+
+  // Logout button
+  document.getElementById('btn-logout')?.addEventListener('click', () => {
+    if (confirm('¿Deseas cerrar tu sesión?')) {
+      localStorage.removeItem('whatsapp_bot_token');
+      currentAuthToken = null;
+      currentUser = null;
+      currentPermissions.clear();
+      document.getElementById('user-header-profile')?.classList.add('hidden');
+      showAuthModal(true);
+      showToast('Sesión cerrada correctamente', 'info');
+    }
+  });
+
+  // Change password modal
+  const btnHeaderChangePwd = document.getElementById('btn-header-change-pwd');
+  const changePwdModal = document.getElementById('change-pwd-modal');
+  const formChangePwd = document.getElementById('form-change-password');
+  const pwdErr = document.getElementById('pwd-error-alert');
+  const pwdSuccess = document.getElementById('pwd-success-alert');
+
+  btnHeaderChangePwd?.addEventListener('click', () => {
+    pwdErr.classList.add('hidden');
+    pwdSuccess.classList.add('hidden');
+    formChangePwd.reset();
+    changePwdModal.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-close-pwd-modal')?.addEventListener('click', () => changePwdModal.classList.add('hidden'));
+  document.getElementById('btn-cancel-pwd-modal')?.addEventListener('click', () => changePwdModal.classList.add('hidden'));
+
+  formChangePwd?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    pwdErr.classList.add('hidden');
+    pwdSuccess.classList.add('hidden');
+
+    const currentPassword = document.getElementById('pwd-current').value;
+    const newPassword = document.getElementById('pwd-new').value;
+    const confirmPassword = document.getElementById('pwd-confirm').value;
+
+    if (newPassword !== confirmPassword) {
+      pwdErr.textContent = 'La nueva contraseña y su confirmación no coinciden.';
+      pwdErr.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      pwdSuccess.textContent = 'Contraseña actualizada exitosamente.';
+      pwdSuccess.classList.remove('hidden');
+      setTimeout(() => {
+        changePwdModal.classList.add('hidden');
+        showToast('Contraseña actualizada correctamente', 'success');
+      }, 1200);
+    } catch (err) {
+      pwdErr.textContent = err.message;
+      pwdErr.classList.remove('hidden');
+    }
+  });
+}
+
+/**
+ * Verificar estado de sesión y permisos del usuario actual
+ */
+async function checkAuthStatus() {
+  if (!currentAuthToken) {
+    showAuthModal(true);
+    return false;
+  }
+
+  try {
+    const res = await fetch(`/api/auth/me?companyId=${encodeURIComponent(currentCompanyId)}`);
+    if (!res.ok) {
+      throw new Error('Token inválido o expirado');
+    }
+    const data = await res.json();
+    currentUser = data.user;
+
+    // Sincronizar permisos del usuario en la empresa activa
+    currentPermissions = new Set(data.membership?.permissions || []);
+
+    updateUserBadge(data);
+    applyRolePermissions();
+    showAuthModal(false);
+    return true;
+  } catch (e) {
+    localStorage.removeItem('whatsapp_bot_token');
+    currentAuthToken = null;
+    currentUser = null;
+    showAuthModal(true);
+    return false;
+  }
+}
+
+/**
+ * Actualizar etiqueta visual de usuario en el header
+ */
+function updateUserBadge(data) {
+  const profileContainer = document.getElementById('user-header-profile');
+  const avatarLetter = document.getElementById('user-avatar-letter');
+  const nameDisplay = document.getElementById('user-display-name');
+  const roleDisplay = document.getElementById('user-display-role');
+
+  if (!profileContainer || !currentUser) return;
+
+  profileContainer.classList.remove('hidden');
+  const initial = (currentUser.fullName || 'U').charAt(0).toUpperCase();
+  avatarLetter.textContent = initial;
+  nameDisplay.textContent = currentUser.fullName || currentUser.email;
+
+  const roleName = data.membership?.roleName || 'Colaborador';
+  roleDisplay.textContent = roleName;
+}
+
+/**
+ * Aplicar restricciones visuales y de control de acceso según los permisos del usuario
+ */
+function applyRolePermissions() {
+  const isAdmin = currentPermissions.has('*') || currentPermissions.has('all');
+
+  function hasPerm(perm) {
+    return isAdmin || currentPermissions.has(perm);
+  }
+
+  // Rutas
+  const btnCreateRule = document.getElementById('btn-open-create-rule');
+  if (btnCreateRule) {
+    btnCreateRule.style.display = hasPerm('rules:create') ? '' : 'none';
+  }
+
+  // QR y Conexión WhatsApp
+  const btnQr = document.getElementById('btn-show-qr-modal');
+  const btnReconnect = document.getElementById('btn-reconnect');
+  if (btnQr) btnQr.style.display = hasPerm('whatsapp:connect') ? '' : 'none';
+  if (btnReconnect) btnReconnect.style.display = hasPerm('whatsapp:connect') ? '' : 'none';
+
+  // Toggle Bot
+  const botToggleWrap = document.querySelector('.bot-toggle-wrapper');
+  if (botToggleWrap) {
+    botToggleWrap.style.display = hasPerm('whatsapp:toggle') ? '' : 'none';
+  }
+
+  // Pestaña de Equipo y Roles
+  const tabBtnTeam = document.getElementById('tab-btn-team');
+  if (tabBtnTeam) {
+    tabBtnTeam.style.display = hasPerm('team:view') ? '' : 'none';
+  }
+
+  // Pestaña de Configuración
+  const tabBtnSettings = document.getElementById('tab-btn-settings');
+  if (tabBtnSettings) {
+    tabBtnSettings.style.display = hasPerm('settings:view') ? '' : 'none';
+  }
+
+  // Acciones dentro de Equipo
+  const btnAddMember = document.getElementById('btn-open-add-member');
+  const btnCreateRole = document.getElementById('btn-open-create-role');
+  if (btnAddMember) btnAddMember.style.display = hasPerm('team:manage') ? '' : 'none';
+  if (btnCreateRole) btnCreateRole.style.display = hasPerm('roles:manage') ? '' : 'none';
+}
+
+// =========================================================================
+// MÓDULO DE GESTIÓN DE EQUIPO & ROLES
+// =========================================================================
+
+let currentTeamMembers = [];
+let currentCompanyRoles = [];
+
+function initTeamManagement() {
+  const tabBtnTeam = document.getElementById('tab-btn-team');
+  tabBtnTeam?.addEventListener('click', () => {
+    loadTeamData();
+  });
+
+  // Modal Invitar Miembro
+  const memberModal = document.getElementById('member-modal');
+  const btnOpenAddMember = document.getElementById('btn-open-add-member');
+  const btnCloseMemberModal = document.getElementById('btn-close-member-modal');
+  const btnCancelMemberModal = document.getElementById('btn-cancel-member-modal');
+  const formMember = document.getElementById('member-modal-form');
+  const btnGenPwd = document.getElementById('btn-generate-password');
+  const btnCopyPwd = document.getElementById('btn-copy-password');
+  const tempPwdInput = document.getElementById('member-temp-password');
+
+  btnOpenAddMember?.addEventListener('click', () => {
+    formMember.reset();
+    // Generar contraseña segura por defecto
+    tempPwdInput.value = generateSecurePassword();
+    populateRolesSelect('member-role-select');
+    memberModal.classList.remove('hidden');
+  });
+
+  btnCloseMemberModal?.addEventListener('click', () => memberModal.classList.add('hidden'));
+  btnCancelMemberModal?.addEventListener('click', () => memberModal.classList.add('hidden'));
+
+  btnGenPwd?.addEventListener('click', () => {
+    tempPwdInput.value = generateSecurePassword();
+  });
+
+  btnCopyPwd?.addEventListener('click', () => {
+    if (tempPwdInput.value) {
+      navigator.clipboard.writeText(tempPwdInput.value);
+      showToast('Contraseña copiada al portapapeles', 'info');
+    }
+  });
+
+  formMember?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('member-fullname').value.trim();
+    const email = document.getElementById('member-email').value.trim();
+    const phone = document.getElementById('member-phone').value.trim();
+    const roleId = document.getElementById('member-role-select').value;
+    const password = tempPwdInput.value;
+
+    try {
+      const res = await fetch(`/api/companies/${currentCompanyId}/team/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, email, phone, roleId, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast(`Colaborador ${fullName} agregado exitosamente`, 'success');
+      memberModal.classList.add('hidden');
+      loadTeamData();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
+  // Modal Editar Rol
+  const editRoleModal = document.getElementById('edit-member-role-modal');
+  document.getElementById('btn-close-edit-role-modal')?.addEventListener('click', () => editRoleModal.classList.add('hidden'));
+  document.getElementById('btn-cancel-edit-role')?.addEventListener('click', () => editRoleModal.classList.add('hidden'));
+
+  document.getElementById('edit-member-role-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const targetUserId = document.getElementById('edit-member-target-id').value;
+    const newRoleId = document.getElementById('edit-member-role-select').value;
+
+    try {
+      const res = await fetch(`/api/companies/${currentCompanyId}/team/members/${targetUserId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleId: newRoleId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast('Rol de colaborador actualizado', 'success');
+      editRoleModal.classList.add('hidden');
+      loadTeamData();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
+  // Modal Crear Rol Personalizado
+  const customRoleModal = document.getElementById('custom-role-modal');
+  const btnOpenCustomRole = document.getElementById('btn-open-create-role');
+  btnOpenCustomRole?.addEventListener('click', () => {
+    document.getElementById('custom-role-form').reset();
+    customRoleModal.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-close-custom-role-modal')?.addEventListener('click', () => customRoleModal.classList.add('hidden'));
+  document.getElementById('btn-cancel-custom-role')?.addEventListener('click', () => customRoleModal.classList.add('hidden'));
+
+  document.getElementById('custom-role-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('custom-role-name').value.trim();
+    const description = document.getElementById('custom-role-desc').value.trim();
+
+    const selectedPerms = [];
+    document.querySelectorAll('#custom-role-form input[name="perm"]:checked').forEach(cb => {
+      selectedPerms.push(cb.value);
+    });
+
+    if (selectedPerms.length === 0) {
+      showToast('Debes seleccionar al menos un permiso para este rol', 'warning');
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/companies/${currentCompanyId}/roles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, permissions: selectedPerms })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast(`Rol "${name}" creado exitosamente`, 'success');
+      customRoleModal.classList.add('hidden');
+      loadTeamData();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+}
+
+function generateSecurePassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
+  let pwd = '';
+  for (let i = 0; i < 10; i++) {
+    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pwd;
+}
+
+function populateRolesSelect(selectId, selectedRoleId = null) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+
+  currentCompanyRoles.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `${r.name} - ${r.description || ''}`;
+    if (selectedRoleId && r.id === selectedRoleId) {
+      opt.selected = true;
+    }
+    sel.appendChild(opt);
+  });
+}
+
+/**
+ * Cargar lista de miembros y roles de la empresa activa
+ */
+async function loadTeamData() {
+  try {
+    const res = await fetch(`/api/companies/${currentCompanyId}/team`);
+    if (!res.ok) throw new Error('Error al cargar datos del equipo');
+    const data = await res.json();
+
+    currentTeamMembers = data.members || [];
+    currentCompanyRoles = data.roles || [];
+
+    // Actualizar badge contador
+    const badge = document.getElementById('tab-team-badge');
+    const totalCount = document.getElementById('team-total-count');
+    if (badge) badge.textContent = currentTeamMembers.length;
+    if (totalCount) totalCount.textContent = `${currentTeamMembers.length} Miembros`;
+
+    renderTeamMembersTable();
+    renderRolesGrid();
+  } catch (err) {
+    console.error('Error en loadTeamData:', err);
+    showToast(err.message, 'error');
+  }
+}
+
+function renderTeamMembersTable() {
+  const tbody = document.getElementById('team-members-tbody');
+  if (!tbody) return;
+
+  if (currentTeamMembers.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">No hay colaboradores registrados en esta empresa.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = '';
+  currentTeamMembers.forEach(m => {
+    const tr = document.createElement('tr');
+
+    const initial = (m.fullName || 'U').charAt(0).toUpperCase();
+    const isOwner = Boolean(m.isOwner);
+    const isSelf = currentUser && currentUser.id === m.userId;
+
+    const roleClass = m.roleId ? m.roleId : 'custom-role';
+    const statusLabel = m.status === 'active' 
+      ? '<span class="status-badge active">● Activo</span>'
+      : '<span class="status-badge pending_pwd">⚠️ Contraseña Temp.</span>';
+
+    const joinDate = m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : 'Reciente';
+
+    let actionsHtml = '';
+    if (!isSelf && !isOwner) {
+      actionsHtml = `
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-outline-sm btn-edit-role" data-user-id="${m.userId}" data-role-id="${m.roleId}" data-name="${escapeHtml(m.fullName)}">
+            Cambiar Rol
+          </button>
+          <button class="btn btn-outline-sm btn-delete-member" data-user-id="${m.userId}" data-name="${escapeHtml(m.fullName)}" style="color: var(--accent-rose); border-color: rgba(244,63,94,0.3);">
+            Eliminar
+          </button>
+        </div>
+      `;
+    } else if (isOwner) {
+      actionsHtml = `<span style="font-size: 0.78rem; color: var(--text-dim); text-align: right; display: block;">Propietario Principal</span>`;
+    } else {
+      actionsHtml = `<span style="font-size: 0.78rem; color: #4ade80; text-align: right; display: block;">Tu usuario actual</span>`;
+    }
+
+    tr.innerHTML = `
+      <td>
+        <div class="member-cell">
+          <div class="member-avatar">${initial}</div>
+          <div>
+            <span class="member-name">${escapeHtml(m.fullName)}</span>
+            ${isOwner ? '<span class="member-owner-badge">Owner</span>' : ''}
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-size: 0.85rem; color: var(--text-main);">${escapeHtml(m.email)}</div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);">${m.phone ? escapeHtml(m.phone) : 'Sin teléfono'}</div>
+      </td>
+      <td>
+        <span class="role-badge ${roleClass}">${escapeHtml(m.roleName)}</span>
+      </td>
+      <td>${statusLabel}</td>
+      <td style="color: var(--text-muted); font-size: 0.82rem;">${joinDate}</td>
+      <td>${actionsHtml}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  // Eventos de botones de acción
+  tbody.querySelectorAll('.btn-edit-role').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const userId = btn.getAttribute('data-user-id');
+      const roleId = btn.getAttribute('data-role-id');
+      const name = btn.getAttribute('data-name');
+
+      document.getElementById('edit-member-target-id').value = userId;
+      document.getElementById('edit-member-subtitle').textContent = `Asignar nuevo rol a ${name}`;
+      populateRolesSelect('edit-member-role-select', roleId);
+      document.getElementById('edit-member-role-modal').classList.remove('hidden');
+    });
+  });
+
+  tbody.querySelectorAll('.btn-delete-member').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const userId = btn.getAttribute('data-user-id');
+      const name = btn.getAttribute('data-name');
+
+      if (!confirm(`¿Estás seguro de eliminar a ${name} de esta empresa? Perderá el acceso de inmediato.`)) return;
+
+      try {
+        const res = await fetch(`/api/companies/${currentCompanyId}/team/members/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        showToast(`${name} ha sido eliminado de la empresa`, 'info');
+        loadTeamData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+  });
+}
+
+function renderRolesGrid() {
+  const container = document.getElementById('roles-display-grid');
+  if (!container) return;
+
+  container.innerHTML = '';
+  currentCompanyRoles.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'role-card';
+
+    const roleBadgeClass = r.is_system_default ? r.id : 'custom-role';
+    const perms = Array.isArray(r.permissions) ? r.permissions : [];
+
+    const permsChips = perms.map(p => `<span class="perm-chip">${p}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="role-card-header">
+        <span class="role-badge ${roleBadgeClass}">${escapeHtml(r.name)}</span>
+        ${r.is_system_default ? '<span style="font-size: 0.7rem; color: var(--text-dim);">Sistema</span>' : '<span style="font-size: 0.7rem; color: #a855f7;">Personalizado</span>'}
+      </div>
+      <p class="role-card-desc">${escapeHtml(r.description || 'Sin descripción.')}</p>
+      <div class="role-card-perms">
+        ${permsChips}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
 }
