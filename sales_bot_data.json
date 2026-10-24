@@ -14,6 +14,7 @@
       "id": "rule-welcome",
       "name": "Saludo y Menú Principal",
       "enabled": false,
+      "parentRuleId": null,
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -36,6 +37,7 @@
       "id": "rule-receipt",
       "name": "Recepción de Comprobante de Pago",
       "enabled": false,
+      "parentRuleId": null,
       "triggerType": "media",
       "mediaTypeFilter": "image",
       "matchType": "contains_any",
@@ -57,6 +59,7 @@
       "id": "rule-catalog",
       "name": "Catálogo de Productos",
       "enabled": false,
+      "parentRuleId": "rule-welcome",
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -84,6 +87,7 @@
       "id": "rule-prices",
       "name": "Precios y Promociones",
       "enabled": false,
+      "parentRuleId": "rule-welcome",
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -112,6 +116,7 @@
       "id": "rule-payments",
       "name": "Medios de Pago",
       "enabled": true,
+      "parentRuleId": "rule-welcome",
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -134,6 +139,7 @@
       "id": "rule-shipping",
       "name": "Información de Envíos",
       "enabled": false,
+      "parentRuleId": "rule-welcome",
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -154,6 +160,7 @@
       "id": "rule-human",
       "name": "Transferir a Asesor Humano",
       "enabled": false,
+      "parentRuleId": "rule-welcome",
       "triggerType": "text",
       "matchType": "contains_any",
       "triggers": [
@@ -299,9 +306,9 @@
     {
       "phone": "167675556851809@lid",
       "name": "Rubén Darío Villamil",
-      "tag": "Interesado",
-      "lastMessage": "De gaming",
-      "lastInteraction": "2026-10-17T22:01:58.881Z",
+      "tag": "Por Pagar",
+      "lastMessage": "3",
+      "lastInteraction": "2026-10-24T18:39:24.534Z",
       "humanPaused": false,
       "receivedFiles": [
         {

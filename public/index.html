@@ -542,6 +542,15 @@
           </select>
         </div>
 
+        <!-- REGLA PADRE / SUBMENÚ CONTEXTUAL -->
+        <div class="form-group" id="group-parent-rule">
+          <label for="rule-parent-id">Menú o Regla Previa Requerida (Submenú Opcional)</label>
+          <select id="rule-parent-id">
+            <option value="">Ninguna / Global (Se activa en cualquier momento)</option>
+          </select>
+          <span class="field-help" id="rule-parent-help">Si seleccionas una regla padre, los números y opciones de esta regla solo se activarán inmediatamente después de que el bot haya enviado esa regla (ideal para submenús de catálogo o flujos secuenciales).</span>
+        </div>
+
         <!-- ARCHIVO ADJUNTO A ENVIAR EN ESTA RUTA -->
         <div class="form-group">
           <label>📎 Archivo Adjunto que el Bot Enviará (Opcional: Catálogo en PDF, Foto del producto, Folleto)</label>

@@ -312,10 +312,24 @@ function initRules() {
 
   triggerTypeSelect.addEventListener('change', updateTriggerVisibility);
 
+  function populateParentRuleSelect(excludeId = '') {
+    const parentSelect = document.getElementById('rule-parent-id');
+    if (!parentSelect) return;
+    const opts = ['<option value="">Ninguna / Global (Se activa en cualquier momento)</option>'];
+    currentRules.forEach(r => {
+      if (r.id !== excludeId) {
+        opts.push(`<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}</option>`);
+      }
+    });
+    parentSelect.innerHTML = opts.join('');
+  }
+
   btnOpenModal.addEventListener('click', () => {
     document.getElementById('modal-rule-title').textContent = 'Nueva Ruta de Venta';
     document.getElementById('modal-rule-id').value = '';
     modalForm.reset();
+    populateParentRuleSelect('');
+    document.getElementById('rule-parent-id').value = '';
     currentRuleAttachedMedia = null;
     renderFilePreview(document.getElementById('rule-file-preview'), null);
     triggerTypeSelect.value = 'text';
@@ -332,6 +346,7 @@ function initRules() {
     e.preventDefault();
     const id = document.getElementById('modal-rule-id').value;
     const name = document.getElementById('rule-name').value.trim();
+    const parentRuleId = document.getElementById('rule-parent-id').value || null;
     const triggerType = triggerTypeSelect.value;
     const mediaTypeFilter = document.getElementById('rule-media-filter').value;
     const matchType = document.getElementById('rule-match-type').value;
@@ -354,6 +369,7 @@ function initRules() {
 
     const payload = {
       name,
+      parentRuleId,
       triggerType,
       mediaTypeFilter,
       matchType,
@@ -441,6 +457,13 @@ async function loadRules() {
         `;
       }
 
+      let parentRuleBadge = '';
+      if (rule.parentRuleId) {
+        const parent = currentRules.find(r => r.id === rule.parentRuleId);
+        const parentName = parent ? parent.name : rule.parentRuleId;
+        parentRuleBadge = `<span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3);">↳ Submenú de: ${escapeHtml(parentName)}</span>`;
+      }
+
       return `
         <div class="rule-card ${rule.enabled === false ? 'disabled' : ''}" data-id="${rule.id}">
           <div class="rule-card-header">
@@ -475,6 +498,7 @@ async function loadRules() {
             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
               <span class="badge-tag badge-tag-interesado">🏷️ ${escapeHtml(rule.leadTag || 'Lead')}</span>
               ${rule.pauseBot ? '<span class="badge-tag badge-tag-requiereasesor">👤 Pausa para Asesor</span>' : ''}
+              ${parentRuleBadge}
             </div>
             <div class="rule-card-actions">
               <button class="icon-btn edit-rule-btn" data-id="${rule.id}" title="Editar regla">
@@ -499,6 +523,9 @@ async function loadRules() {
         document.getElementById('modal-rule-title').textContent = 'Editar Ruta de Respuesta';
         document.getElementById('modal-rule-id').value = rule.id;
         document.getElementById('rule-name').value = rule.name;
+
+        populateParentRuleSelect(rule.id);
+        document.getElementById('rule-parent-id').value = rule.parentRuleId || '';
 
         const trigSelect = document.getElementById('rule-trigger-type');
         trigSelect.value = rule.triggerType || 'text';

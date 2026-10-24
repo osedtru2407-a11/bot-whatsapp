@@ -252,6 +252,7 @@ async function handleIncomingMessage(msg) {
             tag: isAudioMsg ? 'Audio / Nota de voz' : (receivedMedia ? 'Comprobante/Archivo Enviado' : 'Nuevo'),
             lastMessage: displayMsg,
             lastInteraction: new Date().toISOString(),
+            lastSentRuleId: null,
             humanPaused: false,
             receivedFiles: []
         };
@@ -276,10 +277,11 @@ async function handleIncomingMessage(msg) {
         return;
     }
 
-    // 3. Buscar regla coincidente (considerando texto y/o tipo de archivo)
+    // 3. Buscar regla coincidente (considerando texto y/o tipo de archivo y contexto del último mensaje del bot)
     const hasMediaFlag = Boolean(receivedMedia);
     const mediaMimetype = receivedMedia ? receivedMedia.mimetype : (isAudioType ? 'audio/ogg' : '');
-    const matchedRule = matchRule(text, appData.rules, hasMediaFlag, mediaMimetype);
+    const context = { lastSentRuleId: lead ? lead.lastSentRuleId : null };
+    const matchedRule = matchRule(text, appData.rules, hasMediaFlag, mediaMimetype, context);
 
     if (matchedRule) {
         console.log(`Regla activada: "${matchedRule.name}" para contacto ${senderPhone}`);
@@ -293,6 +295,7 @@ async function handleIncomingMessage(msg) {
             console.log(`Bot pausado para ${senderPhone} debido a la regla "${matchedRule.name}".`);
         }
 
+        lead.lastSentRuleId = matchedRule.id;
         saveData(appData);
 
         // Simular escritura natural
@@ -349,6 +352,7 @@ async function handleIncomingMessage(msg) {
                         ? `🎤 [Nota de voz]: "${aiReply.replace(/\n/g, ' ').slice(0, 70)}..."`
                         : aiReply.replace(/\n/g, ' ').slice(0, 70);
                     lead.lastInteraction = new Date().toISOString();
+                    lead.lastSentRuleId = 'gemini';
                     saveData(appData);
                 }
             }
@@ -359,10 +363,17 @@ async function handleIncomingMessage(msg) {
             }
             if (appData.settings.fallbackMessage) {
                 await msg.reply(appData.settings.fallbackMessage);
+                if (lead) {
+                    lead.lastSentRuleId = 'fallback';
+                    saveData(appData);
+                }
             }
         }
 
     } else if (appData.settings.fallbackMessage && (text.length > 1 || hasMediaFlag)) {
+        if (lead) {
+            lead.lastSentRuleId = 'fallback';
+        }
         saveData(appData);
         if (appData.settings.simulateTyping) {
             try {
@@ -407,12 +418,107 @@ async function sendRuleResponse(msg, rule) {
     }
 }
 
-// Algoritmo de coincidencia de reglas (Soporta Texto, Archivos o Ambos)
-function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normalizeAccents(str) {
+    return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
+ * Evalúa si un trigger (palabra clave o número de opción) coincide con el texto del mensaje.
+ * - Si el trigger es puramente numérico (ej: "3", "1", "2"):
+ *   Representa una opción de menú/submenú y SOLAMENTE coincide si:
+ *   1) El último mensaje enviado al usuario corresponde a la regla padre (rule.parentRuleId o por defecto 'rule-welcome').
+ *   2) El usuario escribió ese número solo (ej: "3", "3.", "#3", "opcion 3", "el 3", "3️⃣").
+ *   NUNCA se activa si el bot no envió previamente ese menú específico (ej: si el chatbot preguntó cantidades "3"
+ *   o si está en medio de una conversación general o en otro submenú diferente), ni si forma parte de otro número ("365", "30").
+ * - Si el trigger es texto (ej: "pagos", "nequi", "como pago", "suscripciones"):
+ *   Evalúa según el matchType ('exact', 'starts_with', 'contains_any') respetando límites de palabra
+ *   y normalizando tildes para evitar falsos positivos (ej: 'pago' no se activa con 'apagon').
+ */
+function checkTriggerMatch(text, trigger, matchType = 'contains_any', context = {}, rule = {}) {
+    const rawText = (text || '').trim();
+    const rawTrigger = (trigger || '').trim();
+    if (!rawText || !rawTrigger) return false;
+
+    // Normalizar espacios múltiples
+    const lowerText = rawText.toLowerCase().replace(/\s+/g, ' ');
+    const lowerTrigger = rawTrigger.toLowerCase().replace(/\s+/g, ' ');
+
+    // Caso 1: El trigger es un número puro (ej: '1', '2', '3', etc.)
+    const isNumericTrigger = /^\d+$/.test(lowerTrigger);
+
+    if (isNumericTrigger) {
+        // REGLA FUNDAMENTAL DE SUBMENÚS:
+        // Si la regla tiene un parentRuleId definido, SOLAMENTE coincide si el último mensaje del bot fue esa regla padre.
+        // Si la regla NO tiene parentRuleId, por compatibilidad con menús principales requiere 'rule-welcome'.
+        const requiredParentId = rule.parentRuleId || 'rule-welcome';
+        if (!context || context.lastSentRuleId !== requiredParentId) {
+            return false;
+        }
+
+        // A. Mensaje que contiene solo el número (limpiando posibles signos comunes como #, ., !, ?, paréntesis, emojis)
+        // Por ejemplo: '3', ' 3 ', '3.', '#3', '(3)', '3!', '3️⃣'
+        const cleanNoEmojis = lowerText.replace(/[\uFE0F\u20E3]/g, '');
+        const cleanNoPunct = cleanNoEmojis.replace(/^[#\s([<]+|[.\s!?:)\]>]+$/g, '');
+        if (cleanNoPunct === lowerTrigger) return true;
+
+        // B. Elección explícita de la opción del menú (ej: 'opcion 3', 'opción 3', 'el 3', 'la 3', 'numero 3', 'n° 3')
+        const escaped = escapeRegExp(lowerTrigger);
+        const menuOptionRegex = new RegExp(
+            '^(?:(?:hola|buenas|por\\s+favor)?\\s*(?:opci[oó]n|n[uú]mero|num|n°|no\\.?|item|el|la)?\\s*#?\\s*)' +
+            escaped +
+            '[.\\s!?:)]*$',
+            'iu'
+        );
+        if (menuOptionRegex.test(cleanNoEmojis)) return true;
+
+        // Si no es el número solo ni opción explícita (ej: 'office 365', 'tienen office 365?', '365 días'), NO coincide.
+        return false;
+    }
+
+    // Caso 2: Palabras clave de texto. Normalización de tildes (ej: 'catalogo' coincide con 'catálogo')
+    const normText = normalizeAccents(lowerText);
+    const normTrigger = normalizeAccents(lowerTrigger);
+
+    if (matchType === 'exact') {
+        const cleanNoPunct = normText.replace(/^[¿¡!?,.:;\s]+|[¿¡!?,.:;\s]+$/g, '');
+        return cleanNoPunct === normTrigger;
+    }
+
+    if (matchType === 'starts_with') {
+        const escaped = escapeRegExp(normTrigger);
+        const startsRegex = new RegExp('^(?:[¿¡!?,.:;\\s]*)(?:' + escaped + ')(?:(?![\\p{L}\\p{N}])|$)', 'iu');
+        return startsRegex.test(normText);
+    }
+
+    // Default: 'contains_any'
+    // Comprobamos con límites de palabra para evitar falsos positivos
+    // (ej: 'pago' no debe coincidir con 'apagon', pero 'como pago' sí debe coincidir con 'hola como pago')
+    const escaped = escapeRegExp(normTrigger);
+    const wordBoundaryRegex = new RegExp('(?<![\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'iu');
+    return wordBoundaryRegex.test(normText);
+}
+
+// Algoritmo de coincidencia de reglas (Soporta Texto, Archivos o Ambos con Contexto de Estado de Conversación y Submenús)
+function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = {}) {
     const activeRules = rules.filter(r => r.enabled !== false);
     const isAudioMedia = mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg');
+    const lastSentRuleId = context.lastSentRuleId || null;
 
-    for (const rule of activeRules) {
+    // Prioridad 1: Reglas contextuales cuyo parentRuleId coincide exactamente con el último menú enviado (submenús)
+    // Prioridad 2: Reglas globales
+    const sortedRules = [...activeRules].sort((a, b) => {
+        const aMatchesContext = Boolean(a.parentRuleId && a.parentRuleId === lastSentRuleId);
+        const bMatchesContext = Boolean(b.parentRuleId && b.parentRuleId === lastSentRuleId);
+        if (aMatchesContext && !bMatchesContext) return -1;
+        if (!aMatchesContext && bMatchesContext) return 1;
+        return 0;
+    });
+
+    for (const rule of sortedRules) {
         const triggerType = rule.triggerType || 'text'; // 'text', 'media', 'both'
 
         // A. Coincidencia por archivo recibido
@@ -421,7 +527,6 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
             let mediaMatches = false;
 
             if (filter === 'any') {
-                // Las reglas genéricas no deben interceptar notas de voz dirigidas a la IA
                 if (!isAudioMedia) {
                     mediaMatches = true;
                 }
@@ -442,12 +547,11 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
 
             if (mediaMatches) {
                 const triggers = (rule.triggers || []).map(t => t.trim().toLowerCase()).filter(Boolean);
-                // Si la regla no exige palabras clave o si no hay texto, se dispara
                 if (!triggers.length || !text) {
                     return rule;
                 }
-                // Si tiene palabras clave requeridas, comprobar si el caption coincide
-                if (triggers.some(t => text.includes(t))) {
+                const matchType = rule.matchType || 'contains_any';
+                if (triggers.some(t => checkTriggerMatch(text, t, matchType, context, rule))) {
                     return rule;
                 }
                 if (triggerType === 'media' || rule.matchType === 'on_media') {
@@ -461,13 +565,9 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '') {
             const triggers = (rule.triggers || []).map(t => t.trim().toLowerCase()).filter(Boolean);
             if (!triggers.length) continue;
 
-            if (rule.matchType === 'exact') {
-                if (triggers.some(t => t === text)) return rule;
-            } else if (rule.matchType === 'starts_with') {
-                if (triggers.some(t => text.startsWith(t))) return rule;
-            } else {
-                // Default: 'contains_any'
-                if (triggers.some(t => text.includes(t))) return rule;
+            const matchType = rule.matchType || 'contains_any';
+            if (triggers.some(t => checkTriggerMatch(text, t, matchType, context, rule))) {
+                return rule;
             }
         }
     }
@@ -645,7 +745,7 @@ app.get('/api/rules', (req, res) => {
 });
 
 app.post('/api/rules', (req, res) => {
-    const { name, triggers, response, matchType, leadTag, pauseBot, triggerType, mediaTypeFilter, media } = req.body;
+    const { name, triggers, response, matchType, leadTag, pauseBot, triggerType, mediaTypeFilter, media, parentRuleId } = req.body;
     if (!name || (!response && !media)) {
         return res.status(400).json({ error: 'Campos requeridos: name y (response o archivo adjunto)' });
     }
@@ -654,6 +754,7 @@ app.post('/api/rules', (req, res) => {
         id: 'rule-' + Date.now(),
         name,
         enabled: true,
+        parentRuleId: parentRuleId || null,
         triggerType: triggerType || 'text', // 'text', 'media', 'both'
         mediaTypeFilter: mediaTypeFilter || 'any', // 'any', 'image', 'document', 'audio'
         matchType: matchType || 'contains_any',
@@ -673,9 +774,14 @@ app.put('/api/rules/:id', (req, res) => {
     const index = appData.rules.findIndex(r => r.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Regla no encontrada' });
 
+    const updatedParentRuleId = req.body.parentRuleId !== undefined 
+        ? (req.body.parentRuleId || null) 
+        : appData.rules[index].parentRuleId;
+
     appData.rules[index] = { 
         ...appData.rules[index], 
         ...req.body, 
+        parentRuleId: updatedParentRuleId,
         id: req.params.id 
     };
     saveData(appData);
@@ -772,6 +878,9 @@ app.post('/api/leads/:phone/toggle-pause', (req, res) => {
     res.json({ success: true, humanPaused: lead.humanPaused });
 });
 
+// Variable en memoria para rastrear el estado de conversación del simulador en vivo
+let simulatorLastSentRuleId = null;
+
 // 9. Simulador en Vivo (Soporta texto, simulación de archivo recibido, notas de voz y Gemini AI)
 app.post('/api/simulate', async (req, res) => {
     const rawText = (req.body.text || '').trim();
@@ -782,8 +891,10 @@ app.post('/api/simulate', async (req, res) => {
 
     const isAudioSim = Boolean(audio || (mediaMimetype && (mediaMimetype.startsWith('audio/') || mediaMimetype.includes('ogg'))));
 
-    const matched = matchRule(text, appData.rules, hasMedia || isAudioSim, mediaMimetype || (isAudioSim ? 'audio/ogg' : ''));
+    const context = { lastSentRuleId: simulatorLastSentRuleId };
+    const matched = matchRule(text, appData.rules, hasMedia || isAudioSim, mediaMimetype || (isAudioSim ? 'audio/ogg' : ''), context);
     if (matched) {
+        simulatorLastSentRuleId = matched.id;
         res.json({
             matched: true,
             ruleName: matched.name,
@@ -793,6 +904,7 @@ app.post('/api/simulate', async (req, res) => {
             pauseBot: matched.pauseBot
         });
     } else if (appData.settings.geminiEnabled !== false && geminiService.isConfigured() && (rawText || audio)) {
+        simulatorLastSentRuleId = 'gemini';
         try {
             const businessName = appData.settings.businessName || 'Mi Negocio';
             const geminiInput = audio ? {
@@ -814,6 +926,7 @@ app.post('/api/simulate', async (req, res) => {
             });
         }
     } else {
+        simulatorLastSentRuleId = 'fallback';
         res.json({
             matched: false,
             response: appData.settings.fallbackMessage || 'El bot no tiene una respuesta configurada para este mensaje.'
@@ -825,6 +938,9 @@ app.post('/api/simulate', async (req, res) => {
 app.post('/api/gemini/reset', (req, res) => {
     const sessionId = req.body.sessionId || 'simulator-session';
     geminiService.resetSession(sessionId);
+    if (sessionId === 'simulator-session') {
+        simulatorLastSentRuleId = null;
+    }
     res.json({ success: true, message: `Sesión de ${sessionId} reiniciada.` });
 });
 
