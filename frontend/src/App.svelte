@@ -24,6 +24,7 @@
   import RuleModal from './components/rules/RuleModal.svelte';
   import ScheduleModal from './components/scheduler/ScheduleModal.svelte';
   import LeadFilesModal from './components/leads/LeadFilesModal.svelte';
+  import LeadChatModal from './components/leads/LeadChatModal.svelte';
   import LibraryUploadModal from './components/library/LibraryUploadModal.svelte';
   import LibraryViewModal from './components/library/LibraryViewModal.svelte';
   import InviteUserModal from './components/team/InviteUserModal.svelte';
@@ -110,6 +111,7 @@
   <RuleModal />
   <ScheduleModal />
   <LeadFilesModal />
+  <LeadChatModal />
   <LibraryUploadModal />
   <LibraryViewModal />
   <InviteUserModal />

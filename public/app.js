@@ -18,7 +18,7 @@ let currentUser = null;
 let currentPermissions = new Set();
 
 const originalFetch = window.fetch;
-window.fetch = function(url, options = {}) {
+window.fetch = function (url, options = {}) {
   options = options || {};
   options.headers = options.headers || {};
 
@@ -176,7 +176,7 @@ function initCompanyManager() {
 
       try {
         await fetch(`/api/companies/${currentCompanyId}/select`, { method: 'POST' });
-      } catch (e) {}
+      } catch (e) { }
 
       const comp = currentCompanies.find(c => c.id === currentCompanyId);
       showToast(`Empresa activa: ${comp ? comp.name : currentCompanyId}`);
@@ -750,10 +750,10 @@ function renderFilePreview(container, mediaObj, onRemove) {
 
   container.innerHTML = `
     <div class="file-preview-left">
-      ${isImage 
-        ? `<img src="${mediaObj.url}" alt="${escapeHtml(mediaObj.filename)}" class="file-preview-thumb">`
-        : `<div class="file-icon-placeholder">${icon}</div>`
-      }
+      ${isImage
+      ? `<img src="${mediaObj.url}" alt="${escapeHtml(mediaObj.filename)}" class="file-preview-thumb">`
+      : `<div class="file-icon-placeholder">${icon}</div>`
+    }
       <div class="file-preview-meta">
         <span class="file-preview-name" title="${escapeHtml(mediaObj.filename)}">${escapeHtml(mediaObj.filename)}</span>
         <span class="file-preview-size">${formatBytes(mediaObj.size || 0)} • ${escapeHtml(mediaObj.mimetype || 'Archivo')}</span>
@@ -1616,7 +1616,7 @@ async function loadLeads() {
       const tagClass = 'badge-tag-' + (l.tag || 'nuevo').toLowerCase().replace(/\s+/g, '');
       const filesCount = (l.receivedFiles && Array.isArray(l.receivedFiles)) ? l.receivedFiles.length : 0;
 
-      const filesColHtml = filesCount > 0 
+      const filesColHtml = filesCount > 0
         ? `<button class="btn-view-files" data-phone="${escapeHtml(l.phone)}">📁 Ver ${filesCount} archivo(s)</button>`
         : `<span class="badge-no-files">Sin archivos</span>`;
 
@@ -1642,9 +1642,14 @@ async function loadLeads() {
             ${l.humanPaused ? '<span style="color: #fb7185; font-weight: 600;">🛑 Bot Pausado (Humano)</span>' : '<span style="color: #4ade80;">🤖 Bot Activo</span>'}
           </td>
           <td>
-            <button class="btn btn-outline-sm btn-toggle-lead" data-phone="${l.phone}">
-              ${l.humanPaused ? 'Reactivar Bot' : 'Pausar Bot'}
-            </button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button class="btn btn-outline-sm btn-view-chat" data-phone="${escapeHtml(l.phone)}" style="color: #38bdf8; border-color: rgba(56,189,248,0.3);">
+                💬 Ver Chat
+              </button>
+              <button class="btn btn-outline-sm btn-toggle-lead" data-phone="${l.phone}">
+                ${l.humanPaused ? 'Reactivar' : 'Pausar'}
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -1671,6 +1676,15 @@ async function loadLeads() {
         const phone = btn.getAttribute('data-phone');
         const lead = currentLeads.find(l => l.phone === phone);
         if (lead) openLeadFilesModal(lead);
+      });
+    });
+
+    // Abrir historial de chat
+    tbody.querySelectorAll('.btn-view-chat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const phone = btn.getAttribute('data-phone');
+        const lead = currentLeads.find(l => l.phone === phone);
+        if (lead) openLeadChatModal(lead);
       });
     });
 
@@ -1736,14 +1750,191 @@ function openLeadFilesModal(lead) {
   modal.classList.remove('hidden');
 }
 
+let activeChatPhone = null;
+let activeChatSSE = null;
+let activeChatPoll = null;
+
+async function openLeadChatModal(lead) {
+  const modal = document.getElementById('lead-chat-modal');
+  if (!modal) return;
+  activeChatPhone = lead.phone;
+
+  // Limpiar conexiones previas
+  if (activeChatSSE) {
+    try { activeChatSSE.close(); } catch (e) { }
+    activeChatSSE = null;
+  }
+  if (activeChatPoll) {
+    clearInterval(activeChatPoll);
+    activeChatPoll = null;
+  }
+
+  const title = document.getElementById('lead-chat-title');
+  const subtitle = document.getElementById('lead-chat-subtitle');
+  const container = document.getElementById('lead-chat-messages-container');
+  const badgesBox = document.getElementById('lead-chat-status-badges');
+  const btnTogglePause = document.getElementById('btn-lead-chat-toggle-pause');
+  const btnRefresh = document.getElementById('btn-lead-chat-refresh');
+  const formReply = document.getElementById('lead-chat-reply-form');
+  const inputReply = document.getElementById('lead-chat-reply-input');
+
+  title.textContent = `💬 Conversación con ${lead.name || 'Cliente'}`;
+  subtitle.textContent = `+${lead.phone} • Etiqueta: ${lead.tag || 'Nuevo'}`;
+
+  const renderBadges = (paused, isLive) => {
+    badgesBox.innerHTML = `
+      <span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 9999px; ${paused ? 'background: rgba(244,63,94,0.15); color: #fb7185;' : 'background: rgba(34,197,94,0.15); color: #4ade80;'}">
+        ${paused ? '🛑 Bot Pausado' : '🤖 Bot Activo'}
+      </span>
+      <span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 9999px; ${isLive ? 'background: rgba(56,189,248,0.15); color: #38bdf8;' : 'background: rgba(148,163,184,0.15); color: #cbd5e1;'}">
+        ${isLive ? '🟢 Tiempo Real Activo' : '📦 Historial Local'}
+      </span>
+    `;
+    btnTogglePause.textContent = paused ? 'Reactivar Bot' : 'Pausar Bot';
+  };
+
+  renderBadges(lead.humanPaused, false);
+
+  btnTogglePause.onclick = async () => {
+    try {
+      const res = await fetch(`/api/leads/${lead.phone}/toggle-pause`, { method: 'POST' });
+      const data = await res.json();
+      lead.humanPaused = data.humanPaused;
+      renderBadges(lead.humanPaused, true);
+      showToast(data.humanPaused ? 'Bot pausado para este cliente' : 'Bot reactivado para este cliente', 'info');
+      loadLeads();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  };
+
+  const loadMessages = async () => {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 40px;">Cargando mensajes...</div>`;
+    try {
+      const res = await fetch(`/api/leads/${lead.phone}/messages`);
+      const data = await res.json();
+      const messages = data.messages || [];
+
+      renderBadges(data.humanPaused, data.liveFetched);
+
+      if (messages.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 40px;">No hay mensajes registrados con este cliente.</div>`;
+        return;
+      }
+
+      container.innerHTML = messages.map(m => {
+        const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '';
+        const isAudio = m.type === 'ptt' || m.type === 'audio';
+        const isImg = (m.mediaUrl && !isAudio);
+
+        return `
+          <div style="display: flex; justify-content: ${m.fromMe ? 'flex-end' : 'flex-start'};">
+            <div style="max-width: 75%; padding: 8px 12px; border-radius: 8px; background: ${m.fromMe ? '#005c4b' : '#202c33'}; color: #e9edef; font-size: 13.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.3); word-break: break-word;">
+              ${isImg ? `<img src="${m.mediaUrl}" style="max-width: 220px; border-radius: 6px; display: block; margin-bottom: 6px;">` : ''}
+              ${isAudio && m.mediaUrl ? `<audio controls src="${m.mediaUrl}" style="width: 220px; height: 32px; display: block; margin-bottom: 6px;"></audio>` : ''}
+              ${m.body ? `<div>${escapeHtml(m.body)}</div>` : ''}
+              <div style="text-align: right; font-size: 10px; color: #8696a0; margin-top: 4px;">
+                ${timeStr} ${m.fromMe ? '<span style="color: #53bdeb;">✓✓</span>' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    } catch (e) {
+      container.innerHTML = `<div style="text-align: center; color: var(--accent-rose); padding: 40px;">Error cargando mensajes: ${e.message}</div>`;
+    }
+  };
+
+  btnRefresh.onclick = () => loadMessages();
+
+  // Iniciar conexión SSE en tiempo real
+  const sseUrl = `/api/leads/${encodeURIComponent(lead.phone)}/stream?companyId=${encodeURIComponent(currentCompanyId)}`;
+  try {
+    activeChatSSE = new EventSource(sseUrl);
+    activeChatSSE.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'connected') return;
+
+        const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : '';
+        const isAudio = msg.type === 'ptt' || msg.type === 'audio';
+        const isImg = (msg.mediaUrl && !isAudio);
+
+        const newMsgHtml = `
+          <div style="display: flex; justify-content: ${msg.fromMe ? 'flex-end' : 'flex-start'};">
+            <div style="max-width: 75%; padding: 8px 12px; border-radius: 8px; background: ${msg.fromMe ? '#005c4b' : '#202c33'}; color: #e9edef; font-size: 13.5px; box-shadow: 0 1px 2px rgba(0,0,0,0.3); word-break: break-word;">
+              ${isImg ? `<img src="${msg.mediaUrl}" style="max-width: 220px; border-radius: 6px; display: block; margin-bottom: 6px;">` : ''}
+              ${isAudio && msg.mediaUrl ? `<audio controls src="${msg.mediaUrl}" style="width: 220px; height: 32px; display: block; margin-bottom: 6px;"></audio>` : ''}
+              ${msg.body ? `<div>${escapeHtml(msg.body)}</div>` : ''}
+              <div style="text-align: right; font-size: 10px; color: #8696a0; margin-top: 4px;">
+                ${timeStr} ${msg.fromMe ? '<span style="color: #53bdeb;">✓✓</span>' : ''}
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (container.querySelector('.chat-empty-state') || container.textContent.includes('No hay mensajes')) {
+          container.innerHTML = '';
+        }
+        container.insertAdjacentHTML('beforeend', newMsgHtml);
+        container.scrollTop = container.scrollHeight;
+        loadLeads();
+      } catch (err) { }
+    };
+  } catch (err) { }
+
+  activeChatPoll = setInterval(() => {
+    if (!modal.classList.contains('hidden') && activeChatPhone === lead.phone) {
+      // Polling de respaldo
+    } else {
+      if (activeChatSSE) { activeChatSSE.close(); activeChatSSE = null; }
+      if (activeChatPoll) { clearInterval(activeChatPoll); activeChatPoll = null; }
+    }
+  }, 3500);
+
+  formReply.onsubmit = async (e) => {
+    e.preventDefault();
+    const text = inputReply.value.trim();
+    if (!text) return;
+    inputReply.value = '';
+
+    try {
+      const res = await fetch(`/api/leads/${lead.phone}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast('Mensaje entregado', 'success');
+      loadLeads();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  modal.classList.remove('hidden');
+  loadMessages();
+}
+
 function initLeads() {
   const modal = document.getElementById('lead-files-modal');
   const btnClose = document.getElementById('btn-close-lead-files');
   const btnCloseBtn = document.getElementById('btn-close-lead-modal-btn');
 
   const close = () => modal.classList.add('hidden');
-  btnClose.addEventListener('click', close);
-  btnCloseBtn.addEventListener('click', close);
+  btnClose?.addEventListener('click', close);
+  btnCloseBtn?.addEventListener('click', close);
+
+  const chatModal = document.getElementById('lead-chat-modal');
+  document.getElementById('btn-close-lead-chat')?.addEventListener('click', () => {
+    chatModal?.classList.add('hidden');
+    if (activeChatSSE) { activeChatSSE.close(); activeChatSSE = null; }
+    if (activeChatPoll) { clearInterval(activeChatPoll); activeChatPoll = null; }
+  });
 
   loadLeads();
 }
@@ -1792,7 +1983,7 @@ async function loadSettings() {
     currentSettings = await res.json();
 
     document.getElementById('set-biz-name').value = currentSettings.businessName || '';
-    
+
     const geminiSelect = document.getElementById('set-gemini-enabled');
     if (geminiSelect) {
       geminiSelect.value = String(currentSettings.geminiEnabled ?? true);
@@ -1820,7 +2011,7 @@ async function loadSettings() {
           statusTag.style.background = '#ef4444';
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
   } catch (e) {
     console.error('Error cargando configuración:', e);
@@ -2059,7 +2250,7 @@ function initLibrary() {
         if (!res.ok) throw new Error(data.error || 'Error al procesar el documento');
 
         showToast(`Documento convertido a Markdown: ${data.document.wordCount} palabras añadidas a la memoria`, 'success');
-        
+
         // Limpiar formulario
         form.reset();
         currentLibraryFile = null;
@@ -2282,7 +2473,7 @@ function initAuthUI() {
     e.preventDefault();
     loginErr.classList.add('hidden');
     loginErr.textContent = '';
-    
+
     const email = document.getElementById('login-identifier').value.trim();
     const password = loginPwdInput.value;
     const btnSubmit = document.getElementById('btn-submit-login');
@@ -2714,7 +2905,7 @@ function renderTeamMembersTable() {
     const isSelf = currentUser && currentUser.id === m.userId;
 
     const roleClass = m.roleId ? m.roleId : 'custom-role';
-    const statusLabel = m.status === 'active' 
+    const statusLabel = m.status === 'active'
       ? '<span class="status-badge active">● Activo</span>'
       : '<span class="status-badge pending_pwd">⚠️ Contraseña Temp.</span>';
 
