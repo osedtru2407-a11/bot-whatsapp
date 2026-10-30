@@ -43,7 +43,7 @@ function optionalAuth(req, res, next) {
         try {
             const decoded = authService.verifyToken(token);
             req.user = decoded;
-        } catch (e) {}
+        } catch (e) { }
     }
     next();
 }
@@ -138,6 +138,7 @@ function loadData() {
                     if (!comp.rules) comp.rules = [];
                     if (!comp.schedules) comp.schedules = [];
                     if (!comp.leads) comp.leads = [];
+                    comp.leads = comp.leads.filter(l => l && l.phone !== 'status@broadcast' && !String(l.phone).includes('@broadcast'));
                     if (!comp.library) comp.library = [];
                     if (!comp.settings) comp.settings = { businessName: comp.name || 'Mi Negocio', botEnabled: true };
                 });
@@ -183,8 +184,8 @@ function initCompanyWhatsAppClient(companyId) {
         const existing = companyClients.get(companyId);
         if (existing && existing.client) {
             try {
-                existing.client.destroy().catch(() => {});
-            } catch (e) {}
+                existing.client.destroy().catch(() => { });
+            } catch (e) { }
         }
     }
 
@@ -336,9 +337,24 @@ async function handleIncomingMessage(companyId, msg) {
     if (!company.settings || !company.settings.botEnabled) return;
     if (msg.fromMe) return;
 
-    if (company.settings.ignoreGroups && msg.from.includes('@g.us')) return;
+    // Ignorar estados de WhatsApp (Stories), difusiones y canales (newsletters)
+    const fromId = msg.from || '';
+    if (
+        msg.isStatus ||
+        msg.broadcast ||
+        msg.type === 'status' ||
+        fromId === 'status@broadcast' ||
+        fromId.includes('@broadcast') ||
+        fromId.includes('@newsletter') ||
+        (msg.id && msg.id.remote === 'status@broadcast')
+    ) {
+        return;
+    }
 
-    const senderPhone = msg.from.replace('@c.us', '').replace('@g.us', '');
+    if (company.settings.ignoreGroups && fromId.includes('@g.us')) return;
+
+    const senderPhone = fromId.replace('@c.us', '').replace('@g.us', '');
+    if (!senderPhone || senderPhone === 'status@broadcast') return;
     const cleanText = getCleanCaption(msg.body);
     const text = cleanText.toLowerCase();
 
@@ -413,10 +429,10 @@ async function handleIncomingMessage(companyId, msg) {
     if (!company.leads) company.leads = [];
     let lead = company.leads.find(l => l.phone === senderPhone);
     const isAudioMsg = Boolean(rawAudioMedia || isAudioType || (receivedMedia && (receivedMedia.mimetype || '').startsWith('audio/')));
-    const displayMsg = isAudioMsg 
+    const displayMsg = isAudioMsg
         ? (cleanText ? `🎤 [Nota de voz] ${cleanText}` : `🎤 [Nota de voz / Audio]`)
-        : (receivedMedia 
-            ? (cleanText ? `📎 [${receivedMedia.filename}] ${cleanText}` : `📎 [${receivedMedia.filename}]`) 
+        : (receivedMedia
+            ? (cleanText ? `📎 [${receivedMedia.filename}] ${cleanText}` : `📎 [${receivedMedia.filename}]`)
             : cleanText);
 
     if (!lead) {
@@ -479,7 +495,7 @@ async function handleIncomingMessage(companyId, msg) {
                 const delayMs = (company.settings.typingDelaySeconds || 2) * 1000;
                 await new Promise(r => setTimeout(r, delayMs));
                 await chat.clearStateTyping();
-            } catch (e) {}
+            } catch (e) { }
         }
 
         // 4. Enviar respuesta con el cliente de WhatsApp de esta empresa
@@ -499,7 +515,7 @@ async function handleIncomingMessage(companyId, msg) {
                 try {
                     chat = await msg.getChat();
                     await chat.sendStateTyping();
-                } catch (e) {}
+                } catch (e) { }
             }
 
             const businessName = company.settings.businessName || company.name || 'Mi Negocio';
@@ -513,7 +529,7 @@ async function handleIncomingMessage(companyId, msg) {
             const aiReply = await geminiService.sendMessage(sessionKey, geminiInput, businessName, company.library || []);
 
             if (chat) {
-                try { await chat.clearStateTyping(); } catch (e) {}
+                try { await chat.clearStateTyping(); } catch (e) { }
             }
 
             if (aiReply) {
@@ -521,7 +537,7 @@ async function handleIncomingMessage(companyId, msg) {
                 console.log(`[${company.name}] ✅ Respuesta de Gemini enviada a ${senderPhone}`);
 
                 if (lead) {
-                    lead.lastMessage = isAudioMsg 
+                    lead.lastMessage = isAudioMsg
                         ? `🎤 [Nota de voz]: "${aiReply.replace(/\n/g, ' ').slice(0, 70)}..."`
                         : aiReply.replace(/\n/g, ' ').slice(0, 70);
                     lead.lastInteraction = new Date().toISOString();
@@ -532,7 +548,7 @@ async function handleIncomingMessage(companyId, msg) {
         } catch (geminiErr) {
             console.error(`[${company.name}] Error al responder con Gemini:`, geminiErr.message || geminiErr);
             if (chat) {
-                try { await chat.clearStateTyping(); } catch (e) {}
+                try { await chat.clearStateTyping(); } catch (e) { }
             }
             if (company.settings.fallbackMessage) {
                 await msg.reply(company.settings.fallbackMessage);
@@ -555,7 +571,7 @@ async function handleIncomingMessage(companyId, msg) {
                 const delayMs = (company.settings.typingDelaySeconds || 2) * 1000;
                 await new Promise(r => setTimeout(r, delayMs));
                 await chat.clearStateTyping();
-            } catch (e) {}
+            } catch (e) { }
         }
         await msg.reply(company.settings.fallbackMessage);
         console.log(`[${company.name}] 💬 Respuesta por defecto enviada a ${senderPhone} (sin coincidencia de regla y biblioteca sin datos activos para Gemini)`);
@@ -689,11 +705,11 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = 
             } else if (filter === 'image' && mediaMimetype.startsWith('image/')) {
                 mediaMatches = true;
             } else if (filter === 'document' && (
-                mediaMimetype.includes('pdf') || 
-                mediaMimetype.includes('document') || 
-                mediaMimetype.includes('sheet') || 
-                mediaMimetype.includes('msword') || 
-                mediaMimetype.includes('text') || 
+                mediaMimetype.includes('pdf') ||
+                mediaMimetype.includes('document') ||
+                mediaMimetype.includes('sheet') ||
+                mediaMimetype.includes('msword') ||
+                mediaMimetype.includes('text') ||
                 mediaMimetype.includes('octet-stream')
             )) {
                 mediaMatches = true;
@@ -825,8 +841,10 @@ function resolveCompany(req, res, next) {
 
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const result = await authService.login(email, password);
+        const identifier = req.body.identifier || req.body.email || req.body.username;
+        const password = req.body.password;
+        const targetCompId = req.query.companyId || req.headers['x-company-id'] || req.body.companyId || appData.activeCompanyId;
+        const result = await authService.login(identifier, password, targetCompId);
         res.json({ success: true, ...result });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -839,7 +857,10 @@ app.post('/api/auth/register', async (req, res) => {
         const result = await authService.register(fullName, email, password, companyName);
         // Recargar datos multi-empresa
         appData = await dataStore.loadAllAppData();
-        initCompanyWhatsAppClient(result.company.id);
+        const newCompId = result.company?.id || result.activeCompanyId;
+        if (newCompId) {
+            initCompanyWhatsAppClient(newCompId);
+        }
         res.json({ success: true, ...result });
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -936,10 +957,10 @@ app.get('/api/companies', async (req, res) => {
         try {
             const userComps = await authService.getUserCompanies(req.user.id);
             allowedCompanyIds = new Set(userComps.map(c => c.id));
-        } catch (e) {}
+        } catch (e) { }
     }
 
-    const filtered = allowedCompanyIds 
+    const filtered = allowedCompanyIds
         ? appData.companies.filter(c => allowedCompanyIds.has(c.id))
         : appData.companies;
 
@@ -1228,15 +1249,15 @@ app.put('/api/rules/:id', resolveCompany, async (req, res) => {
     const index = req.company.rules.findIndex(r => r.id === req.params.id);
     if (index === -1) return res.status(404).json({ error: 'Regla no encontrada' });
 
-    const updatedParentRuleId = req.body.parentRuleId !== undefined 
-        ? (req.body.parentRuleId || null) 
+    const updatedParentRuleId = req.body.parentRuleId !== undefined
+        ? (req.body.parentRuleId || null)
         : req.company.rules[index].parentRuleId;
 
-    req.company.rules[index] = { 
-        ...req.company.rules[index], 
-        ...req.body, 
+    req.company.rules[index] = {
+        ...req.company.rules[index],
+        ...req.body,
         parentRuleId: updatedParentRuleId,
-        id: req.params.id 
+        id: req.params.id
     };
     saveData(appData);
     await dataStore.saveRuleInDb(req.companyId, req.company.rules[index]).catch(e => console.error('Error actualizando regla en DB:', e));
@@ -1468,7 +1489,7 @@ app.post('/api/library/upload', resolveCompany, async (req, res) => {
         const buffer = Buffer.from(rawBase64, 'base64');
         const customTitle = (req.body.name || '').trim();
         console.log(`[${req.company.name}] 📚 Procesando documento para biblioteca: "${filename}" (${buffer.length} bytes)...`);
-        
+
         const markdown = await libraryService.convertToMarkdown(buffer, filename);
         const stats = libraryService.calculateStats(markdown);
 
@@ -1576,6 +1597,11 @@ app.listen(PORT, async () => {
             appData = dbData;
             console.log(`🗄️ Datos cargados exitosamente desde PostgreSQL (${appData.companies.length} empresas registradas)`);
         }
+        for (const comp of appData.companies) {
+            if (comp.leads) {
+                comp.leads = comp.leads.filter(l => l && l.phone !== 'status@broadcast' && !String(l.phone).includes('@broadcast'));
+            }
+        }
     } catch (err) {
         console.error('⚠️ Aviso cargando datos iniciales de PostgreSQL:', err.message);
     }
@@ -1603,7 +1629,7 @@ async function gracefulShutdown(signal) {
     }
     try {
         await Promise.all(closePromises);
-    } catch (e) {}
+    } catch (e) { }
     console.log('✅ Clientes cerrados correctamente. Servidor detenido.');
     process.exit(0);
 }

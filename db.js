@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const pool = new Pool({
     host: process.env.PG_HOST || process.env.POSTGRES_HOST || 'localhost',
@@ -239,6 +240,42 @@ async function initDb() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_library_company ON library_documents(company_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_user ON company_users(user_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_company ON company_users(company_id);`);
+
+        // Limpiar registros espurios de estados de WhatsApp (Stories) guardados por error
+        await client.query(`DELETE FROM leads WHERE phone = 'status@broadcast' OR phone LIKE '%@broadcast%';`);
+
+        // 11. Asegurar que existe al menos un usuario administrador por defecto
+        const userCountRes = await client.query('SELECT count(*) as count FROM users');
+        if (parseInt(userCountRes.rows[0].count, 10) === 0) {
+            const defaultPass = process.env.POSTGRES_PW || 'Lajama18*..';
+            const defaultUser = (process.env.POSTGRES_USER || 'oscar').toLowerCase();
+            const defaultEmail = `${defaultUser}@admin.com`;
+            const salt = await bcrypt.genSalt(10);
+            const passwordHash = await bcrypt.hash(defaultPass, salt);
+            const adminId = 'usr_' + Date.now();
+
+            await client.query(`
+                INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password)
+                VALUES ($1, $2, $3, $4, TRUE, FALSE)
+                ON CONFLICT (email) DO NOTHING;
+            `, [adminId, defaultEmail, passwordHash, 'Oscar']);
+
+            console.log(`👤 Usuario Administrador por defecto inicializado: ${defaultEmail}`);
+        }
+
+        // Asegurar membresía de admin en empresas existentes
+        const companiesRes = await client.query('SELECT id FROM companies');
+        const adminRes = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [`${(process.env.POSTGRES_USER || 'oscar').toLowerCase()}@admin.com`]);
+        if (adminRes.rows.length > 0) {
+            const adminId = adminRes.rows[0].id;
+            for (const comp of companiesRes.rows) {
+                await client.query(`
+                    INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
+                    VALUES ($1, $2, $3, 'role_admin', TRUE, 'active')
+                    ON CONFLICT (user_id, company_id) DO NOTHING;
+                `, [`cu_${comp.id}_${adminId}`, adminId, comp.id]);
+            }
+        }
 
         await client.query('COMMIT');
         console.log('✅ Esquema relacional PostgreSQL inicializado exitosamente.');

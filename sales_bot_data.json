@@ -1,5 +1,5 @@
 {
-  "activeCompanyId": "comp_1792869695336",
+  "activeCompanyId": "default",
   "companies": [
     {
       "id": "default",
@@ -190,9 +190,9 @@
           "phone": "167675556851809@lid",
           "name": "Rubén Darío Villamil",
           "tag": "Por Pagar",
-          "lastMessage": "3",
-          "lastInteraction": "2026-10-24T18:39:24.534Z",
-          "lastSentRuleId": null,
+          "lastMessage": "En la categoría de *Gaming* tenemos disponibles los siguientes product",
+          "lastInteraction": "2026-10-25T20:47:42.790Z",
+          "lastSentRuleId": "gemini",
           "humanPaused": false,
           "receivedFiles": [
             {
@@ -237,8 +237,8 @@
           "phone": "205608842211531@lid",
           "name": "Oscar",
           "tag": "Por Pagar",
-          "lastMessage": "¡Claro que sí! Con gusto te comparto nuestras principales categorías d",
-          "lastInteraction": "2026-10-24T21:56:26.576Z",
+          "lastMessage": "¡Excelente elección! 🎬   Tenemos varias opciones para llevar *Netflix",
+          "lastInteraction": "2026-10-27T21:44:47.459Z",
           "lastSentRuleId": "gemini",
           "humanPaused": false,
           "receivedFiles": [
@@ -403,6 +403,16 @@
       "rules": [],
       "leads": [
         {
+          "phone": "205608842211531@lid",
+          "name": "Oscar",
+          "tag": "Nuevo",
+          "lastMessage": "¡Hola! 👋 ¡Bienvenido a *Academia Digital Pro Pluss*!   ¿Cómo estás? ¿",
+          "lastInteraction": "2026-10-24T22:03:20.078Z",
+          "lastSentRuleId": "gemini",
+          "humanPaused": false,
+          "receivedFiles": []
+        },
+        {
           "phone": "167675556851809@lid",
           "name": "Rubén Darío Villamil",
           "tag": "Nuevo",
@@ -411,31 +421,10 @@
           "lastSentRuleId": "fallback",
           "humanPaused": false,
           "receivedFiles": []
-        },
-        {
-          "phone": "205608842211531@lid",
-          "name": "Oscar",
-          "tag": "Nuevo",
-          "lastMessage": "¡Claro que sí! 📱 Te comparto las categorías principales de productos ",
-          "lastInteraction": "2026-10-24T21:57:55.827Z",
-          "lastSentRuleId": "gemini",
-          "humanPaused": false,
-          "receivedFiles": []
         }
       ],
       "schedules": [],
-      "library": [
-        {
-          "id": "doc_1792872580477",
-          "name": "DigitalPass_Lista_Precios_Oficial",
-          "originalFilename": "DigitalPass_Lista_Precios_Oficial.docx",
-          "wordCount": 720,
-          "charCount": 5124,
-          "size": 32408,
-          "active": true,
-          "createdAt": "2026-10-24T20:09:40.478Z"
-        }
-      ]
+      "library": []
     }
   ]
 }
