@@ -220,6 +220,21 @@ async function initDb() {
             );
         `);
 
+        // 10. Tabla de Historial de Mensajes de Chat
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS messages (
+                id VARCHAR(150) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                phone VARCHAR(100) NOT NULL,
+                from_me BOOLEAN DEFAULT FALSE,
+                body TEXT,
+                media_url TEXT,
+                media_mimetype VARCHAR(100),
+                message_type VARCHAR(50) DEFAULT 'chat',
+                timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        `);
+
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
             await client.query(`
@@ -240,6 +255,8 @@ async function initDb() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_library_company ON library_documents(company_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_user ON company_users(user_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_company ON company_users(company_id);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_company_phone ON messages(company_id, phone);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);`);
 
         // Limpiar registros espurios de estados de WhatsApp (Stories) guardados por error
         await client.query(`DELETE FROM leads WHERE phone = 'status@broadcast' OR phone LIKE '%@broadcast%';`);

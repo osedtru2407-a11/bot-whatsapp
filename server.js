@@ -172,6 +172,26 @@ let appData = loadData();
 // Mapa de instancias de WhatsApp por empresa: Map<companyId, { client, status, qrCode, clientInfo }>
 const companyClients = new Map();
 
+// Clientes SSE para transmisión de chat en tiempo real: Map<`${companyId}_${phone}`, Set<res>>
+const chatSSEClients = new Map();
+
+function broadcastChatMessage(companyId, phone, messageData) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone) return;
+    const key = `${companyId}_${cleanPhone}`;
+    const clients = chatSSEClients.get(key);
+    if (clients && clients.size > 0) {
+        const payload = `data: ${JSON.stringify(messageData)}\n\n`;
+        for (const clientRes of clients) {
+            try {
+                clientRes.write(payload);
+            } catch (e) {
+                clients.delete(clientRes);
+            }
+        }
+    }
+}
+
 function initCompanyWhatsAppClient(companyId) {
     const company = appData.companies.find(c => c.id === companyId);
     if (!company) {
@@ -281,6 +301,31 @@ function initCompanyWhatsAppClient(companyId) {
         } catch (err) {
             console.error(`[Empresa: ${company.name}] Error procesando mensaje entrante:`, err);
         }
+    });
+
+    clientInstance.on('message_create', async (msg) => {
+        try {
+            // Detectar mensajes enviados desde el teléfono físico u otro cliente WhatsApp
+            if (msg.fromMe) {
+                const toId = msg.to || '';
+                const recipientPhone = toId.replace('@c.us', '').replace('@g.us', '');
+                if (recipientPhone && recipientPhone !== 'status@broadcast' && !toId.includes('@g.us')) {
+                    const isAudio = msg.type === 'ptt' || msg.type === 'audio';
+                    const text = msg.body || (msg.hasMedia ? (isAudio ? '🎤 [Nota de voz]' : '📎 [Archivo adjunto]') : '');
+                    if (text) {
+                        dataStore.saveMessageInDb(companyId, recipientPhone, true, text, null, null, msg.type || 'chat', msg.id?._serialized);
+                        broadcastChatMessage(companyId, recipientPhone, {
+                            id: msg.id?._serialized || `out_${Date.now()}`,
+                            fromMe: true,
+                            body: text,
+                            timestamp: msg.timestamp ? (msg.timestamp > 1e11 ? msg.timestamp : msg.timestamp * 1000) : Date.now(),
+                            type: msg.type || 'chat',
+                            hasMedia: Boolean(msg.hasMedia)
+                        });
+                    }
+                }
+            }
+        } catch (e) { }
     });
 
     clientInstance.initialize().catch((err) => {
@@ -460,6 +505,23 @@ async function handleIncomingMessage(companyId, msg) {
         lead.receivedFiles.unshift(receivedMedia);
     }
 
+    // Registrar mensaje entrante en historial de base de datos
+    dataStore.saveMessageInDb(companyId, senderPhone, false, cleanText || displayMsg, receivedMedia?.url, receivedMedia?.mimetype, msg.type, msg.id?._serialized);
+
+    // Transmitir en tiempo real a la vista del chat abierta
+    broadcastChatMessage(companyId, senderPhone, {
+        id: msg.id?._serialized || `in_${Date.now()}`,
+        fromMe: false,
+        author: msg.author || null,
+        body: cleanText || displayMsg,
+        timestamp: Date.now(),
+        type: msg.type || 'chat',
+        hasMedia: Boolean(receivedMedia),
+        mediaUrl: receivedMedia?.url || null,
+        mediaMimetype: receivedMedia?.mimetype || null,
+        filename: receivedMedia?.filename || null
+    });
+
     if (lead.humanPaused) {
         console.log(`[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`);
         persistLead(companyId, lead);
@@ -535,6 +597,15 @@ async function handleIncomingMessage(companyId, msg) {
             if (aiReply) {
                 await msg.reply(aiReply);
                 console.log(`[${company.name}] ✅ Respuesta de Gemini enviada a ${senderPhone}`);
+                dataStore.saveMessageInDb(companyId, senderPhone, true, aiReply, null, null, 'chat');
+                broadcastChatMessage(companyId, senderPhone, {
+                    id: `gemini_${Date.now()}`,
+                    fromMe: true,
+                    body: aiReply,
+                    timestamp: Date.now(),
+                    type: 'chat',
+                    hasMedia: false
+                });
 
                 if (lead) {
                     lead.lastMessage = isAudioMsg
@@ -574,6 +645,15 @@ async function handleIncomingMessage(companyId, msg) {
             } catch (e) { }
         }
         await msg.reply(company.settings.fallbackMessage);
+        dataStore.saveMessageInDb(companyId, senderPhone, true, company.settings.fallbackMessage, null, null, 'chat');
+        broadcastChatMessage(companyId, senderPhone, {
+            id: `fallback_${Date.now()}`,
+            fromMe: true,
+            body: company.settings.fallbackMessage,
+            timestamp: Date.now(),
+            type: 'chat',
+            hasMedia: false
+        });
         console.log(`[${company.name}] 💬 Respuesta por defecto enviada a ${senderPhone} (sin coincidencia de regla y biblioteca sin datos activos para Gemini)`);
     } else {
         persistLead(companyId, lead);
@@ -602,13 +682,33 @@ async function sendRuleResponse(companyId, msg, rule) {
     const holder = companyClients.get(companyId);
     const clientInstance = holder ? holder.client : null;
 
+    const targetPhone = (msg.from || '').replace('@c.us', '').replace('@g.us', '');
     if (mediaToSend && clientInstance) {
         console.log(`📤 Enviando archivo adjunto "${rule.media.filename || 'archivo'}" a ${msg.from}...`);
         await clientInstance.sendMessage(msg.from, mediaToSend, {
             caption: rule.response || undefined
         });
+        dataStore.saveMessageInDb(companyId, targetPhone, true, rule.response, rule.media?.url, rule.media?.mimetype, 'chat');
+        broadcastChatMessage(companyId, targetPhone, {
+            id: `rule_${Date.now()}`,
+            fromMe: true,
+            body: rule.response,
+            timestamp: Date.now(),
+            type: 'chat',
+            hasMedia: Boolean(mediaToSend),
+            mediaUrl: rule.media?.url || null
+        });
     } else {
         await msg.reply(rule.response);
+        dataStore.saveMessageInDb(companyId, targetPhone, true, rule.response, null, null, 'chat');
+        broadcastChatMessage(companyId, targetPhone, {
+            id: `rule_${Date.now()}`,
+            fromMe: true,
+            body: rule.response,
+            timestamp: Date.now(),
+            type: 'chat',
+            hasMedia: false
+        });
     }
 }
 
@@ -1203,7 +1303,28 @@ app.post('/api/send', resolveCompany, async (req, res) => {
             result = await holder.client.sendMessage(chatId, message);
         }
 
-        res.json({ success: true, message: `Mensaje entregado a ${cleanPhone}`, id: result.id?._serialized });
+        const msgSerializedId = result.id?._serialized || null;
+        dataStore.saveMessageInDb(req.companyId, cleanPhone, true, message || '', media?.url, media?.mimetype, 'chat', msgSerializedId);
+        broadcastChatMessage(req.companyId, cleanPhone, {
+            id: msgSerializedId || `send_${Date.now()}`,
+            fromMe: true,
+            body: message || (media ? '📎 Archivo enviado' : ''),
+            timestamp: Date.now(),
+            type: 'chat',
+            hasMedia: Boolean(media),
+            mediaUrl: media?.url || null
+        });
+
+        if (!req.company.leads) req.company.leads = [];
+        let lead = req.company.leads.find(l => l.phone === cleanPhone);
+        if (lead) {
+            lead.lastMessage = message || (media ? '📎 Archivo enviado' : '');
+            lead.lastInteraction = new Date().toISOString();
+            saveData(appData);
+            dataStore.upsertLeadInDb(req.companyId, lead).catch(() => {});
+        }
+
+        res.json({ success: true, message: `Mensaje entregado a ${cleanPhone}`, id: msgSerializedId });
     } catch (err) {
         console.error('Error enviando mensaje directo:', err);
         res.status(500).json({ error: err.message || 'Error al enviar el mensaje' });
@@ -1369,6 +1490,207 @@ app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
     await dataStore.upsertLeadInDb(req.companyId, lead).catch(e => console.error('Error actualizando pausa de lead en DB:', e));
 
     res.json({ success: true, humanPaused: lead.humanPaused });
+});
+
+// 8.1. Obtener historial de chat con un prospecto (en vivo de WhatsApp o de base de datos)
+app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
+    const rawPhone = req.params.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    if (!cleanPhone) {
+        return res.status(400).json({ error: 'Número de teléfono inválido' });
+    }
+
+    const chatId = `${cleanPhone}@c.us`;
+    let messages = [];
+    let liveFetched = false;
+
+    // 1. Intentar obtener mensajes directamente del cliente WhatsApp activo
+    const holder = companyClients.get(req.companyId);
+    if (holder && holder.status === 'ready' && holder.client) {
+        try {
+            const chat = await holder.client.getChatById(chatId);
+            if (chat) {
+                const rawMsgs = await chat.fetchMessages({ limit: 100 });
+                if (Array.isArray(rawMsgs) && rawMsgs.length > 0) {
+                    messages = rawMsgs.map(m => {
+                        const isAudio = m.type === 'ptt' || m.type === 'audio';
+                        const bodyText = m.body || (m.hasMedia ? (m._data?.caption || (isAudio ? '🎤 [Nota de voz]' : '📎 [Archivo adjunto]')) : '');
+                        return {
+                            id: m.id?._serialized || m.id?.id || `w_${m.timestamp}_${Math.random()}`,
+                            fromMe: Boolean(m.fromMe),
+                            author: m.author || null,
+                            body: bodyText,
+                            timestamp: m.timestamp ? (m.timestamp > 1e11 ? m.timestamp : m.timestamp * 1000) : Date.now(),
+                            type: m.type || 'chat',
+                            hasMedia: Boolean(m.hasMedia),
+                            mediaUrl: null
+                        };
+                    });
+                    liveFetched = true;
+                }
+            }
+        } catch (fetchErr) {
+            console.warn(`[${req.company.name}] Aviso al leer chat de WhatsApp (${cleanPhone}):`, fetchErr.message);
+        }
+    }
+
+    // 2. Si no se obtuvieron en vivo, consultar base de datos
+    const dbMessages = await dataStore.getMessagesFromDb(req.companyId, cleanPhone, 100);
+
+    // 3. Vincular archivos descargados si están en lead.receivedFiles
+    const lead = (req.company.leads || []).find(l => l.phone === cleanPhone);
+    const receivedFiles = lead?.receivedFiles || [];
+
+    if (liveFetched) {
+        messages = messages.map(m => {
+            if (m.hasMedia && !m.fromMe && receivedFiles.length > 0) {
+                const match = receivedFiles.find(f => {
+                    if (f.caption && m.body && f.caption === m.body) return true;
+                    if (f.receivedAt) {
+                        const fileTime = new Date(f.receivedAt).getTime();
+                        return Math.abs(fileTime - m.timestamp) < 90000;
+                    }
+                    return false;
+                });
+                if (match) {
+                    return { ...m, mediaUrl: match.url, mediaMimetype: match.mimetype, filename: match.filename };
+                }
+            }
+            return m;
+        });
+
+        // Respaldar mensajes en DB silenciosamente
+        for (const m of messages) {
+            dataStore.saveMessageInDb(req.companyId, cleanPhone, m.fromMe, m.body, m.mediaUrl, m.mediaMimetype, m.type, m.id).catch(() => {});
+        }
+    } else {
+        messages = dbMessages;
+    }
+
+    // 4. Fallback si no hay mensajes pero el lead tiene lastMessage registrado
+    if (messages.length === 0 && lead && lead.lastMessage) {
+        messages = [{
+            id: 'last_msg_' + Date.now(),
+            fromMe: false,
+            body: lead.lastMessage,
+            timestamp: lead.lastInteraction ? new Date(lead.lastInteraction).getTime() : Date.now(),
+            type: 'chat',
+            hasMedia: false
+        }];
+    }
+
+    res.json({
+        success: true,
+        phone: cleanPhone,
+        leadName: lead?.name || cleanPhone,
+        leadTag: lead?.tag || 'Nuevo',
+        humanPaused: Boolean(lead?.humanPaused),
+        liveFetched,
+        messages
+    });
+});
+
+// 8.2. Enviar mensaje directo dentro de la vista del chat
+app.post('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
+    const rawPhone = req.params.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const { message } = req.body;
+
+    if (!cleanPhone || !message || !message.trim()) {
+        return res.status(400).json({ error: 'Número de teléfono y mensaje son requeridos.' });
+    }
+
+    const holder = companyClients.get(req.companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+        return res.status(503).json({ error: `El WhatsApp de ${req.company.name} no está conectado todavía. Escanea el código QR primero.` });
+    }
+
+    try {
+        const chatId = `${cleanPhone}@c.us`;
+        const result = await holder.client.sendMessage(chatId, message.trim());
+        const msgId = result.id?._serialized || `msg_${Date.now()}`;
+
+        // Guardar mensaje en DB
+        dataStore.saveMessageInDb(req.companyId, cleanPhone, true, message.trim(), null, null, 'chat', msgId);
+
+        // Transmitir en tiempo real
+        broadcastChatMessage(req.companyId, cleanPhone, {
+            id: msgId,
+            fromMe: true,
+            body: message.trim(),
+            timestamp: Date.now(),
+            type: 'chat',
+            hasMedia: false
+        });
+
+        // Actualizar lead
+        if (!req.company.leads) req.company.leads = [];
+        let lead = req.company.leads.find(l => l.phone === cleanPhone);
+        if (lead) {
+            lead.lastMessage = message.trim();
+            lead.lastInteraction = new Date().toISOString();
+            saveData(appData);
+            dataStore.upsertLeadInDb(req.companyId, lead).catch(() => {});
+        }
+
+        res.json({
+            success: true,
+            message: {
+                id: msgId,
+                fromMe: true,
+                body: message.trim(),
+                timestamp: Date.now(),
+                type: 'chat',
+                hasMedia: false
+            }
+        });
+    } catch (err) {
+        console.error('Error enviando mensaje en chat:', err);
+        res.status(500).json({ error: err.message || 'Error al enviar el mensaje' });
+    }
+});
+
+// 8.3. Transmisión SSE en tiempo real de cambios en el chat
+app.get('/api/leads/:phone/stream', resolveCompany, (req, res) => {
+    const rawPhone = req.params.phone || '';
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    if (!cleanPhone) {
+        return res.status(400).end();
+    }
+
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+    });
+
+    const key = `${req.companyId}_${cleanPhone}`;
+    if (!chatSSEClients.has(key)) {
+        chatSSEClients.set(key, new Set());
+    }
+    const clientSet = chatSSEClients.get(key);
+    clientSet.add(res);
+
+    // Saludo de conexión
+    res.write(`data: ${JSON.stringify({ type: 'connected', phone: cleanPhone })}\n\n`);
+
+    // Heartbeat cada 20 segundos
+    const heartbeat = setInterval(() => {
+        try {
+            res.write(': heartbeat\n\n');
+        } catch (e) {
+            clearInterval(heartbeat);
+        }
+    }, 20000);
+
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        clientSet.delete(res);
+        if (clientSet.size === 0) {
+            chatSSEClients.delete(key);
+        }
+    });
 });
 
 // 9. Simulador en Vivo de la empresa seleccionada

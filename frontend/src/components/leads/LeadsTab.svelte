@@ -1,5 +1,5 @@
 <script>
-  import { leads, togglePauseLead, openLeadFiles } from '../../stores/leads';
+  import { leads, togglePauseLead, openLeadFiles, openLeadChat } from '../../stores/leads';
   import { hasPermission } from '../../stores/auth';
   import { formatDate } from '../../utils/formatters';
 
@@ -93,15 +93,26 @@
                 {/if}
               </td>
               <td>
-                {#if $hasPermission('leads:pause')}
+                <div class="lead-actions-row">
                   <button 
                     type="button" 
-                    class="btn btn-outline-sm btn-toggle-lead" 
-                    onclick={() => togglePauseLead(lead.phone)}
+                    class="btn btn-outline-sm btn-view-chat" 
+                    onclick={() => openLeadChat(lead)}
+                    title="Ver historial de conversación y contexto"
                   >
-                    {lead.humanPaused ? 'Reactivar Bot' : 'Pausar Bot'}
+                    💬 Ver Chat
                   </button>
-                {/if}
+                  {#if $hasPermission('leads:pause')}
+                    <button 
+                      type="button" 
+                      class="btn btn-outline-sm btn-toggle-lead" 
+                      onclick={() => togglePauseLead(lead.phone)}
+                      title={lead.humanPaused ? 'Reactivar atención automática del bot' : 'Pausar bot para atención humana'}
+                    >
+                      {lead.humanPaused ? 'Reactivar' : 'Pausar'}
+                    </button>
+                  {/if}
+                </div>
               </td>
             </tr>
           {/each}
@@ -146,5 +157,20 @@
   .date-cell {
     font-size: 0.82rem;
     color: var(--text-muted);
+  }
+
+  .lead-actions-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-view-chat {
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+  }
+  .btn-view-chat:hover {
+    background: rgba(56, 189, 248, 0.12) !important;
+    border-color: #38bdf8 !important;
   }
 </style>

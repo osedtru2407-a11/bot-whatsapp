@@ -333,6 +333,54 @@ async function deleteLibraryDocFromDb(companyId, docId) {
     await pool.query('DELETE FROM library_documents WHERE company_id = $1 AND id = $2', [companyId, docId]);
 }
 
+/**
+ * Guardar mensaje en el historial
+ */
+async function saveMessageInDb(companyId, phone, fromMe, body, mediaUrl = null, mediaMimetype = null, messageType = 'chat', customId = null) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone || (!body && !mediaUrl)) return;
+    const msgId = customId || `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    try {
+        await pool.query(`
+            INSERT INTO messages (id, company_id, phone, from_me, body, media_url, media_mimetype, message_type, timestamp)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+            ON CONFLICT (id) DO NOTHING;
+        `, [msgId, companyId, cleanPhone, Boolean(fromMe), body || '', mediaUrl, mediaMimetype, messageType]);
+    } catch (e) {
+        console.error('Error guardando mensaje en DB:', e.message);
+    }
+}
+
+/**
+ * Obtener historial de mensajes de un prospecto desde la DB
+ */
+async function getMessagesFromDb(companyId, phone, limit = 100) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone) return [];
+    try {
+        const res = await pool.query(`
+            SELECT id, from_me as "fromMe", body, media_url as "mediaUrl", media_mimetype as "mediaMimetype", message_type as "type", timestamp
+            FROM messages
+            WHERE company_id = $1 AND phone = $2
+            ORDER BY timestamp ASC
+            LIMIT $3;
+        `, [companyId, cleanPhone, limit]);
+        return res.rows.map(r => ({
+            id: r.id,
+            fromMe: Boolean(r.fromMe),
+            body: r.body,
+            mediaUrl: r.mediaUrl,
+            mediaMimetype: r.mediaMimetype,
+            type: r.type || 'chat',
+            hasMedia: Boolean(r.mediaUrl),
+            timestamp: r.timestamp ? new Date(r.timestamp).getTime() : Date.now()
+        }));
+    } catch (e) {
+        console.error('Error obteniendo mensajes de DB:', e.message);
+        return [];
+    }
+}
+
 module.exports = {
     loadAllAppData,
     createCompanyInDb,
@@ -346,5 +394,7 @@ module.exports = {
     saveScheduleInDb,
     deleteScheduleFromDb,
     saveLibraryDocInDb,
-    deleteLibraryDocFromDb
+    deleteLibraryDocFromDb,
+    saveMessageInDb,
+    getMessagesFromDb
 };
