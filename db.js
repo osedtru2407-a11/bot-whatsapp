@@ -235,6 +235,81 @@ async function initDb() {
             );
         `);
 
+        // 11. Grupos Personalizados de Difusión
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS contact_groups (
+                id VARCHAR(100) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                color VARCHAR(50) DEFAULT '#38bdf8',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        `);
+
+        // 12. Miembros de Grupos Personalizados
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS lead_group_members (
+                id VARCHAR(100) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                group_id VARCHAR(100) NOT NULL REFERENCES contact_groups(id) ON DELETE CASCADE,
+                lead_phone VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                UNIQUE(group_id, lead_phone)
+            );
+        `);
+
+        // 13. Migraciones y ampliación de schedules para campañas y grupos de difusión
+        await client.query(`
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS target_type VARCHAR(50) DEFAULT 'single';
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS target_value VARCHAR(255);
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS total_recipients INT DEFAULT 1;
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS sent_recipients INT DEFAULT 0;
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS failed_recipients INT DEFAULT 0;
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS delay_seconds INT DEFAULT 10;
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS execution_logs JSONB DEFAULT '[]'::jsonb;
+        `);
+
+        // 14. Agenda de Contactos (Directorio general separado del embudo de ventas CRM)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS contacts (
+                id VARCHAR(100) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                phone VARCHAR(100) NOT NULL,
+                name VARCHAR(255),
+                source VARCHAR(50) DEFAULT 'manual',
+                tags VARCHAR(255) DEFAULT '',
+                notes TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                UNIQUE(company_id, phone)
+            );
+        `);
+
+        // Migración automática: separar contactos importados que no hayan iniciado interacción en el embudo
+        await client.query(`
+            INSERT INTO contacts (id, company_id, phone, name, source, tags, created_at, updated_at)
+            SELECT 'cnt_' || id, company_id, phone, COALESCE(name, phone),
+                   CASE 
+                     WHEN tag ILIKE '%whatsapp%' THEN 'whatsapp'
+                     ELSE 'google_csv'
+                   END,
+                   tag, 
+                   last_interaction, 
+                   NOW()
+            FROM leads
+            WHERE (tag IN ('Importado Google', 'Importado WhatsApp', 'Agenda WhatsApp') OR tag ILIKE 'Importado%')
+            ON CONFLICT (company_id, phone) DO UPDATE SET
+                name = EXCLUDED.name,
+                source = EXCLUDED.source,
+                tags = EXCLUDED.tags;
+
+            DELETE FROM leads 
+            WHERE (tag IN ('Importado Google', 'Importado WhatsApp', 'Agenda WhatsApp') OR tag ILIKE 'Importado%')
+              AND (last_message IS NULL OR last_message = '')
+              AND (received_files IS NULL OR jsonb_array_length(received_files) = 0);
+        `);
+
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
             await client.query(`
@@ -257,6 +332,11 @@ async function initDb() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_company ON company_users(company_id);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_company_phone ON messages(company_id, phone);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_contact_groups_company ON contact_groups(company_id);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_group_members_group ON lead_group_members(group_id);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_group_members_phone ON lead_group_members(lead_phone);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_contacts_company_phone ON contacts(company_id, phone);`);
 
         // Limpiar registros espurios de estados de WhatsApp (Stories) guardados por error
         await client.query(`DELETE FROM leads WHERE phone = 'status@broadcast' OR phone LIKE '%@broadcast%';`);

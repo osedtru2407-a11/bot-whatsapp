@@ -101,12 +101,35 @@ export const api = {
   }),
   delete: (url, options) => apiRequest(url, { ...options, method: 'DELETE' }),
   upload: async (file, category = 'rules') => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('category', category);
-    return apiRequest('/api/upload', {
-      method: 'POST',
-      body: formData
+    if(file.size > 50 * 1024 * 1024) {
+      throw new Error('El archivo supera los 50 MB. Por favor elige un archivo más liviano.');
+    }
+
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
+
+    const res = await api.post('/api/upload', {
+      filename: file.name,
+      mimetype: file.type || 'application/octet-stream',
+      data: base64Data,
+      folder: category
+    });
+
+    const fileObj = res.file || {
+      url: res.url,
+      filename: res.filename || file.name,
+      mimetype: res.mimetype || file.type,
+      size: res.size || file.size
+    };
+
+    return {
+      success: true,
+      file: fileObj,
+      ...fileObj
+    };
   }
 };

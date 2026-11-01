@@ -9,6 +9,7 @@ const libraryService = require('./libraryService');
 const { initDb } = require('./db');
 const dataStore = require('./dataStore');
 const authService = require('./authService');
+const contactsService = require('./contactsService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -87,6 +88,7 @@ function createDefaultCompany(name = 'Digital Pass', id = 'default') {
         rules: [],
         schedules: [],
         leads: [],
+        groups: [],
         library: []
     };
 }
@@ -481,9 +483,12 @@ async function handleIncomingMessage(companyId, msg) {
             : cleanText);
 
     if (!lead) {
+        const cleanSender = senderPhone.replace(/\D/g, '');
+        const savedContact = (company.contacts || []).find(c => c.phone === senderPhone || (cleanSender && c.phone && c.phone.replace(/\D/g, '') === cleanSender));
+        const initialName = savedContact?.name || msg._data?.notifyName || senderPhone;
         lead = {
             phone: senderPhone,
-            name: msg._data?.notifyName || senderPhone,
+            name: initialName,
             tag: isAudioMsg ? 'Audio / Nota de voz' : (receivedMedia ? 'Comprobante/Archivo Enviado' : 'Nuevo'),
             lastMessage: displayMsg,
             lastInteraction: new Date().toISOString(),
@@ -845,12 +850,187 @@ function matchRule(text, rules, hasMedia = false, mediaMimetype = '', context = 
 }
 
 // =========================================================================
-// MOTOR DE PROGRAMACIÓN DE ENVÍOS MULTI-EMPRESA
+// MOTOR DE PROGRAMACIÓN DE ENVÍOS & DIFUSIONES MULTI-EMPRESA
 // =========================================================================
 
+async function executeScheduleCampaign(companyId, item) {
+    const company = (appData.companies || []).find(c => c.id === companyId);
+    if (!company) return;
+    const holder = companyClients.get(companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+        console.warn(`[${company.name}] ⚠️ No se puede ejecutar campaña ${item.id}: WhatsApp no está conectado.`);
+        return;
+    }
+
+    if (item.status === 'sending' || item.status === 'sent' || item.status === 'cancelled') {
+        return;
+    }
+
+    item.status = 'sending';
+    item.executionLogs = Array.isArray(item.executionLogs) ? item.executionLogs : [];
+    saveData(appData);
+    await dataStore.saveScheduleInDb(companyId, item).catch(() => { });
+
+    // 1. Resolver lista de destinatarios según targetType
+    let targetRecipients = [];
+    const targetType = item.targetType || 'single';
+    const targetValue = item.targetValue || item.recipient || '';
+
+    if (targetType === 'single') {
+        const cleanDigits = targetValue.replace(/\D/g, '');
+        if (cleanDigits) {
+            const existing = (company.leads || []).find(l => l.phone === cleanDigits || (l.phone && l.phone.replace(/\D/g, '') === cleanDigits));
+            targetRecipients.push({
+                phone: targetValue,
+                name: existing?.name || 'Cliente'
+            });
+        }
+    } else if (targetType === 'tag') {
+        const matchingLeads = (company.leads || []).filter(l =>
+            l.tag && l.tag.toLowerCase().trim() === targetValue.toLowerCase().trim() &&
+            l.phone && l.phone !== 'status@broadcast' && !l.phone.includes('@broadcast')
+        );
+        targetRecipients = matchingLeads.map(l => ({
+            phone: l.phone,
+            name: l.name || 'Cliente'
+        }));
+    } else if (targetType === 'group') {
+        const memberPhones = await dataStore.getGroupMemberPhonesFromDb(companyId, targetValue).catch(() => []);
+        targetRecipients = memberPhones.map(ph => {
+            const contact = (company.contacts || []).find(c => c.phone === ph || (c.phone && c.phone.replace(/\D/g, '') === ph.replace(/\D/g, '')));
+            const lead = (company.leads || []).find(l => l.phone === ph || (l.phone && l.phone.replace(/\D/g, '') === ph.replace(/\D/g, '')));
+            return {
+                phone: ph,
+                name: contact?.name || lead?.name || 'Cliente'
+            };
+        });
+    }
+
+    item.totalRecipients = targetRecipients.length;
+    item.sentRecipients = 0;
+    item.failedRecipients = 0;
+
+    if (targetRecipients.length === 0) {
+        item.status = 'failed';
+        item.error = 'No se encontraron destinatarios válidos para esta campaña.';
+        saveData(appData);
+        await dataStore.saveScheduleInDb(companyId, item).catch(() => { });
+        return;
+    }
+
+    console.log(`[${company.name}] 📢 Iniciando campaña de difusión "${item.name}" para ${targetRecipients.length} contactos (${targetType}: ${targetValue})...`);
+
+    // Preparar archivo adjunto si tiene
+    let mediaInstance = null;
+    if (item.media && item.media.url) {
+        const relPath = item.media.url.startsWith('/') ? item.media.url.slice(1) : item.media.url;
+        const fullPath = path.join(__dirname, 'public', relPath);
+        if (fs.existsSync(fullPath)) {
+            mediaInstance = MessageMedia.fromFilePath(fullPath);
+        } else if (item.media.url.startsWith('http')) {
+            mediaInstance = await MessageMedia.fromUrl(item.media.url).catch(() => null);
+        }
+    }
+
+    const baseDelaySec = Math.max(3, parseInt(item.delaySeconds, 10) || 10);
+
+    // Iterar secuencialmente con pausas seguras para proteger la cuenta contra baneos
+    for (let i = 0; i < targetRecipients.length; i++) {
+        // Verificar si fue cancelada por el usuario
+        if (item.status === 'cancelled') {
+            console.log(`[${company.name}] 🛑 Campaña "${item.name}" cancelada por el usuario.`);
+            break;
+        }
+
+        const recipient = targetRecipients[i];
+        try {
+            const { chatId, cleanDigits, storagePhone } = findLeadAndChatId(company, recipient.phone);
+            if (!chatId) {
+                throw new Error('Identificador de WhatsApp inválido');
+            }
+
+            // Interpolación de variables en mensaje
+            const personalizedMsg = (item.message || '')
+                .replace(/{nombre}/gi, recipient.name || 'Cliente')
+                .replace(/{name}/gi, recipient.name || 'Cliente')
+                .replace(/{telefono}/gi, recipient.phone || '')
+                .replace(/{phone}/gi, recipient.phone || '');
+
+            let result;
+            if (mediaInstance) {
+                result = await holder.client.sendMessage(chatId, mediaInstance, { caption: personalizedMsg || undefined });
+            } else {
+                result = await holder.client.sendMessage(chatId, personalizedMsg);
+            }
+
+            const msgId = result?.id?._serialized || `camp_${Date.now()}_${i}`;
+
+            // Registrar en historial de mensajes de la base de datos
+            await dataStore.saveMessageInDb(companyId, cleanDigits || storagePhone, true, personalizedMsg || (item.media ? '📎 Archivo de campaña' : ''), item.media?.url, item.media?.mimetype, 'chat', msgId);
+
+            broadcastChatMessage(companyId, cleanDigits || storagePhone, {
+                id: msgId,
+                fromMe: true,
+                body: personalizedMsg || (item.media ? '📎 Archivo de campaña' : ''),
+                timestamp: Date.now(),
+                type: 'chat',
+                hasMedia: Boolean(item.media),
+                mediaUrl: item.media?.url || null
+            });
+
+            // Actualizar lead
+            const lead = (company.leads || []).find(l => l.phone === storagePhone || (cleanDigits && l.phone === cleanDigits));
+            if (lead) {
+                lead.lastMessage = personalizedMsg || (item.media ? '📎 Archivo de campaña' : '');
+                lead.lastInteraction = new Date().toISOString();
+                dataStore.upsertLeadInDb(companyId, lead).catch(() => { });
+            }
+
+            item.sentRecipients++;
+            item.executionLogs.push({
+                phone: recipient.phone,
+                name: recipient.name,
+                status: 'sent',
+                at: new Date().toISOString()
+            });
+
+        } catch (sendErr) {
+            console.error(`[${company.name}] Error enviando a ${recipient.phone} en campaña:`, sendErr.message);
+            item.failedRecipients++;
+            item.executionLogs.push({
+                phone: recipient.phone,
+                name: recipient.name,
+                status: 'failed',
+                error: sendErr.message,
+                at: new Date().toISOString()
+            });
+        }
+
+        // Actualizar progreso persistente
+        saveData(appData);
+        await dataStore.saveScheduleInDb(companyId, item).catch(() => { });
+
+        // Pausa segura entre mensajes para evitar detección de spam (con jitter humano)
+        if (i < targetRecipients.length - 1 && item.status !== 'cancelled') {
+            const jitter = (Math.random() * 4 - 2); // +/- 2 segundos de variación humana
+            const sleepMs = Math.max(3000, Math.round((baseDelaySec + jitter) * 1000));
+            await new Promise(r => setTimeout(r, sleepMs));
+        }
+    }
+
+    if (item.status !== 'cancelled') {
+        item.status = item.sentRecipients > 0 ? 'sent' : 'failed';
+        item.sentAt = new Date().toISOString();
+        console.log(`[${company.name}] 🏁 Campaña "${item.name}" completada: ${item.sentRecipients} entregados, ${item.failedRecipients} fallidos.`);
+    }
+
+    saveData(appData);
+    await dataStore.saveScheduleInDb(companyId, item).catch(() => { });
+}
+
+// Bucle en segundo plano para verificar envíos pendientes
 setInterval(async () => {
     const now = new Date();
-    let hasChanges = false;
 
     for (const company of (appData.companies || [])) {
         const holder = companyClients.get(company.id);
@@ -860,46 +1040,13 @@ setInterval(async () => {
             if (item.status === 'pending') {
                 const scheduledDate = new Date(item.scheduledTime);
                 if (scheduledDate <= now) {
-                    console.log(`[${company.name}] ⏰ Ejecutando envío programado a ${item.recipient}: "${(item.message || '').slice(0, 30)}..."`);
-                    try {
-                        const cleanPhone = item.recipient.replace(/\D/g, '');
-                        const chatId = `${cleanPhone}@c.us`;
-
-                        if (item.media && item.media.url) {
-                            const relPath = item.media.url.startsWith('/') ? item.media.url.slice(1) : item.media.url;
-                            const fullPath = path.join(__dirname, 'public', relPath);
-                            let mediaInstance = null;
-                            if (fs.existsSync(fullPath)) {
-                                mediaInstance = MessageMedia.fromFilePath(fullPath);
-                            } else if (item.media.url.startsWith('http')) {
-                                mediaInstance = await MessageMedia.fromUrl(item.media.url);
-                            }
-
-                            if (mediaInstance) {
-                                await holder.client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
-                            } else {
-                                await holder.client.sendMessage(chatId, item.message || '');
-                            }
-                        } else {
-                            await holder.client.sendMessage(chatId, item.message);
-                        }
-
-                        item.status = 'sent';
-                        item.sentAt = new Date().toISOString();
-                        console.log(`[${company.name}] ✅ Envío programado exitoso a ${cleanPhone}`);
-                    } catch (err) {
-                        console.error(`[${company.name}] ❌ Error en envío programado a ${item.recipient}:`, err);
-                        item.status = 'failed';
-                        item.error = err.message || 'Error al enviar';
-                    }
-                    hasChanges = true;
+                    // Ejecutar de manera asíncrona sin bloquear el loop
+                    executeScheduleCampaign(company.id, item).catch(err => {
+                        console.error(`[${company.name}] Error inesperado en campaña ${item.id}:`, err);
+                    });
                 }
             }
         }
-    }
-
-    if (hasChanges) {
-        saveData(appData);
     }
 }, 10000);
 
@@ -1198,35 +1345,50 @@ app.get('/api/status', resolveCompany, (req, res) => {
 // 2. Subida de Archivos
 app.post('/api/upload', (req, res) => {
     try {
-        const { filename, mimetype, data, folder } = req.body;
+        const body = req.body || {};
+        const filename = body.filename || body.name;
+        const mimetype = body.mimetype || body.type;
+        const data = body.data || body.base64;
+        const folder = body.folder || body.category;
+
         if (!filename || !data) {
             return res.status(400).json({ error: 'Faltan parámetros: filename y data (base64) son requeridos' });
         }
 
-        const targetFolder = ['rules', 'quick', 'received'].includes(folder) ? folder : 'rules';
+        const targetFolder = ['rules', 'quick', 'received', 'library'].includes(folder) ? folder : 'rules';
+        const dirPath = path.join(UPLOADS_DIR, targetFolder);
+        if (!fs.existsSync(dirPath)) {
+            fs.mkdirSync(dirPath, { recursive: true });
+        }
+
         const cleanName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
         const uniqueFilename = `${Date.now()}_${cleanName}`;
-        const savePath = path.join(UPLOADS_DIR, targetFolder, uniqueFilename);
+        const savePath = path.join(dirPath, uniqueFilename);
 
         const cleanBase64 = data.includes(';base64,') ? data.split(';base64,').pop() : data;
         const buffer = Buffer.from(cleanBase64, 'base64');
         fs.writeFileSync(savePath, buffer);
 
-        const detectedMime = mimetype || mime.getType(savePath) || 'application/octet-stream';
+        const detectedMime = mimetype || (mime && typeof mime.getType === 'function' ? mime.getType(savePath) : null) || 'application/octet-stream';
         const fileUrl = `/uploads/${targetFolder}/${uniqueFilename}`;
 
-        res.json({
-            success: true,
-            url: fileUrl,
-            filename: cleanName,
-            mimetype: detectedMime,
-            size: buffer.length
-        });
-    } catch (e) {
-        console.error('Error en /api/upload:', e);
-        res.status(500).json({ error: e.message || 'Error al procesar el archivo subido' });
-    }
-});
+            const fileObj = {
+                url: fileUrl,
+                filename: cleanName,
+                mimetype: detectedMime,
+                size: buffer.length
+            };
+
+            res.json({
+                success: true,
+                file: fileObj,
+                ...fileObj
+            });
+        } catch (e) {
+            console.error('Error en /api/upload:', e);
+            res.status(500).json({ error: e.message || 'Error al procesar el archivo subido' });
+        }
+    });
 
 // 3. Reiniciar cliente WhatsApp de la empresa seleccionada
 app.post('/api/bot/restart', resolveCompany, async (req, res) => {
@@ -1266,6 +1428,37 @@ app.post('/api/bot/toggle', resolveCompany, (req, res) => {
     res.json({ botEnabled: req.company.settings.botEnabled });
 });
 
+// Helper universal para resolver el chatId de WhatsApp y el teléfono de almacenamiento
+function findLeadAndChatId(company, rawPhone) {
+    if (!company) return { lead: null, chatId: null, cleanDigits: '', storagePhone: rawPhone };
+    const leads = company.leads || [];
+    const raw = String(rawPhone || '').trim();
+    const cleanDigits = raw.replace(/\D/g, '');
+
+    // 1. Buscar en leads por coincidencia exacta, por dígitos o con sufijos
+    let lead = leads.find(l =>
+        l.phone === raw ||
+        (cleanDigits && l.phone === cleanDigits) ||
+        (cleanDigits && l.phone.replace(/\D/g, '') === cleanDigits) ||
+        (cleanDigits && l.phone === `${cleanDigits}@lid`) ||
+        (cleanDigits && l.phone === `${cleanDigits}@c.us`)
+    );
+
+    // 2. Determinar el chatId exacto para WhatsApp
+    let chatId = null;
+    if (raw.endsWith('@lid') || raw.endsWith('@c.us') || raw.endsWith('@g.us')) {
+        chatId = raw;
+    } else if (lead && lead.phone && (lead.phone.endsWith('@lid') || lead.phone.endsWith('@g.us') || lead.phone.endsWith('@c.us'))) {
+        chatId = lead.phone;
+    } else if (cleanDigits) {
+        chatId = `${cleanDigits}@c.us`;
+    }
+
+    const storagePhone = lead?.phone || (chatId && chatId.endsWith('@lid') ? chatId : cleanDigits || raw);
+
+    return { lead, chatId, cleanDigits, storagePhone };
+}
+
 // 5. Enviar mensaje directo / prueba inmediata con el WhatsApp de la empresa seleccionada
 app.post('/api/send', resolveCompany, async (req, res) => {
     const { phone, message, media } = req.body;
@@ -1279,8 +1472,10 @@ app.post('/api/send', resolveCompany, async (req, res) => {
     }
 
     try {
-        const cleanPhone = phone.replace(/\D/g, '');
-        const chatId = `${cleanPhone}@c.us`;
+        const { lead: existingLead, chatId, cleanDigits, storagePhone } = findLeadAndChatId(req.company, phone);
+        if (!chatId) {
+            return res.status(400).json({ error: 'Número de WhatsApp inválido' });
+        }
         let result;
 
         if (media && media.url) {
@@ -1303,9 +1498,9 @@ app.post('/api/send', resolveCompany, async (req, res) => {
             result = await holder.client.sendMessage(chatId, message);
         }
 
-        const msgSerializedId = result.id?._serialized || null;
-        dataStore.saveMessageInDb(req.companyId, cleanPhone, true, message || '', media?.url, media?.mimetype, 'chat', msgSerializedId);
-        broadcastChatMessage(req.companyId, cleanPhone, {
+        const msgSerializedId = result?.id?._serialized || null;
+        await dataStore.saveMessageInDb(req.companyId, cleanDigits || storagePhone, true, message || '', media?.url, media?.mimetype, 'chat', msgSerializedId);
+        broadcastChatMessage(req.companyId, cleanDigits || storagePhone, {
             id: msgSerializedId || `send_${Date.now()}`,
             fromMe: true,
             body: message || (media ? '📎 Archivo enviado' : ''),
@@ -1316,15 +1511,15 @@ app.post('/api/send', resolveCompany, async (req, res) => {
         });
 
         if (!req.company.leads) req.company.leads = [];
-        let lead = req.company.leads.find(l => l.phone === cleanPhone);
+        let lead = existingLead || req.company.leads.find(l => l.phone === storagePhone || (cleanDigits && l.phone === cleanDigits));
         if (lead) {
             lead.lastMessage = message || (media ? '📎 Archivo enviado' : '');
             lead.lastInteraction = new Date().toISOString();
             saveData(appData);
-            dataStore.upsertLeadInDb(req.companyId, lead).catch(() => {});
+            await dataStore.upsertLeadInDb(req.companyId, lead).catch(() => { });
         }
 
-        res.json({ success: true, message: `Mensaje entregado a ${cleanPhone}`, id: msgSerializedId });
+        res.json({ success: true, message: `Mensaje entregado a ${storagePhone || cleanDigits}`, id: msgSerializedId });
     } catch (err) {
         console.error('Error enviando mensaje directo:', err);
         res.status(500).json({ error: err.message || 'Error al enviar el mensaje' });
@@ -1395,21 +1590,44 @@ app.delete('/api/rules/:id', resolveCompany, async (req, res) => {
     res.json({ success: true });
 });
 
-// 7. CRUD de Programación de Envíos de la empresa seleccionada
+// 7. CRUD de Programación de Envíos & Campañas de Difusión
 app.get('/api/schedules', resolveCompany, (req, res) => {
     res.json(req.company.schedules || []);
 });
 
 app.post('/api/schedules', resolveCompany, async (req, res) => {
-    const { name, recipient, message, scheduledTime, media } = req.body;
-    if (!recipient || (!message && !media) || !scheduledTime) {
-        return res.status(400).json({ error: 'recipient, scheduledTime y (message o media) son obligatorios' });
+    const { name, recipient, message, scheduledTime, media, targetType = 'single', targetValue, delaySeconds = 10 } = req.body;
+    const effectiveTargetType = targetType || 'single';
+    const effectiveTargetVal = targetValue || recipient || '';
+
+    if (!effectiveTargetVal || (!message && !media) || !scheduledTime) {
+        return res.status(400).json({ error: 'Destinatario/Grupo/Etiqueta, fecha y (mensaje o archivo) son obligatorios.' });
+    }
+
+    // Calcular cantidad estimada de destinatarios
+    let estimatedCount = 1;
+    if (effectiveTargetType === 'tag') {
+        const matches = (req.company.leads || []).filter(l =>
+            l.tag && l.tag.toLowerCase().trim() === effectiveTargetVal.toLowerCase().trim() &&
+            l.phone && l.phone !== 'status@broadcast' && !l.phone.includes('@broadcast')
+        );
+        estimatedCount = matches.length;
+    } else if (effectiveTargetType === 'group') {
+        const memberPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, effectiveTargetVal).catch(() => []);
+        estimatedCount = memberPhones.length;
     }
 
     const newSchedule = {
         id: 'sched-' + Date.now(),
-        name: name || 'Campaña sin título',
-        recipient: recipient.replace(/\D/g, ''),
+        name: name || (effectiveTargetType === 'single' ? 'Envío Individual' : `Campaña ${effectiveTargetType}: ${effectiveTargetVal}`),
+        recipient: effectiveTargetType === 'single' ? effectiveTargetVal.replace(/\D/g, '') : effectiveTargetVal,
+        targetType: effectiveTargetType,
+        targetValue: effectiveTargetVal,
+        totalRecipients: estimatedCount,
+        sentRecipients: 0,
+        failedRecipients: 0,
+        delaySeconds: parseInt(delaySeconds, 10) || 10,
+        executionLogs: [],
         message: message || '',
         media: media || null,
         scheduledTime,
@@ -1423,6 +1641,73 @@ app.post('/api/schedules', resolveCompany, async (req, res) => {
     await dataStore.saveScheduleInDb(req.companyId, newSchedule).catch(e => console.error('Error guardando envío en DB:', e));
 
     res.json(newSchedule);
+});
+
+app.put('/api/schedules/:id', resolveCompany, async (req, res) => {
+    if (!req.company.schedules) req.company.schedules = [];
+    const item = req.company.schedules.find(s => s.id === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Envío programado no encontrado' });
+
+    const {
+        name,
+        recipient,
+        message,
+        scheduledTime,
+        media,
+        targetType = 'single',
+        targetValue,
+        delaySeconds = 10,
+        relaunch = false
+    } = req.body;
+
+    const effectiveTargetType = targetType || item.targetType || 'single';
+    const effectiveTargetVal = targetValue || recipient || item.targetValue || item.recipient || '';
+
+    if (!effectiveTargetVal || (!message && !media) || !scheduledTime) {
+        return res.status(400).json({ error: 'Destinatario/Grupo/Etiqueta, fecha y (mensaje o archivo) son obligatorios.' });
+    }
+
+    // Calcular cantidad estimada de destinatarios
+    let estimatedCount = 1;
+    if (effectiveTargetType === 'tag') {
+        const matches = (req.company.leads || []).filter(l =>
+            l.tag && l.tag.toLowerCase().trim() === effectiveTargetVal.toLowerCase().trim() &&
+            l.phone && l.phone !== 'status@broadcast' && !l.phone.includes('@broadcast')
+        );
+        estimatedCount = matches.length;
+    } else if (effectiveTargetType === 'group') {
+        const memberPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, effectiveTargetVal).catch(() => []);
+        estimatedCount = memberPhones.length;
+    }
+
+    item.name = name ? name.trim() : item.name;
+    item.targetType = effectiveTargetType;
+    item.targetValue = effectiveTargetVal;
+    item.recipient = effectiveTargetType === 'single' ? effectiveTargetVal.replace(/\D/g, '') : effectiveTargetVal;
+    item.totalRecipients = estimatedCount;
+    item.delaySeconds = parseInt(delaySeconds, 10) || 10;
+    item.message = message !== undefined ? message : item.message;
+    if (media !== undefined) {
+        item.media = media;
+    }
+    item.scheduledTime = scheduledTime;
+
+    // Reactivar como 'pending' si ya fue ejecutada/cancelada o tiene fecha futura
+    const isPastState = item.status === 'sent' || item.status === 'failed' || item.status === 'cancelled';
+    const isFutureSchedule = new Date(scheduledTime) > new Date();
+
+    if (relaunch || isPastState || isFutureSchedule) {
+        item.status = 'pending';
+        item.sentRecipients = 0;
+        item.failedRecipients = 0;
+        item.executionLogs = [];
+        item.sentAt = null;
+    }
+
+    saveData(appData);
+    await dataStore.saveScheduleInDb(req.companyId, item).catch(e => console.error('Error actualizando envío en DB:', e));
+
+    res.json({ success: true, schedule: item });
 });
 
 app.delete('/api/schedules/:id', resolveCompany, async (req, res) => {
@@ -1441,37 +1726,294 @@ app.post('/api/schedules/:id/send-now', resolveCompany, async (req, res) => {
 
     const holder = companyClients.get(req.companyId);
     if (!holder || holder.status !== 'ready' || !holder.client) {
-        return res.status(503).json({ error: `WhatsApp de ${req.company.name} no está conectado aún.` });
+        return res.status(503).json({ error: `El WhatsApp de ${req.company.name} no está conectado todavía.` });
+    }
+
+    // Reiniciar estado y contadores si se relanza manualmente
+    item.status = 'pending';
+    item.sentRecipients = 0;
+    item.failedRecipients = 0;
+    item.executionLogs = [];
+    item.sentAt = null;
+    saveData(appData);
+    await dataStore.saveScheduleInDb(req.companyId, item).catch(() => { });
+
+    // Iniciar ejecución asíncrona de la campaña
+    executeScheduleCampaign(req.companyId, item).catch(err => {
+        console.error('Error ejecutando campaña manual:', err);
+    });
+
+    res.json({ success: true, message: 'Campaña iniciada', schedule: item });
+});
+
+app.post('/api/schedules/:id/cancel', resolveCompany, async (req, res) => {
+    if (!req.company.schedules) req.company.schedules = [];
+    const item = req.company.schedules.find(s => s.id === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Envío no encontrado' });
+
+    item.status = 'cancelled';
+    saveData(appData);
+    await dataStore.saveScheduleInDb(req.companyId, item).catch(() => { });
+
+    res.json({ success: true, message: 'Campaña cancelada' });
+});
+
+// =========================================================================
+// 7.B. GRUPOS PERSONALIZADOS DE DIFUSIÓN & CONTACTOS
+// =========================================================================
+
+app.get('/api/groups', resolveCompany, (req, res) => {
+    res.json(req.company.groups || []);
+});
+
+app.post('/api/groups', resolveCompany, async (req, res) => {
+    const { name, description, color } = req.body;
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'El nombre del grupo es obligatorio.' });
+    }
+
+    const newGroup = {
+        id: 'grp_' + Date.now(),
+        name: name.trim(),
+        description: description ? description.trim() : '',
+        color: color || '#38bdf8',
+        memberCount: 0,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!req.company.groups) req.company.groups = [];
+    req.company.groups.push(newGroup);
+    saveData(appData);
+    await dataStore.saveContactGroupInDb(req.companyId, newGroup).catch(e => console.error('Error guardando grupo en DB:', e));
+
+    res.json(newGroup);
+});
+
+app.delete('/api/groups/:id', resolveCompany, async (req, res) => {
+    if (!req.company.groups) req.company.groups = [];
+    req.company.groups = req.company.groups.filter(g => g.id !== req.params.id);
+    saveData(appData);
+    await dataStore.deleteContactGroupFromDb(req.companyId, req.params.id).catch(e => console.error('Error eliminando grupo en DB:', e));
+
+    res.json({ success: true });
+});
+
+app.get('/api/groups/:id/members', resolveCompany, async (req, res) => {
+    try {
+        const phones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, req.params.id);
+        const contacts = req.company.contacts || [];
+        const leads = req.company.leads || [];
+        const members = phones.map(ph => {
+            const cleanDigits = String(ph).replace(/\D/g, '');
+            const ct = contacts.find(c => c.phone === ph || (cleanDigits && c.phone && c.phone.replace(/\D/g, '') === cleanDigits));
+            const ld = leads.find(l => l.phone === ph || (cleanDigits && l.phone && l.phone.replace(/\D/g, '') === cleanDigits));
+            return {
+                phone: ph,
+                name: ct?.name || ld?.name || ph,
+                tag: ct?.tags || ld?.tag || 'Sin etiqueta',
+                source: ct ? (ct.source === 'whatsapp' ? 'WhatsApp' : 'Google CSV') : (ld ? 'CRM Lead' : 'Directo')
+            };
+        });
+        res.json({ members, phones });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/groups/:id/members', resolveCompany, async (req, res) => {
+    const { phones } = req.body;
+    if (!phones || !Array.isArray(phones) || phones.length === 0) {
+        return res.status(400).json({ error: 'Lista de teléfonos requerida' });
     }
 
     try {
-        const cleanPhone = item.recipient.replace(/\D/g, '');
-        const chatId = `${cleanPhone}@c.us`;
+        await dataStore.addLeadsToGroupInDb(req.companyId, req.params.id, phones);
+        const group = (req.company.groups || []).find(g => g.id === req.params.id);
+        if (group) {
+            const allPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, req.params.id);
+            group.memberCount = allPhones.length;
+            saveData(appData);
+        }
+        res.json({ success: true, count: phones.length });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
-        if (item.media && item.media.url) {
-            const relPath = item.media.url.startsWith('/') ? item.media.url.slice(1) : item.media.url;
-            const fullPath = path.join(__dirname, 'public', relPath);
-            let mediaInstance = null;
-            if (fs.existsSync(fullPath)) {
-                mediaInstance = MessageMedia.fromFilePath(fullPath);
-            }
-            if (mediaInstance) {
-                await holder.client.sendMessage(chatId, mediaInstance, { caption: item.message || undefined });
-            } else {
-                await holder.client.sendMessage(chatId, item.message || '');
-            }
-        } else {
-            await holder.client.sendMessage(chatId, item.message);
+app.delete('/api/groups/:id/members/:phone', resolveCompany, async (req, res) => {
+    try {
+        await dataStore.removeLeadFromGroupInDb(req.companyId, req.params.id, req.params.phone);
+        const group = (req.company.groups || []).find(g => g.id === req.params.id);
+        if (group) {
+            const allPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, req.params.id);
+            group.memberCount = allPhones.length;
+            saveData(appData);
+        }
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// =========================================================================
+// 7.C. AGENDA DE CONTACTOS & IMPORTACIÓN (GOOGLE CSV & WHATSAPP)
+// =========================================================================
+
+app.get('/api/contacts', resolveCompany, (req, res) => {
+    res.json(req.company.contacts || []);
+});
+
+app.post('/api/contacts', resolveCompany, async (req, res) => {
+    const { phone, name, source = 'manual', tags = '', notes = '' } = req.body;
+    if (!phone || !phone.trim()) {
+        return res.status(400).json({ error: 'El teléfono es obligatorio' });
+    }
+    const cleanPhone = phone.trim().replace(/\D/g, '');
+    const newContact = {
+        id: 'cnt_' + Date.now(),
+        phone: cleanPhone || phone.trim(),
+        name: (name && name.trim()) || cleanPhone || phone.trim(),
+        source,
+        tags,
+        notes,
+        createdAt: new Date().toISOString()
+    };
+    if (!req.company.contacts) req.company.contacts = [];
+    const idx = req.company.contacts.findIndex(c => c.phone === newContact.phone);
+    if (idx !== -1) {
+        req.company.contacts[idx] = { ...req.company.contacts[idx], ...newContact };
+    } else {
+        req.company.contacts.push(newContact);
+    }
+    saveData(appData);
+    await dataStore.saveContactInDb(req.companyId, newContact).catch(e => console.error('Error guardando contacto en DB:', e));
+    res.json({ success: true, contact: newContact });
+});
+
+app.delete('/api/contacts/:phone', resolveCompany, async (req, res) => {
+    const phone = req.params.phone;
+    if (!req.company.contacts) req.company.contacts = [];
+    req.company.contacts = req.company.contacts.filter(c => c.phone !== phone);
+    saveData(appData);
+    await dataStore.deleteContactFromDb(req.companyId, phone).catch(e => console.error('Error eliminando contacto de DB:', e));
+    res.json({ success: true });
+});
+
+app.post('/api/contacts/import-csv', resolveCompany, async (req, res) => {
+    const { csv, defaultTag = 'Importado Google', defaultPrefix = '57', groupId } = req.body;
+    if (!csv || !csv.trim()) {
+        return res.status(400).json({ error: 'El contenido del archivo CSV es requerido.' });
+    }
+
+    try {
+        const parsed = contactsService.parseGoogleContactsCsv(csv, { defaultPrefix, defaultTag });
+        if (parsed.contacts.length === 0) {
+            return res.status(400).json({ error: 'No se encontraron contactos válidos con teléfono en el archivo.' });
         }
 
-        item.status = 'sent';
-        item.sentAt = new Date().toISOString();
-        saveData(appData);
-        await dataStore.saveScheduleInDb(req.companyId, item).catch(e => console.error('Error actualizando envío en DB:', e));
+        const contactsToInsert = parsed.contacts.map(c => ({
+            id: 'cnt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            phone: c.phone,
+            name: c.name || c.phone,
+            source: 'google_csv',
+            tags: defaultTag || c.tag || 'Importado Google',
+            notes: '',
+            createdAt: new Date().toISOString()
+        }));
 
-        res.json({ success: true, message: 'Mensaje enviado de inmediato' });
+        await dataStore.bulkUpsertContactsInDb(req.companyId, contactsToInsert);
+
+        if (groupId) {
+            const phones = contactsToInsert.map(l => l.phone);
+            await dataStore.addLeadsToGroupInDb(req.companyId, groupId, phones);
+            const grp = (req.company.groups || []).find(g => g.id === groupId);
+            if (grp) {
+                const allPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, groupId);
+                grp.memberCount = allPhones.length;
+            }
+        }
+
+        if (!req.company.contacts) req.company.contacts = [];
+        for (const newCt of contactsToInsert) {
+            const existingIdx = req.company.contacts.findIndex(c => c.phone === newCt.phone);
+            if (existingIdx !== -1) {
+                req.company.contacts[existingIdx] = { ...req.company.contacts[existingIdx], ...newCt };
+            } else {
+                req.company.contacts.push(newCt);
+            }
+        }
+        saveData(appData);
+
+        res.json({
+            success: true,
+            importedCount: parsed.contacts.length,
+            invalidCount: parsed.invalidCount
+        });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Error importando CSV de Google Contacts:', err);
+        res.status(400).json({ error: err.message || 'Error procesando el archivo CSV' });
+    }
+});
+
+app.post('/api/contacts/sync-whatsapp', resolveCompany, async (req, res) => {
+    const holder = companyClients.get(req.companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+        return res.status(503).json({ error: `El WhatsApp de ${req.company.name} no está conectado todavía. Escanea el código QR primero.` });
+    }
+
+    const { defaultTag = 'Agenda WhatsApp', groupId } = req.body;
+
+    try {
+        const rawContacts = await holder.client.getContacts();
+        const validContacts = (rawContacts || []).filter(c =>
+            c && c.isMyContact && c.isUser && !c.isGroup && c.number &&
+            c.number !== 'status' && !String(c.number).includes('@')
+        );
+
+        if (validContacts.length === 0) {
+            return res.json({ success: true, syncedCount: 0, message: 'No se encontraron contactos guardados en la agenda del teléfono.' });
+        }
+
+        const contactsToInsert = validContacts.map(c => ({
+            id: 'cnt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            phone: c.number,
+            name: c.name || c.pushname || c.number,
+            source: 'whatsapp',
+            tags: defaultTag || 'Agenda WhatsApp',
+            notes: '',
+            createdAt: new Date().toISOString()
+        }));
+
+        await dataStore.bulkUpsertContactsInDb(req.companyId, contactsToInsert);
+
+        if (groupId) {
+            const phones = contactsToInsert.map(l => l.phone);
+            await dataStore.addLeadsToGroupInDb(req.companyId, groupId, phones);
+            const grp = (req.company.groups || []).find(g => g.id === groupId);
+            if (grp) {
+                const allPhones = await dataStore.getGroupMemberPhonesFromDb(req.companyId, groupId);
+                grp.memberCount = allPhones.length;
+            }
+        }
+
+        if (!req.company.contacts) req.company.contacts = [];
+        for (const newCt of contactsToInsert) {
+            const existingIdx = req.company.contacts.findIndex(c => c.phone === newCt.phone);
+            if (existingIdx !== -1) {
+                req.company.contacts[existingIdx] = { ...req.company.contacts[existingIdx], ...newCt };
+            } else {
+                req.company.contacts.push(newCt);
+            }
+        }
+        saveData(appData);
+
+        res.json({
+            success: true,
+            syncedCount: contactsToInsert.length
+        });
+    } catch (err) {
+        console.error('Error sincronizando contactos de WhatsApp:', err);
+        res.status(500).json({ error: err.message || 'Error al obtener contactos de WhatsApp' });
     }
 });
 
@@ -1482,7 +2024,7 @@ app.get('/api/leads', resolveCompany, (req, res) => {
 
 app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
     if (!req.company.leads) req.company.leads = [];
-    const lead = req.company.leads.find(l => l.phone === req.params.phone);
+    const { lead } = findLeadAndChatId(req.company, req.params.phone);
     if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
 
     lead.humanPaused = !lead.humanPaused;
@@ -1495,18 +2037,17 @@ app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
 // 8.1. Obtener historial de chat con un prospecto (en vivo de WhatsApp o de base de datos)
 app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
     const rawPhone = req.params.phone || '';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
-    if (!cleanPhone) {
+    const { lead, chatId, cleanDigits, storagePhone } = findLeadAndChatId(req.company, rawPhone);
+    if (!cleanDigits && !chatId) {
         return res.status(400).json({ error: 'Número de teléfono inválido' });
     }
 
-    const chatId = `${cleanPhone}@c.us`;
     let messages = [];
     let liveFetched = false;
 
     // 1. Intentar obtener mensajes directamente del cliente WhatsApp activo
     const holder = companyClients.get(req.companyId);
-    if (holder && holder.status === 'ready' && holder.client) {
+    if (holder && holder.status === 'ready' && holder.client && chatId) {
         try {
             const chat = await holder.client.getChatById(chatId);
             if (chat) {
@@ -1530,15 +2071,14 @@ app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
                 }
             }
         } catch (fetchErr) {
-            console.warn(`[${req.company.name}] Aviso al leer chat de WhatsApp (${cleanPhone}):`, fetchErr.message);
+            console.warn(`[${req.company.name}] Aviso al leer chat de WhatsApp (${chatId}):`, fetchErr.message);
         }
     }
 
     // 2. Si no se obtuvieron en vivo, consultar base de datos
-    const dbMessages = await dataStore.getMessagesFromDb(req.companyId, cleanPhone, 100);
+    const dbMessages = await dataStore.getMessagesFromDb(req.companyId, cleanDigits || storagePhone, 100);
 
     // 3. Vincular archivos descargados si están en lead.receivedFiles
-    const lead = (req.company.leads || []).find(l => l.phone === cleanPhone);
     const receivedFiles = lead?.receivedFiles || [];
 
     if (liveFetched) {
@@ -1561,7 +2101,7 @@ app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
 
         // Respaldar mensajes en DB silenciosamente
         for (const m of messages) {
-            dataStore.saveMessageInDb(req.companyId, cleanPhone, m.fromMe, m.body, m.mediaUrl, m.mediaMimetype, m.type, m.id).catch(() => {});
+            dataStore.saveMessageInDb(req.companyId, cleanDigits || storagePhone, m.fromMe, m.body, m.mediaUrl, m.mediaMimetype, m.type, m.id).catch(() => { });
         }
     } else {
         messages = dbMessages;
@@ -1581,8 +2121,8 @@ app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
 
     res.json({
         success: true,
-        phone: cleanPhone,
-        leadName: lead?.name || cleanPhone,
+        phone: storagePhone || cleanDigits,
+        leadName: lead?.name || cleanDigits || storagePhone,
         leadTag: lead?.tag || 'Nuevo',
         humanPaused: Boolean(lead?.humanPaused),
         liveFetched,
@@ -1593,11 +2133,15 @@ app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
 // 8.2. Enviar mensaje directo dentro de la vista del chat
 app.post('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
     const rawPhone = req.params.phone || '';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
     const { message } = req.body;
 
-    if (!cleanPhone || !message || !message.trim()) {
-        return res.status(400).json({ error: 'Número de teléfono y mensaje son requeridos.' });
+    if (!rawPhone || !message || !message.trim()) {
+        return res.status(400).json({ error: 'Número de destinatario y mensaje son requeridos.' });
+    }
+
+    const { lead, chatId, cleanDigits, storagePhone } = findLeadAndChatId(req.company, rawPhone);
+    if (!chatId) {
+        return res.status(400).json({ error: 'No se pudo determinar el identificador del chat para WhatsApp.' });
     }
 
     const holder = companyClients.get(req.companyId);
@@ -1606,43 +2150,50 @@ app.post('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
     }
 
     try {
-        const chatId = `${cleanPhone}@c.us`;
         const result = await holder.client.sendMessage(chatId, message.trim());
-        const msgId = result.id?._serialized || `msg_${Date.now()}`;
+        const msgId = result?.id?._serialized || `msg_${Date.now()}`;
 
-        // Guardar mensaje en DB
-        dataStore.saveMessageInDb(req.companyId, cleanPhone, true, message.trim(), null, null, 'chat', msgId);
+        // Guardar mensaje en DB PostgreSQL
+        await dataStore.saveMessageInDb(req.companyId, cleanDigits || storagePhone, true, message.trim(), null, null, 'chat', msgId);
 
-        // Transmitir en tiempo real
-        broadcastChatMessage(req.companyId, cleanPhone, {
+        const outMessage = {
             id: msgId,
             fromMe: true,
             body: message.trim(),
             timestamp: Date.now(),
             type: 'chat',
             hasMedia: false
-        });
+        };
+
+        // Transmitir en tiempo real al SSE
+        broadcastChatMessage(req.companyId, cleanDigits || storagePhone, outMessage);
 
         // Actualizar lead
         if (!req.company.leads) req.company.leads = [];
-        let lead = req.company.leads.find(l => l.phone === cleanPhone);
-        if (lead) {
-            lead.lastMessage = message.trim();
-            lead.lastInteraction = new Date().toISOString();
-            saveData(appData);
-            dataStore.upsertLeadInDb(req.companyId, lead).catch(() => {});
+        let targetLead = lead;
+        if (!targetLead) {
+            targetLead = {
+                phone: storagePhone,
+                name: storagePhone,
+                tag: 'Nuevo',
+                lastMessage: message.trim(),
+                lastInteraction: new Date().toISOString(),
+                lastSentRuleId: null,
+                humanPaused: true,
+                receivedFiles: []
+            };
+            req.company.leads.unshift(targetLead);
+        } else {
+            targetLead.lastMessage = message.trim();
+            targetLead.lastInteraction = new Date().toISOString();
         }
+
+        saveData(appData);
+        await dataStore.upsertLeadInDb(req.companyId, targetLead).catch(e => console.error('Error actualizando lead en DB:', e.message));
 
         res.json({
             success: true,
-            message: {
-                id: msgId,
-                fromMe: true,
-                body: message.trim(),
-                timestamp: Date.now(),
-                type: 'chat',
-                hasMedia: false
-            }
+            message: outMessage
         });
     } catch (err) {
         console.error('Error enviando mensaje en chat:', err);
@@ -1653,8 +2204,9 @@ app.post('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
 // 8.3. Transmisión SSE en tiempo real de cambios en el chat
 app.get('/api/leads/:phone/stream', resolveCompany, (req, res) => {
     const rawPhone = req.params.phone || '';
-    const cleanPhone = rawPhone.replace(/\D/g, '');
-    if (!cleanPhone) {
+    const { cleanDigits, storagePhone } = findLeadAndChatId(req.company, rawPhone);
+    const streamTarget = cleanDigits || storagePhone;
+    if (!streamTarget) {
         return res.status(400).end();
     }
 

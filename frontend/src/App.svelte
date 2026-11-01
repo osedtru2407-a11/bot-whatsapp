@@ -6,6 +6,8 @@
   import { loadRules } from './stores/rules';
   import { loadSchedules } from './stores/schedules';
   import { loadLeads } from './stores/leads';
+  import { loadGroups } from './stores/groups';
+  import { loadContacts } from './stores/contacts';
   import { loadLibrary } from './stores/library';
   import { loadSettings } from './stores/settings';
   import { loadTeamData } from './stores/team';
@@ -25,6 +27,8 @@
   import ScheduleModal from './components/scheduler/ScheduleModal.svelte';
   import LeadFilesModal from './components/leads/LeadFilesModal.svelte';
   import LeadChatModal from './components/leads/LeadChatModal.svelte';
+  import ImportContactsModal from './components/leads/ImportContactsModal.svelte';
+  import GroupsModal from './components/leads/GroupsModal.svelte';
   import LibraryUploadModal from './components/library/LibraryUploadModal.svelte';
   import LibraryViewModal from './components/library/LibraryViewModal.svelte';
   import InviteUserModal from './components/team/InviteUserModal.svelte';
@@ -47,6 +51,8 @@
       loadRules(),
       loadSchedules(),
       loadLeads(),
+      loadContacts(),
+      loadGroups(),
       loadLibrary(),
       loadSettings(),
       loadTeamData()
@@ -112,6 +118,8 @@
   <ScheduleModal />
   <LeadFilesModal />
   <LeadChatModal />
+  <ImportContactsModal />
+  <GroupsModal />
   <LibraryUploadModal />
   <LibraryViewModal />
   <InviteUserModal />

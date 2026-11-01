@@ -48,7 +48,7 @@ async function loadAllAppData() {
             mediaTypeFilter: r.media_type_filter || 'any'
         }));
 
-        // Leads
+        // Leads (Prospectos que han interactuado con el bot / embudo CRM)
         const leadsRes = await pool.query('SELECT * FROM leads WHERE company_id = $1 ORDER BY last_interaction DESC', [c.id]);
         const leads = leadsRes.rows.map(l => ({
             phone: l.phone,
@@ -61,18 +61,56 @@ async function loadAllAppData() {
             receivedFiles: Array.isArray(l.received_files) ? l.received_files : []
         }));
 
+        // Contacts (Agenda y directorio de contactos importados / WhatsApp para campañas)
+        const contactsRes = await pool.query('SELECT * FROM contacts WHERE company_id = $1 ORDER BY name ASC', [c.id]);
+        const contacts = contactsRes.rows.map(ct => ({
+            id: ct.id,
+            phone: ct.phone,
+            name: ct.name || ct.phone,
+            source: ct.source || 'manual',
+            tags: ct.tags || '',
+            notes: ct.notes || '',
+            createdAt: ct.created_at ? new Date(ct.created_at).toISOString() : new Date().toISOString()
+        }));
+
         // Schedules
         const schedRes = await pool.query('SELECT * FROM schedules WHERE company_id = $1 ORDER BY created_at DESC', [c.id]);
         const schedules = schedRes.rows.map(sc => ({
             id: sc.id,
             name: sc.name || 'Campaña sin título',
             recipient: sc.recipient,
+            targetType: sc.target_type || 'single',
+            targetValue: sc.target_value || sc.recipient,
+            totalRecipients: parseInt(sc.total_recipients, 10) || 1,
+            sentRecipients: parseInt(sc.sent_recipients, 10) || 0,
+            failedRecipients: parseInt(sc.failed_recipients, 10) || 0,
+            delaySeconds: parseInt(sc.delay_seconds, 10) || 10,
+            executionLogs: Array.isArray(sc.execution_logs) ? sc.execution_logs : [],
             message: sc.message,
             media: sc.media || null,
             scheduledTime: sc.scheduled_time ? new Date(sc.scheduled_time).toISOString() : null,
             status: sc.status || 'pending',
             sentAt: sc.sent_at ? new Date(sc.sent_at).toISOString() : null,
             createdAt: sc.created_at ? new Date(sc.created_at).toISOString() : new Date().toISOString()
+        }));
+
+        // Contact Groups
+        const groupsRes = await pool.query(`
+            SELECT g.id, g.name, g.description, g.color, g.created_at,
+                   COUNT(m.id)::int as member_count
+            FROM contact_groups g
+            LEFT JOIN lead_group_members m ON g.id = m.group_id
+            WHERE g.company_id = $1
+            GROUP BY g.id, g.name, g.description, g.color, g.created_at
+            ORDER BY g.created_at ASC
+        `, [c.id]);
+        const groups = groupsRes.rows.map(g => ({
+            id: g.id,
+            name: g.name,
+            description: g.description || '',
+            color: g.color || '#38bdf8',
+            memberCount: parseInt(g.member_count, 10) || 0,
+            createdAt: g.created_at ? new Date(g.created_at).toISOString() : new Date().toISOString()
         }));
 
         // Library Documents
@@ -95,7 +133,9 @@ async function loadAllAppData() {
             settings,
             rules,
             leads,
+            contacts,
             schedules,
+            groups,
             library
         });
     }
@@ -269,8 +309,11 @@ async function deleteLeadFromDb(companyId, phone) {
  */
 async function saveScheduleInDb(companyId, schedule) {
     await pool.query(`
-        INSERT INTO schedules (id, company_id, name, recipient, message, media, scheduled_time, status, sent_at, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO schedules (
+            id, company_id, name, recipient, message, media, scheduled_time, status, sent_at, created_at,
+            target_type, target_value, total_recipients, sent_recipients, failed_recipients, delay_seconds, execution_logs
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
             recipient = EXCLUDED.recipient,
@@ -278,18 +321,32 @@ async function saveScheduleInDb(companyId, schedule) {
             media = EXCLUDED.media,
             scheduled_time = EXCLUDED.scheduled_time,
             status = EXCLUDED.status,
-            sent_at = EXCLUDED.sent_at;
+            sent_at = EXCLUDED.sent_at,
+            target_type = EXCLUDED.target_type,
+            target_value = EXCLUDED.target_value,
+            total_recipients = EXCLUDED.total_recipients,
+            sent_recipients = EXCLUDED.sent_recipients,
+            failed_recipients = EXCLUDED.failed_recipients,
+            delay_seconds = EXCLUDED.delay_seconds,
+            execution_logs = EXCLUDED.execution_logs;
     `, [
         schedule.id,
         companyId,
         schedule.name || 'Campaña sin título',
-        schedule.recipient,
+        schedule.recipient || schedule.targetValue || '',
         schedule.message || '',
         schedule.media ? JSON.stringify(schedule.media) : null,
         schedule.scheduledTime,
         schedule.status || 'pending',
         schedule.sentAt || null,
-        schedule.createdAt || new Date().toISOString()
+        schedule.createdAt || new Date().toISOString(),
+        schedule.targetType || 'single',
+        schedule.targetValue || schedule.recipient || '',
+        parseInt(schedule.totalRecipients, 10) || 1,
+        parseInt(schedule.sentRecipients, 10) || 0,
+        parseInt(schedule.failedRecipients, 10) || 0,
+        parseInt(schedule.delaySeconds, 10) || 10,
+        JSON.stringify(schedule.executionLogs || [])
     ]);
 }
 
@@ -298,6 +355,119 @@ async function saveScheduleInDb(companyId, schedule) {
  */
 async function deleteScheduleFromDb(companyId, scheduleId) {
     await pool.query('DELETE FROM schedules WHERE company_id = $1 AND id = $2', [companyId, scheduleId]);
+}
+
+/**
+ * Guardar o actualizar grupo personalizado
+ */
+async function saveContactGroupInDb(companyId, group) {
+    await pool.query(`
+        INSERT INTO contact_groups (id, company_id, name, description, color, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            color = EXCLUDED.color;
+    `, [
+        group.id,
+        companyId,
+        group.name,
+        group.description || '',
+        group.color || '#38bdf8',
+        group.createdAt || new Date().toISOString()
+    ]);
+}
+
+/**
+ * Eliminar grupo personalizado y sus membresías
+ */
+async function deleteContactGroupFromDb(companyId, groupId) {
+    await pool.query('DELETE FROM contact_groups WHERE company_id = $1 AND id = $2', [companyId, groupId]);
+}
+
+/**
+ * Añadir miembros a un grupo
+ */
+async function addLeadsToGroupInDb(companyId, groupId, phoneList) {
+    if (!phoneList || !phoneList.length) return;
+    for (const phone of phoneList) {
+        const clean = String(phone).trim();
+        if (!clean) continue;
+        const memberId = `gm_${groupId}_${clean.replace(/\D/g, '') || clean}`;
+        await pool.query(`
+            INSERT INTO lead_group_members (id, company_id, group_id, lead_phone, created_at)
+            VALUES ($1, $2, $3, $4, NOW())
+            ON CONFLICT (group_id, lead_phone) DO NOTHING;
+        `, [memberId, companyId, groupId, clean]);
+    }
+}
+
+/**
+ * Remover un miembro de un grupo
+ */
+async function removeLeadFromGroupInDb(companyId, groupId, phone) {
+    await pool.query('DELETE FROM lead_group_members WHERE company_id = $1 AND group_id = $2 AND lead_phone = $3', [companyId, groupId, phone]);
+}
+
+/**
+ * Obtener teléfonos de miembros de un grupo
+ */
+async function getGroupMemberPhonesFromDb(companyId, groupId) {
+    const res = await pool.query('SELECT lead_phone FROM lead_group_members WHERE company_id = $1 AND group_id = $2', [companyId, groupId]);
+    return res.rows.map(r => r.lead_phone);
+}
+
+/**
+ * Inserción masiva de leads (para CSV o sincronización de WhatsApp)
+ */
+async function bulkUpsertLeadsInDb(companyId, leadsList) {
+    if (!leadsList || !leadsList.length) return 0;
+    let count = 0;
+    for (const lead of leadsList) {
+        if (!lead.phone) continue;
+        await upsertLeadInDb(companyId, lead);
+        count++;
+    }
+    return count;
+}
+
+/**
+ * Guardar o actualizar contacto en la agenda general
+ */
+async function saveContactInDb(companyId, contact) {
+    const id = contact.id || `cnt_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    await pool.query(`
+        INSERT INTO contacts (id, company_id, phone, name, source, tags, notes, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        ON CONFLICT (company_id, phone) DO UPDATE SET
+            name = EXCLUDED.name,
+            source = EXCLUDED.source,
+            tags = EXCLUDED.tags,
+            notes = EXCLUDED.notes,
+            updated_at = NOW();
+    `, [id, companyId, contact.phone, contact.name || contact.phone, contact.source || 'manual', contact.tags || '', contact.notes || '']);
+    return id;
+}
+
+/**
+ * Inserción masiva de contactos en la agenda (para CSV de Google o WhatsApp)
+ */
+async function bulkUpsertContactsInDb(companyId, contactsList) {
+    if (!contactsList || !contactsList.length) return 0;
+    let count = 0;
+    for (const ct of contactsList) {
+        if (!ct.phone) continue;
+        await saveContactInDb(companyId, ct);
+        count++;
+    }
+    return count;
+}
+
+/**
+ * Eliminar contacto de la agenda
+ */
+async function deleteContactFromDb(companyId, phone) {
+    await pool.query('DELETE FROM contacts WHERE company_id = $1 AND phone = $2', [companyId, phone]);
 }
 
 /**
@@ -393,6 +563,15 @@ module.exports = {
     deleteLeadFromDb,
     saveScheduleInDb,
     deleteScheduleFromDb,
+    saveContactGroupInDb,
+    deleteContactGroupFromDb,
+    addLeadsToGroupInDb,
+    removeLeadFromGroupInDb,
+    getGroupMemberPhonesFromDb,
+    bulkUpsertLeadsInDb,
+    saveContactInDb,
+    bulkUpsertContactsInDb,
+    deleteContactFromDb,
     saveLibraryDocInDb,
     deleteLibraryDocFromDb,
     saveMessageInDb,

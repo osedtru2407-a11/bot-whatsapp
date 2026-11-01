@@ -3,10 +3,12 @@ import { writable, get } from 'svelte/store';
 import { api } from '../services/api';
 import { currentCompanyId } from './company';
 import { showToast } from './toast';
+import { importContactsCsv as doImportContactsCsv, syncContactsFromWhatsApp as doSyncContactsFromWhatsApp } from './contacts';
 
 export const leads = writable([]);
 export const selectedLead = writable(null);
 export const isLeadModalOpen = writable(false);
+export const isImportModalOpen = writable(false);
 
 // Estado para Historial de Chat de Prospecto
 export const selectedChatLead = writable(null);
@@ -32,7 +34,7 @@ export async function loadLeads() {
 
 export async function togglePauseLead(phone) {
   try {
-    const res = await api.post(`/api/leads/${phone}/toggle-pause`, {});
+    const res = await api.post(`/api/leads/${encodeURIComponent(phone)}/toggle-pause`, {});
     leads.update(list => list.map(l => l.phone === phone ? { ...l, humanPaused: res.humanPaused } : l));
     selectedChatLead.update(curr => curr && curr.phone === phone ? { ...curr, humanPaused: res.humanPaused } : curr);
     showToast(res.humanPaused ? 'Bot pausado para este cliente' : 'Bot reactivado para este cliente', 'info');
@@ -129,7 +131,7 @@ export async function openLeadChat(lead) {
   export async function loadChatHistory(phone, showSpinner = true) {
     if (showSpinner) isChatLoading.set(true);
     try {
-      const res = await api.get(`/api/leads/${phone}/messages`);
+      const res = await api.get(`/api/leads/${encodeURIComponent(phone)}/messages`);
       const newMsgs = res.messages || [];
 
       chatMessages.update(curr => {
@@ -160,7 +162,7 @@ export async function openLeadChat(lead) {
   export async function sendChatMessage(phone, message) {
     if (!message || !message.trim()) return { success: false };
     try {
-      const res = await api.post(`/api/leads/${phone}/messages`, { message: message.trim() });
+      const res = await api.post(`/api/leads/${encodeURIComponent(phone)}/messages`, { message: message.trim() });
       if (res.message) {
         chatMessages.update(msgs => {
           const exists = msgs.some(m => m.id === res.message.id);
@@ -179,4 +181,12 @@ export async function openLeadChat(lead) {
       showToast(err.message || 'Error al enviar mensaje', 'error');
       return { success: false, error: err.message };
     }
+  }
+
+  export async function importContactsCsv(importData) {
+    return doImportContactsCsv(importData.csv, importData.defaultTag, importData.defaultPrefix, importData.groupId);
+  }
+
+  export async function syncContactsFromWhatsApp(options = {}) {
+    return doSyncContactsFromWhatsApp(options.defaultTag, options.groupId);
   }

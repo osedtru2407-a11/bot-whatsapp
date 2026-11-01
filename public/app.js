@@ -1797,7 +1797,7 @@ async function openLeadChatModal(lead) {
 
   btnTogglePause.onclick = async () => {
     try {
-      const res = await fetch(`/api/leads/${lead.phone}/toggle-pause`, { method: 'POST' });
+      const res = await fetch(`/api/leads/${encodeURIComponent(lead.phone)}/toggle-pause`, { method: 'POST' });
       const data = await res.json();
       lead.humanPaused = data.humanPaused;
       renderBadges(lead.humanPaused, true);
@@ -1811,7 +1811,7 @@ async function openLeadChatModal(lead) {
   const loadMessages = async () => {
     container.innerHTML = `<div style="text-align: center; color: var(--text-dim); padding: 40px;">Cargando mensajes...</div>`;
     try {
-      const res = await fetch(`/api/leads/${lead.phone}/messages`);
+      const res = await fetch(`/api/leads/${encodeURIComponent(lead.phone)}/messages`);
       const data = await res.json();
       const messages = data.messages || [];
 
@@ -1901,7 +1901,7 @@ async function openLeadChatModal(lead) {
     inputReply.value = '';
 
     try {
-      const res = await fetch(`/api/leads/${lead.phone}/messages`, {
+      const res = await fetch(`/api/leads/${encodeURIComponent(lead.phone)}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text })

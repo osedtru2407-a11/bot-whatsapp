@@ -44,8 +44,9 @@
     isUploading = true;
     try {
       const res = await api.upload(file, category);
-      if (res && res.file) {
-        onMediaChange?.(res.file);
+      const mediaObj = res?.file || (res?.url ? res : null);
+      if (mediaObj) {
+        onMediaChange?.(mediaObj);
         showToast(`Archivo "${file.name}" cargado con éxito`, 'success');
       }
     } catch (err) {
@@ -63,188 +64,215 @@
 </script>
 
 <div class="dropzone-container">
-  {#if !media}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div 
-      class="file-dropzone {isDragging ? 'dragover' : ''} {isUploading ? 'uploading' : ''}"
-      ondragover={handleDragOver}
-      ondragleave={handleDragLeave}
-      ondrop={handleDrop}
-      onclick={() => fileInput?.click()}
-    >
-      <input 
-        type="file" 
-        bind:this={fileInput} 
-        {accept}
-        style="display: none;" 
-        onchange={handleFileSelect} 
-      />
+    {#if !media}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            class="file-dropzone {isDragging ? 'dragover' : ''} {isUploading
+                ? 'uploading'
+                : ''}"
+            ondragover={handleDragOver}
+            ondragleave={handleDragLeave}
+            ondrop={handleDrop}
+            onclick={() => fileInput?.click()}
+        >
+            <input
+                type="file"
+                bind:this={fileInput}
+                {accept}
+                style="display: none;"
+                onchange={handleFileSelect}
+            />
 
-      {#if isUploading}
-        <div class="dropzone-spinner"></div>
-        <p class="dropzone-text">Subiendo archivo al servidor...</p>
-      {:else}
-        <div class="dropzone-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
+            {#if isUploading}
+                <div class="dropzone-spinner"></div>
+                <p class="dropzone-text">Subiendo archivo al servidor...</p>
+            {:else}
+                <div class="dropzone-icon">
+                    <svg
+                        width="28"
+                        height="28"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                        ></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <p class="dropzone-title">{label}</p>
+                <span class="dropzone-sub">{sublabel}</span>
+            {/if}
         </div>
-        <p class="dropzone-title">{label}</p>
-        <span class="dropzone-sub">{sublabel}</span>
-      {/if}
-    </div>
-  {:else}
-    <div class="file-preview-card">
-      <div class="file-preview-left">
-        {#if (media.mimetype || '').startsWith('image/')}
-          <img src={media.url} alt={media.filename} class="preview-thumbnail" />
-        {:else if (media.mimetype || '').includes('pdf')}
-          <span class="file-type-icon">📄</span>
-        {:else if (media.mimetype || '').startsWith('audio/')}
-          <span class="file-type-icon">🎵</span>
-        {:else}
-          <span class="file-type-icon">📁</span>
-        {/if}
-        <div class="file-preview-info">
-          <strong class="file-preview-name" title={media.filename || media.originalName}>
-            {media.filename || media.originalName}
-          </strong>
-          <span class="file-preview-size">{formatBytes(media.size || 0)}</span>
+    {:else}
+        <div class="file-preview-card">
+            <div class="file-preview-left">
+                {#if (media.mimetype || '').startsWith('image/')}
+                    <img
+                        src={media.url}
+                        alt={media.filename}
+                        class="preview-thumbnail"
+                    />
+                {:else if (media.mimetype || '').includes('pdf')}
+                    <span class="file-type-icon">📄</span>
+                {:else if (media.mimetype || '').startsWith('audio/')}
+                    <span class="file-type-icon">🎵</span>
+                {:else}
+                    <span class="file-type-icon">📁</span>
+                {/if}
+                <div class="file-preview-info">
+                    <strong
+                        class="file-preview-name"
+                        title={media.filename || media.originalName}
+                    >
+                        {media.filename || media.originalName}
+                    </strong>
+                    <span class="file-preview-size"
+                        >{formatBytes(media.size || 0)}</span
+                    >
+                </div>
+            </div>
+            <button
+                type="button"
+                class="btn-remove-media"
+                onclick={removeMedia}
+                title="Quitar archivo"
+            >
+                &times;
+            </button>
         </div>
-      </div>
-      <button type="button" class="btn-remove-media" onclick={removeMedia} title="Quitar archivo">
-        &times;
-      </button>
-    </div>
-  {/if}
+    {/if}
 </div>
 
 <style>
-  .dropzone-container {
-    width: 100%;
-  }
+    .dropzone-container {
+        width: 100%;
+    }
 
-  .file-dropzone {
-    border: 2px dashed rgba(255, 255, 255, 0.15);
-    background: rgba(15, 23, 42, 0.4);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
+    .file-dropzone {
+        border: 2px dashed rgba(255, 255, 255, 0.15);
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
 
-  .file-dropzone:hover, .file-dropzone.dragover {
-    border-color: var(--wa-primary);
-    background: rgba(37, 211, 102, 0.05);
-  }
+    .file-dropzone:hover,
+    .file-dropzone.dragover {
+        border-color: var(--wa-primary);
+        background: rgba(37, 211, 102, 0.05);
+    }
 
-  .dropzone-icon {
-    color: var(--wa-primary);
-    margin-bottom: 4px;
-  }
+    .dropzone-icon {
+        color: var(--wa-primary);
+        margin-bottom: 4px;
+    }
 
-  .dropzone-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-main);
-  }
+    .dropzone-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
 
-  .dropzone-sub {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-  }
+    .dropzone-sub {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
 
-  .dropzone-spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--wa-primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+    .dropzone-spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-top-color: var(--wa-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
-  .file-preview-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(37, 211, 102, 0.3);
-    border-radius: var(--radius-md);
-    padding: 12px 16px;
-    gap: 12px;
-  }
+    .file-preview-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(37, 211, 102, 0.3);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        gap: 12px;
+    }
 
-  .file-preview-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    overflow: hidden;
-  }
+    .file-preview-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        overflow: hidden;
+    }
 
-  .preview-thumbnail {
-    width: 44px;
-    height: 44px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border-subtle);
-  }
+    .preview-thumbnail {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--border-subtle);
+    }
 
-  .file-type-icon {
-    font-size: 26px;
-    line-height: 1;
-  }
+    .file-type-icon {
+        font-size: 26px;
+        line-height: 1;
+    }
 
-  .file-preview-info {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+    .file-preview-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
 
-  .file-preview-name {
-    font-size: 0.85rem;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 320px;
-  }
+    .file-preview-name {
+        font-size: 0.85rem;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 320px;
+    }
 
-  .file-preview-size {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    font-family: var(--font-mono);
-  }
+    .file-preview-size {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+    }
 
-  .btn-remove-media {
-    background: rgba(244, 63, 94, 0.15);
-    color: #fb7185;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
+    .btn-remove-media {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
 
-  .btn-remove-media:hover {
-    background: rgba(244, 63, 94, 0.3);
-    color: #fff;
-  }
+    .btn-remove-media:hover {
+        background: rgba(244, 63, 94, 0.3);
+        color: #fff;
+    }
 </style>
