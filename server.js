@@ -867,7 +867,9 @@ async function executeScheduleCampaign(companyId, item) {
     }
 
     item.status = 'sending';
-    item.executionLogs = Array.isArray(item.executionLogs) ? item.executionLogs : [];
+    item.sentRecipients = 0;
+    item.failedRecipients = 0;
+    item.executionLogs = [];
     saveData(appData);
     await dataStore.saveScheduleInDb(companyId, item).catch(() => { });
 
@@ -1019,9 +1021,35 @@ async function executeScheduleCampaign(companyId, item) {
     }
 
     if (item.status !== 'cancelled') {
-        item.status = item.sentRecipients > 0 ? 'sent' : 'failed';
-        item.sentAt = new Date().toISOString();
-        console.log(`[${company.name}] 🏁 Campaña "${item.name}" completada: ${item.sentRecipients} entregados, ${item.failedRecipients} fallidos.`);
+        const isRecurring = item.recurrence && item.recurrence !== 'none';
+        if (isRecurring) {
+            // Calcular fecha del próximo ciclo respetando la hora establecida
+            const advanceDate = (d, rec) => {
+                if (rec === 'daily') d.setDate(d.getDate() + 1);
+                else if (rec === 'weekly') d.setDate(d.getDate() + 7);
+                else if (rec === 'monthly') d.setMonth(d.getMonth() + 1);
+                else if (rec === 'yearly') d.setFullYear(d.getFullYear() + 1);
+            };
+
+            let nextDate = new Date(item.scheduledTime);
+            const now = new Date();
+
+            advanceDate(nextDate, item.recurrence);
+            while (nextDate <= now) {
+                advanceDate(nextDate, item.recurrence);
+            }
+
+            item.lastSentAt = new Date().toISOString();
+            item.sentAt = new Date().toISOString();
+            item.scheduledTime = nextDate.toISOString();
+            item.status = 'pending';
+            console.log(`[${company.name}] 🔁 Campaña periódica "${item.name}" (${item.recurrence}) completada (${item.sentRecipients} entregados, ${item.failedRecipients} fallidos). Próximo ciclo programado para: ${nextDate.toLocaleString()}`);
+        } else {
+            item.status = item.sentRecipients > 0 ? 'sent' : 'failed';
+            item.sentAt = new Date().toISOString();
+            item.lastSentAt = new Date().toISOString();
+            console.log(`[${company.name}] 🏁 Campaña "${item.name}" completada: ${item.sentRecipients} entregados, ${item.failedRecipients} fallidos.`);
+        }
     }
 
     saveData(appData);
@@ -1372,23 +1400,23 @@ app.post('/api/upload', (req, res) => {
         const detectedMime = mimetype || (mime && typeof mime.getType === 'function' ? mime.getType(savePath) : null) || 'application/octet-stream';
         const fileUrl = `/uploads/${targetFolder}/${uniqueFilename}`;
 
-            const fileObj = {
-                url: fileUrl,
-                filename: cleanName,
-                mimetype: detectedMime,
-                size: buffer.length
-            };
+        const fileObj = {
+            url: fileUrl,
+            filename: cleanName,
+            mimetype: detectedMime,
+            size: buffer.length
+        };
 
-            res.json({
-                success: true,
-                file: fileObj,
-                ...fileObj
-            });
-        } catch (e) {
-            console.error('Error en /api/upload:', e);
-            res.status(500).json({ error: e.message || 'Error al procesar el archivo subido' });
-        }
-    });
+        res.json({
+            success: true,
+            file: fileObj,
+            ...fileObj
+        });
+    } catch (e) {
+        console.error('Error en /api/upload:', e);
+        res.status(500).json({ error: e.message || 'Error al procesar el archivo subido' });
+    }
+});
 
 // 3. Reiniciar cliente WhatsApp de la empresa seleccionada
 app.post('/api/bot/restart', resolveCompany, async (req, res) => {
@@ -1596,7 +1624,7 @@ app.get('/api/schedules', resolveCompany, (req, res) => {
 });
 
 app.post('/api/schedules', resolveCompany, async (req, res) => {
-    const { name, recipient, message, scheduledTime, media, targetType = 'single', targetValue, delaySeconds = 10 } = req.body;
+    const { name, recipient, message, scheduledTime, media, targetType = 'single', targetValue, delaySeconds = 10, recurrence = 'none' } = req.body;
     const effectiveTargetType = targetType || 'single';
     const effectiveTargetVal = targetValue || recipient || '';
 
@@ -1617,6 +1645,8 @@ app.post('/api/schedules', resolveCompany, async (req, res) => {
         estimatedCount = memberPhones.length;
     }
 
+    const validRecurrence = ['none', 'daily', 'weekly', 'monthly', 'yearly'].includes(recurrence) ? recurrence : 'none';
+
     const newSchedule = {
         id: 'sched-' + Date.now(),
         name: name || (effectiveTargetType === 'single' ? 'Envío Individual' : `Campaña ${effectiveTargetType}: ${effectiveTargetVal}`),
@@ -1627,6 +1657,8 @@ app.post('/api/schedules', resolveCompany, async (req, res) => {
         sentRecipients: 0,
         failedRecipients: 0,
         delaySeconds: parseInt(delaySeconds, 10) || 10,
+        recurrence: validRecurrence,
+        lastSentAt: null,
         executionLogs: [],
         message: message || '',
         media: media || null,
@@ -1657,6 +1689,7 @@ app.put('/api/schedules/:id', resolveCompany, async (req, res) => {
         targetType = 'single',
         targetValue,
         delaySeconds = 10,
+        recurrence,
         relaunch = false
     } = req.body;
 
@@ -1686,6 +1719,9 @@ app.put('/api/schedules/:id', resolveCompany, async (req, res) => {
     item.recipient = effectiveTargetType === 'single' ? effectiveTargetVal.replace(/\D/g, '') : effectiveTargetVal;
     item.totalRecipients = estimatedCount;
     item.delaySeconds = parseInt(delaySeconds, 10) || 10;
+    if (recurrence !== undefined) {
+        item.recurrence = ['none', 'daily', 'weekly', 'monthly', 'yearly'].includes(recurrence) ? recurrence : 'none';
+    }
     item.message = message !== undefined ? message : item.message;
     if (media !== undefined) {
         item.media = media;

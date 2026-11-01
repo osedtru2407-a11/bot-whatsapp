@@ -268,6 +268,8 @@ async function initDb() {
             ALTER TABLE schedules ADD COLUMN IF NOT EXISTS failed_recipients INT DEFAULT 0;
             ALTER TABLE schedules ADD COLUMN IF NOT EXISTS delay_seconds INT DEFAULT 10;
             ALTER TABLE schedules ADD COLUMN IF NOT EXISTS execution_logs JSONB DEFAULT '[]'::jsonb;
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS recurrence VARCHAR(50) DEFAULT 'none';
+            ALTER TABLE schedules ADD COLUMN IF NOT EXISTS last_sent_at TIMESTAMP WITH TIME ZONE;
         `);
 
         // 14. Agenda de Contactos (Directorio general separado del embudo de ventas CRM)

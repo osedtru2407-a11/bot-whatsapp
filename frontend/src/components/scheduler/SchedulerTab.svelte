@@ -20,6 +20,13 @@
     cancelled: 'Cancelado'
   };
 
+  const recurrenceLabels = {
+    daily: '🔁 Diario',
+    weekly: '🔁 Semanal',
+    monthly: '🔁 Mensual',
+    yearly: '🔁 Anual'
+  };
+
   let sendingIds = $state(new Set());
 
   // Polling automático cada 4s si hay alguna campaña en estado 'sending'
@@ -102,6 +109,11 @@
                 {:else}
                   <span class="audience-badge single">👤 Individual</span>
                 {/if}
+                {#if item.recurrence && item.recurrence !== 'none'}
+                  <span class="audience-badge recurrence" title="Campaña periódica recurrente">
+                    {recurrenceLabels[item.recurrence] || item.recurrence}
+                  </span>
+                {/if}
               </div>
               <div class="sched-phone">
                 {#if item.targetType === 'single'}
@@ -136,10 +148,17 @@
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            {#if item.status === 'sent' && item.sentAt}
-              Completado el: <strong>{formatDate(item.sentAt)}</strong>
+            {#if item.recurrence && item.recurrence !== 'none'}
+              <span>
+                Próximo ciclo: <strong>{formatDate(item.scheduledTime)}</strong>
+                {#if item.lastSentAt}
+                  <span class="last-cycle-note"> • Último envío realizado: {formatDate(item.lastSentAt)}</span>
+                {/if}
+              </span>
+            {:else if item.status === 'sent' && item.sentAt}
+              <span>Completado el: <strong>{formatDate(item.sentAt)}</strong></span>
             {:else}
-              Programado para: <strong>{formatDate(item.scheduledTime)}</strong>
+              <span>Programado para: <strong>{formatDate(item.scheduledTime)}</strong></span>
             {/if}
           </div>
 
@@ -278,6 +297,17 @@
   .audience-badge.group {
     background: rgba(168, 85, 247, 0.15);
     color: #c084fc;
+  }
+
+  .audience-badge.recurrence {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  .last-cycle-note {
+    color: #94a3b8;
+    font-size: 0.8rem;
   }
 
   .campaign-progress-box {

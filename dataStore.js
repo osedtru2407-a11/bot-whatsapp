@@ -85,6 +85,8 @@ async function loadAllAppData() {
             sentRecipients: parseInt(sc.sent_recipients, 10) || 0,
             failedRecipients: parseInt(sc.failed_recipients, 10) || 0,
             delaySeconds: parseInt(sc.delay_seconds, 10) || 10,
+            recurrence: sc.recurrence || 'none',
+            lastSentAt: sc.last_sent_at ? new Date(sc.last_sent_at).toISOString() : null,
             executionLogs: Array.isArray(sc.execution_logs) ? sc.execution_logs : [],
             message: sc.message,
             media: sc.media || null,
@@ -311,9 +313,10 @@ async function saveScheduleInDb(companyId, schedule) {
     await pool.query(`
         INSERT INTO schedules (
             id, company_id, name, recipient, message, media, scheduled_time, status, sent_at, created_at,
-            target_type, target_value, total_recipients, sent_recipients, failed_recipients, delay_seconds, execution_logs
+            target_type, target_value, total_recipients, sent_recipients, failed_recipients, delay_seconds, execution_logs,
+            recurrence, last_sent_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
             recipient = EXCLUDED.recipient,
@@ -328,7 +331,9 @@ async function saveScheduleInDb(companyId, schedule) {
             sent_recipients = EXCLUDED.sent_recipients,
             failed_recipients = EXCLUDED.failed_recipients,
             delay_seconds = EXCLUDED.delay_seconds,
-            execution_logs = EXCLUDED.execution_logs;
+            execution_logs = EXCLUDED.execution_logs,
+            recurrence = EXCLUDED.recurrence,
+            last_sent_at = EXCLUDED.last_sent_at;
     `, [
         schedule.id,
         companyId,
@@ -346,7 +351,9 @@ async function saveScheduleInDb(companyId, schedule) {
         parseInt(schedule.sentRecipients, 10) || 0,
         parseInt(schedule.failedRecipients, 10) || 0,
         parseInt(schedule.delaySeconds, 10) || 10,
-        JSON.stringify(schedule.executionLogs || [])
+        JSON.stringify(schedule.executionLogs || []),
+        schedule.recurrence || 'none',
+        schedule.lastSentAt || null
     ]);
 }
 
