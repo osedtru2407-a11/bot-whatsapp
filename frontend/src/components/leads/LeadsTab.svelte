@@ -1,11 +1,4 @@
 <script>
-    import {
-        leads,
-        togglePauseLead,
-        openLeadFiles,
-        openLeadChat,
-        isImportModalOpen,
-    } from '../../stores/leads';
     import { onMount, onDestroy } from 'svelte';
     import {
         leads,

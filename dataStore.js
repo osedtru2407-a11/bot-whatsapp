@@ -153,7 +153,7 @@ async function loadAllAppData() {
 /**
  * Crear empresa en PostgreSQL
  */
-async function createCompanyInDb(id, name, createdBy = null) {
+async function createCompanyInDb(id, name, createdBy = null, linkOwner = true) {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -168,7 +168,7 @@ async function createCompanyInDb(id, name, createdBy = null) {
             ON CONFLICT (company_id) DO NOTHING
         `, [id, name, `¡Hola! Gracias por comunicarte con ${name}. Escribe *menu* para ver las opciones disponibles.`]);
 
-        if (createdBy) {
+        if (createdBy && linkOwner) {
             await client.query(`
                 INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
                 VALUES ($1, $2, $3, 'role_admin', TRUE, 'active')

@@ -6,7 +6,7 @@ const mime = require('mime');
 const { Client, LocalAuth, MessageMedia } = require('./index');
 const geminiService = require('./geminiService');
 const libraryService = require('./libraryService');
-const { initDb } = require('./db');
+const { initDb, pool } = require('./db');
 const dataStore = require('./dataStore');
 const authService = require('./authService');
 const contactsService = require('./contactsService');
@@ -61,6 +61,34 @@ function requireAuth(req, res, next) {
         next();
     } catch (e) {
         return res.status(401).json({ error: 'Sesión expirada o token inválido. Inicia sesión nuevamente.' });
+    }
+}
+
+// Middleware de Superusuario del sistema (acceso exclusivo para administradores de toda la plataforma)
+async function requireSuperadmin(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Inicia sesión como superusuario para continuar.' });
+    }
+    const token = authHeader.slice(7).trim();
+    let decoded;
+    try {
+        decoded = authService.verifyToken(token);
+        req.user = decoded;
+    } catch (e) {
+        return res.status(401).json({ error: 'Sesión expirada o token inválido.' });
+    }
+
+    try {
+        const uRes = await pool.query('SELECT is_superadmin, is_active FROM users WHERE id = $1', [decoded.id]);
+        if (uRes.rows.length === 0 || !uRes.rows[0].is_active || !uRes.rows[0].is_superadmin) {
+            return res.status(403).json({ error: 'Acceso denegado. Se requieren privilegios de Superusuario del sistema.' });
+        }
+        req.user.isSuperadmin = true;
+        next();
+    } catch (err) {
+        console.error('Error verificando superusuario:', err);
+        return res.status(500).json({ error: 'Error verificando permisos de superusuario' });
     }
 }
 
@@ -312,6 +340,31 @@ async function stopCompanyWhatsAppClient(companyId) {
         }
         companyClients.delete(companyId);
     }
+}
+
+// Desvincular completamente WhatsApp de una empresa y reiniciar cliente limpio
+async function unlinkCompanyWhatsApp(companyId) {
+    if (companyClients.has(companyId)) {
+        const holder = companyClients.get(companyId);
+        if (holder && holder.client) {
+            try {
+                await holder.client.logout();
+            } catch (e) { }
+            try {
+                await holder.client.destroy();
+            } catch (e) { }
+        }
+        companyClients.delete(companyId);
+    }
+    const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-${companyId}`);
+    if (fs.existsSync(sessionDir)) {
+        try {
+            fs.rmSync(sessionDir, { recursive: true, force: true });
+        } catch (e) {
+            console.error(`Error borrando sesión de WhatsApp para ${companyId}:`, e.message);
+        }
+    }
+    initCompanyWhatsAppClient(companyId);
 }
 
 function initAllCompanyClients() {
@@ -1060,7 +1113,7 @@ setInterval(async () => {
 // MIDDLEWARE DE RESOLUCIÓN DE EMPRESA
 // =========================================================================
 
-function resolveCompany(req, res, next) {
+async function resolveCompany(req, res, next) {
     const rawQueryId = req.query.companyId;
     const rawHeaderId = req.headers['x-company-id'];
     const rawBodyId = req.body?.companyId;
@@ -1083,6 +1136,24 @@ function resolveCompany(req, res, next) {
     if (!company) {
         return res.status(404).json({ error: 'No se encontró la empresa solicitada en el sistema.' });
     }
+
+    // Validación estricta de pertenencia (aplica a todos los usuarios, incluidos superadministradores)
+    if (req.user && req.user.id) {
+        try {
+            const memberCheck = await pool.query(
+                'SELECT cu.role_id, cu.is_owner, r.permissions FROM company_users cu JOIN roles r ON r.id = cu.role_id WHERE cu.user_id = $1 AND cu.company_id = $2 AND cu.status = $3',
+                [req.user.id, company.id, 'active']
+            );
+            if (memberCheck.rows.length === 0) {
+                return res.status(403).json({ error: `Acceso restringido: no estás vinculado a la empresa "${company.name}".` });
+            }
+            req.companyMembership = memberCheck.rows[0];
+        } catch (dbErr) {
+            console.error('Error validando membresía en resolveCompany:', dbErr);
+            return res.status(500).json({ error: 'Error validando membresía de empresa' });
+        }
+    }
+
     req.company = company;
     req.companyId = company.id;
     next();
@@ -1212,45 +1283,55 @@ app.delete('/api/companies/:id/roles/:roleId', requireAuth, async (req, res) => 
 // RUTAS DE GESTIÓN DE EMPRESAS (MULTI-TENANT CON PERSISTENCIA EN DB)
 // =========================================================================
 
-// Listar empresas disponibles para el usuario
+// Listar empresas disponibles para el usuario (solo aquellas a las que pertenece)
 app.get('/api/companies', async (req, res) => {
-    let allowedCompanyIds = null;
-    if (req.user && req.user.id) {
-        try {
-            const userComps = await authService.getUserCompanies(req.user.id);
-            allowedCompanyIds = new Set(userComps.map(c => c.id));
-        } catch (e) { }
+    if (!req.user || !req.user.id) {
+        return res.json({
+            activeCompanyId: null,
+            companies: []
+        });
     }
 
-    const filtered = allowedCompanyIds
-        ? appData.companies.filter(c => allowedCompanyIds.has(c.id))
-        : appData.companies;
+    try {
+        const userComps = await authService.getUserCompanies(req.user.id);
+        const allowedCompanyIds = new Set(userComps.map(c => c.id));
 
-    const list = filtered.map(c => {
-        const holder = companyClients.get(c.id);
-        return {
-            id: c.id,
-            name: c.name,
-            isActive: c.id === appData.activeCompanyId,
-            status: holder ? holder.status : 'disconnected',
-            phone: holder?.clientInfo?.wid || null,
-            pushname: holder?.clientInfo?.pushname || null,
-            botEnabled: c.settings?.botEnabled !== false,
-            rulesCount: (c.rules || []).length,
-            leadsCount: (c.leads || []).length,
-            libraryCount: (c.library || []).length,
-            pendingSchedulesCount: (c.schedules || []).filter(s => s.status === 'pending').length
-        };
-    });
+        const filtered = appData.companies.filter(c => allowedCompanyIds.has(c.id));
 
-    res.json({
-        activeCompanyId: appData.activeCompanyId,
-        companies: list
-    });
+        const list = filtered.map(c => {
+            const holder = companyClients.get(c.id);
+            return {
+                id: c.id,
+                name: c.name,
+                isActive: c.id === appData.activeCompanyId,
+                status: holder ? holder.status : 'disconnected',
+                phone: holder?.clientInfo?.wid || null,
+                pushname: holder?.clientInfo?.pushname || null,
+                botEnabled: c.settings?.botEnabled !== false,
+                rulesCount: (c.rules || []).length,
+                leadsCount: (c.leads || []).length,
+                libraryCount: (c.library || []).length,
+                pendingSchedulesCount: (c.schedules || []).filter(s => s.status === 'pending').length
+            };
+        });
+
+        let activeCompanyId = appData.activeCompanyId;
+        if (!allowedCompanyIds.has(activeCompanyId)) {
+            activeCompanyId = list.length > 0 ? list[0].id : null;
+        }
+
+        res.json({
+            activeCompanyId,
+            companies: list
+        });
+    } catch (err) {
+        console.error('Error listando empresas del usuario:', err);
+        res.status(500).json({ error: 'Error al listar empresas' });
+    }
 });
 
 // Crear una nueva empresa con su propio bot y entorno aislado
-app.post('/api/companies', async (req, res) => {
+app.post('/api/companies', requireAuth, async (req, res) => {
     try {
         const name = (req.body.name || '').trim();
         if (!name) {
@@ -1265,8 +1346,8 @@ app.post('/api/companies', async (req, res) => {
         appData.activeCompanyId = id;
         saveData(appData);
 
-        // Persistir en PostgreSQL
-        await dataStore.createCompanyInDb(id, name, req.user ? req.user.id : null);
+        // Persistir en PostgreSQL vinculando al creador como propietario
+        await dataStore.createCompanyInDb(id, name, req.user ? req.user.id : null, true);
 
         // Inicializar bot exclusivo para esta empresa
         initCompanyWhatsAppClient(id);
@@ -1279,9 +1360,22 @@ app.post('/api/companies', async (req, res) => {
 });
 
 // Actualizar nombre de empresa
-app.put('/api/companies/:id', async (req, res) => {
+app.put('/api/companies/:id', requireAuth, async (req, res) => {
     const comp = appData.companies.find(c => c.id === req.params.id);
     if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
+
+    // Validar que el usuario sea superadmin o propietario/admin de la empresa
+    try {
+        const member = await pool.query(
+            "SELECT cu.is_owner, cu.role_id FROM company_users cu WHERE cu.user_id = $1 AND cu.company_id = $2 AND cu.status = 'active'",
+            [req.user.id, req.params.id]
+        );
+        if (!req.user.isSuperadmin && (member.rows.length === 0 || (!member.rows[0].is_owner && member.rows[0].role_id !== 'role_admin'))) {
+            return res.status(403).json({ error: 'No tienes permisos de administrador para modificar esta empresa.' });
+        }
+    } catch (err) {
+        return res.status(500).json({ error: 'Error verificando permisos' });
+    }
 
     if (req.body.name) {
         const cleanName = req.body.name.trim();
@@ -1303,20 +1397,44 @@ app.put('/api/companies/:id', async (req, res) => {
     res.json({ success: true, company: comp });
 });
 
-// Seleccionar empresa activa
-app.post('/api/companies/:id/select', (req, res) => {
-    const comp = appData.companies.find(c => c.id === req.params.id);
-    if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
+// Seleccionar empresa activa (solo permitida si el usuario está activamente vinculado a ella)
+app.post('/api/companies/:id/select', requireAuth, async (req, res) => {
+    try {
+        const comp = appData.companies.find(c => c.id === req.params.id);
+        if (!comp) return res.status(404).json({ error: 'Empresa no encontrada' });
 
-    appData.activeCompanyId = comp.id;
-    saveData(appData);
-    res.json({ success: true, activeCompanyId: comp.id, name: comp.name });
+        const userComps = await authService.getUserCompanies(req.user.id);
+        const isMember = userComps.some(c => c.id === comp.id);
+        if (!isMember) {
+            return res.status(403).json({ error: 'Acceso denegado: no estás vinculado a esta empresa.' });
+        }
+
+        appData.activeCompanyId = comp.id;
+        saveData(appData);
+        res.json({ success: true, activeCompanyId: comp.id, name: comp.name });
+    } catch (err) {
+        console.error('Error seleccionando empresa:', err);
+        res.status(500).json({ error: 'Error al cambiar de empresa' });
+    }
 });
 
-// Eliminar una empresa (no se permite si es la única)
-app.delete('/api/companies/:id', async (req, res) => {
+// Eliminar una empresa (no se permite si es la única, y requiere ser propietario o superadmin)
+app.delete('/api/companies/:id', requireAuth, async (req, res) => {
     if (appData.companies.length <= 1) {
         return res.status(400).json({ error: 'No es posible eliminar la única empresa registrada.' });
+    }
+
+    // Validar que sea propietario o superadmin
+    try {
+        const member = await pool.query(
+            "SELECT cu.is_owner FROM company_users cu WHERE cu.user_id = $1 AND cu.company_id = $2 AND cu.status = 'active'",
+            [req.user.id, req.params.id]
+        );
+        if (!req.user.isSuperadmin && (member.rows.length === 0 || !member.rows[0].is_owner)) {
+            return res.status(403).json({ error: 'Solo el propietario de la empresa o un superadministrador pueden eliminarla.' });
+        }
+    } catch (err) {
+        return res.status(500).json({ error: 'Error verificando permisos' });
     }
 
     const index = appData.companies.findIndex(c => c.id === req.params.id);
@@ -2380,11 +2498,13 @@ app.post('/api/gemini/reset', resolveCompany, (req, res) => {
 });
 
 app.get('/api/gemini/status', resolveCompany, (req, res) => {
+    const isSuper = Boolean(req.user?.isSuperadmin);
     const customKey = req.company?.settings?.geminiApiKey || null;
     const model = req.company?.settings?.geminiModel || 'gemini-3.5-flash-lite';
     const hasGlobalKey = geminiService.hasGlobalKey();
     const configured = geminiService.isConfigured(customKey);
-    const maskedKey = customKey ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
+    // Solo mostrar maskedKey al superadmin, a usuarios normales no revelar la clave
+    const maskedKey = (isSuper && customKey) ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
 
     res.json({
         configured,
@@ -2392,12 +2512,13 @@ app.get('/api/gemini/status', resolveCompany, (req, res) => {
         maskedKey,
         model,
         hasGlobalKey,
+        canConfigure: isSuper,
         supportsAudio: true
     });
 });
 
-// Probar conexión de API Key de Gemini
-app.post('/api/gemini/test-key', resolveCompany, async (req, res) => {
+// Probar conexión de API Key de Gemini (Solo Superusuario)
+app.post('/api/gemini/test-key', requireSuperadmin, resolveCompany, async (req, res) => {
     try {
         const { apiKey, model } = req.body;
         const candidateKey = (apiKey && !apiKey.includes('...')) ? apiKey.trim() : (req.company?.settings?.geminiApiKey || null);
@@ -2418,8 +2539,8 @@ app.post('/api/gemini/test-key', resolveCompany, async (req, res) => {
     }
 });
 
-// Guardar configuración exclusiva de Gemini para esta empresa
-app.post('/api/gemini/config', resolveCompany, async (req, res) => {
+// Guardar configuración exclusiva de Gemini para esta empresa (Solo Superusuario)
+app.post('/api/gemini/config', requireSuperadmin, resolveCompany, async (req, res) => {
     try {
         const { apiKey, model } = req.body;
         req.company.settings = req.company.settings || {};
@@ -2457,20 +2578,27 @@ app.post('/api/gemini/config', resolveCompany, async (req, res) => {
 // 10. Configuración General de la empresa seleccionada
 app.get('/api/settings', resolveCompany, (req, res) => {
     const s = req.company.settings || {};
-    const maskedKey = s.geminiApiKey ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
+    const isSuper = Boolean(req.user?.isSuperadmin);
+    const maskedKey = (isSuper && s.geminiApiKey) ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
     res.json({
         ...s,
         geminiApiKeyMasked: maskedKey,
-        isCustomGeminiKey: Boolean(s.geminiApiKey)
+        isCustomGeminiKey: Boolean(s.geminiApiKey),
+        canConfigureGemini: isSuper
     });
 });
 
 app.post('/api/settings', resolveCompany, async (req, res) => {
     const prevApiKey = req.company.settings?.geminiApiKey;
+    const prevModel = req.company.settings?.geminiModel;
     req.company.settings = { ...req.company.settings, ...req.body };
-    if (req.body.geminiApiKey && req.body.geminiApiKey.includes('...')) {
+
+    // Solo superusuarios pueden alterar geminiApiKey y geminiModel
+    if (!req.user?.isSuperadmin || (req.body.geminiApiKey && req.body.geminiApiKey.includes('...'))) {
         req.company.settings.geminiApiKey = prevApiKey;
+        req.company.settings.geminiModel = prevModel || 'gemini-3.5-flash-lite';
     }
+
     if (req.body.businessName) {
         req.company.name = req.body.businessName;
     }
@@ -2478,11 +2606,13 @@ app.post('/api/settings', resolveCompany, async (req, res) => {
     await dataStore.saveCompanySettingsInDb(req.companyId, req.company.settings).catch(e => console.error('Error guardando configuración en DB:', e));
 
     const s = req.company.settings;
-    const maskedKey = s.geminiApiKey ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
+    const isSuper = Boolean(req.user?.isSuperadmin);
+    const maskedKey = (isSuper && s.geminiApiKey) ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
     res.json({
         ...s,
         geminiApiKeyMasked: maskedKey,
-        isCustomGeminiKey: Boolean(s.geminiApiKey)
+        isCustomGeminiKey: Boolean(s.geminiApiKey),
+        canConfigureGemini: isSuper
     });
 });
 
@@ -2606,6 +2736,456 @@ app.post('/api/library/:id/toggle', resolveCompany, async (req, res) => {
     geminiService.clearAllSessions();
 
     res.json({ success: true, active: doc.active });
+});
+
+// =========================================================================
+// RUTAS EXCLUSIVAS DE SUPERUSUARIO DEL SISTEMA (PANEL SUPERADMIN)
+// =========================================================================
+
+// 1. Métricas Globales del Sistema
+app.get('/api/superadmin/stats', requireSuperadmin, async (req, res) => {
+    try {
+        const compCount = await pool.query('SELECT count(*) as count FROM companies');
+        const userCount = await pool.query('SELECT count(*) as count FROM users');
+        const superCount = await pool.query('SELECT count(*) as count FROM users WHERE is_superadmin = TRUE');
+        const leadsCount = await pool.query('SELECT count(*) as count FROM leads');
+        const messagesCount = await pool.query('SELECT count(*) as count FROM messages');
+
+        let activeBotsCount = 0;
+        for (const [_, state] of companyClients.entries()) {
+            if (state && state.status === 'ready') activeBotsCount++;
+        }
+
+        res.json({
+            success: true,
+            stats: {
+                companiesCount: parseInt(compCount.rows[0].count, 10),
+                usersCount: parseInt(userCount.rows[0].count, 10),
+                superadminsCount: parseInt(superCount.rows[0].count, 10),
+                leadsCount: parseInt(leadsCount.rows[0].count, 10),
+                messagesCount: parseInt(messagesCount.rows[0].count, 10),
+                activeBotsCount
+            }
+        });
+    } catch (err) {
+        console.error('Error obteniendo stats de superadmin:', err);
+        res.status(500).json({ error: 'Error cargando estadísticas del sistema' });
+    }
+});
+
+// 2. Listado de todas las empresas para el superadmin (respetando privacidad: sin chats ni lectura de mensajes)
+app.get('/api/superadmin/companies', requireSuperadmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT c.id, c.name, c.created_at, c.created_by,
+                   u.full_name as creator_name,
+                   cs.gemini_api_key, cs.gemini_model, cs.bot_enabled,
+                   (SELECT count(*) FROM company_users cu WHERE cu.company_id = c.id) as members_count,
+                   (SELECT count(*) FROM rules r WHERE r.company_id = c.id) as rules_count,
+                   (SELECT count(*) FROM leads l WHERE l.company_id = c.id) as leads_count,
+                   (SELECT count(*) FROM messages m WHERE m.company_id = c.id) as messages_count
+            FROM companies c
+            LEFT JOIN users u ON u.id = c.created_by
+            LEFT JOIN company_settings cs ON cs.company_id = c.id
+            ORDER BY c.created_at ASC;
+        `;
+        const result = await pool.query(query);
+
+        const companiesList = result.rows.map(row => {
+            const clientState = companyClients.get(row.id);
+            const customKey = row.gemini_api_key;
+            const maskedKey = customKey ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
+
+            return {
+                id: row.id,
+                name: row.name,
+                createdAt: row.created_at,
+                createdBy: row.created_by,
+                creatorName: row.creator_name || 'Sistema',
+                botStatus: clientState ? clientState.status : 'disconnected',
+                botPhone: clientState?.clientInfo?.wid || null,
+                botEnabled: row.bot_enabled !== false,
+                membersCount: parseInt(row.members_count || 0, 10),
+                rulesCount: parseInt(row.rules_count || 0, 10),
+                leadsCount: parseInt(row.leads_count || 0, 10),
+                messagesCount: parseInt(row.messages_count || 0, 10),
+                geminiModel: row.gemini_model || 'gemini-3.5-flash-lite',
+                hasCustomGeminiKey: Boolean(customKey),
+                geminiKeyMasked: maskedKey,
+                geminiConfigured: geminiService.isConfigured(customKey)
+            };
+        });
+
+        res.json({ success: true, companies: companiesList });
+    } catch (err) {
+        console.error('Error listando empresas para superadmin:', err);
+        res.status(500).json({ error: 'Error cargando empresas' });
+    }
+});
+
+// 3. Crear empresa desde Superadmin
+app.post('/api/superadmin/companies', requireSuperadmin, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'El nombre de la empresa es obligatorio' });
+        }
+        const companyId = 'comp_' + Date.now();
+        await dataStore.createCompanyInDb(companyId, name.trim(), req.user.id, false);
+        appData = await dataStore.loadAllAppData();
+        initCompanyWhatsAppClient(companyId);
+
+        res.json({ success: true, companyId, message: `Empresa "${name.trim()}" creada exitosamente` });
+    } catch (err) {
+        console.error('Error creando empresa desde superadmin:', err);
+        res.status(500).json({ error: err.message || 'Error creando empresa' });
+    }
+});
+
+// 4. Modificar datos de empresa desde Superadmin
+app.put('/api/superadmin/companies/:id', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, botEnabled, geminiEnabled } = req.body;
+
+        if (name && name.trim()) {
+            await dataStore.updateCompanyNameInDb(id, name.trim());
+        }
+
+        const comp = appData.companies.find(c => c.id === id);
+        if (comp) {
+            if (name) comp.name = name.trim();
+            if (botEnabled !== undefined) comp.settings.botEnabled = Boolean(botEnabled);
+            if (geminiEnabled !== undefined) comp.settings.geminiEnabled = Boolean(geminiEnabled);
+            await dataStore.saveCompanySettingsInDb(id, comp.settings);
+        }
+
+        res.json({ success: true, message: 'Empresa actualizada correctamente' });
+    } catch (err) {
+        console.error('Error actualizando empresa:', err);
+        res.status(500).json({ error: err.message || 'Error actualizando empresa' });
+    }
+});
+
+// 5. Eliminar empresa desde Superadmin
+app.delete('/api/superadmin/companies/:id', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (appData.companies.length <= 1) {
+            return res.status(400).json({ error: 'No puedes eliminar la única empresa existente en el sistema' });
+        }
+
+        await stopCompanyWhatsAppClient(id);
+        await dataStore.deleteCompanyFromDb(id);
+        appData = await dataStore.loadAllAppData();
+
+        res.json({ success: true, message: 'Empresa eliminada exitosamente' });
+    } catch (err) {
+        console.error('Error eliminando empresa:', err);
+        res.status(500).json({ error: err.message || 'Error eliminando empresa' });
+    }
+});
+
+// 6. Eliminar vinculación de WhatsApp de una empresa (desconectar y limpiar sesión)
+app.post('/api/superadmin/companies/:id/disconnect-whatsapp', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await unlinkCompanyWhatsApp(id);
+        res.json({ success: true, message: 'Sesión de WhatsApp desvinculada exitosamente. La empresa puede escanear un nuevo código QR.' });
+    } catch (err) {
+        console.error('Error desvinculando WhatsApp:', err);
+        res.status(500).json({ error: err.message || 'Error desvinculando WhatsApp' });
+    }
+});
+
+// 7. Limpiar la data de una empresa (mensajes, prospectos y archivos temporales, sin tocar configuración ni reglas)
+app.post('/api/superadmin/companies/:id/clean-data', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const comp = appData.companies.find(c => c.id === id);
+        if (!comp) {
+            return res.status(404).json({ error: 'Empresa no encontrada' });
+        }
+
+        // Purgar mensajes y prospectos de la base de datos
+        await pool.query('DELETE FROM messages WHERE company_id = $1', [id]);
+        await pool.query('DELETE FROM leads WHERE company_id = $1', [id]);
+
+        // Limpiar en memoria
+        comp.leads = [];
+        comp._lastLeadUpdate = Date.now();
+        simulatorLastSentRuleId.delete(id);
+        geminiService.resetSession(id);
+
+        broadcastCompanyEvent(id, 'leads_reloaded', {});
+
+        res.json({
+            success: true,
+            message: `Data de la empresa "${comp.name}" limpiada exitosamente. Se eliminaron mensajes y prospectos.`
+        });
+    } catch (err) {
+        console.error('Error limpiando data de empresa:', err);
+        res.status(500).json({ error: err.message || 'Error limpiando data' });
+    }
+});
+
+// 8. Configurar API Key de Gemini para una empresa específica (Superadmin)
+app.post('/api/superadmin/companies/:id/gemini-config', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { apiKey, model } = req.body;
+        const comp = appData.companies.find(c => c.id === id);
+        if (!comp) {
+            return res.status(404).json({ error: 'Empresa no encontrada' });
+        }
+
+        comp.settings = comp.settings || {};
+        if (apiKey === null || apiKey === '') {
+            comp.settings.geminiApiKey = null;
+        } else if (apiKey && !apiKey.includes('...')) {
+            comp.settings.geminiApiKey = apiKey.trim();
+        }
+
+        if (model) {
+            comp.settings.geminiModel = model.trim();
+        }
+
+        await dataStore.saveCompanySettingsInDb(id, comp.settings);
+
+        const customKey = comp.settings.geminiApiKey || null;
+        const maskedKey = customKey ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
+
+        res.json({
+            success: true,
+            configured: geminiService.isConfigured(customKey),
+            isCustom: Boolean(customKey),
+            maskedKey,
+            model: comp.settings.geminiModel || 'gemini-3.5-flash-lite',
+            hasGlobalKey: geminiService.hasGlobalKey()
+        });
+    } catch (err) {
+        console.error('Error configurando Gemini para empresa:', err);
+        res.status(500).json({ error: err.message || 'Error guardando clave de Gemini' });
+    }
+});
+
+// 9. Listado de todos los usuarios del sistema (Superadmin)
+app.get('/api/superadmin/users', requireSuperadmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT u.id, u.email, u.full_name, u.phone, u.is_active, u.is_superadmin, u.created_at,
+                   COALESCE(
+                     json_agg(
+                       json_build_object(
+                         'companyId', c.id,
+                         'companyName', c.name,
+                         'roleId', r.id,
+                         'roleName', r.name,
+                         'isOwner', cu.is_owner,
+                         'status', cu.status
+                       )
+                     ) FILTER (WHERE c.id IS NOT NULL),
+                     '[]'::json
+                   ) as memberships
+            FROM users u
+            LEFT JOIN company_users cu ON cu.user_id = u.id
+            LEFT JOIN companies c ON c.id = cu.company_id
+            LEFT JOIN roles r ON r.id = cu.role_id
+            GROUP BY u.id, u.email, u.full_name, u.phone, u.is_active, u.is_superadmin, u.created_at
+            ORDER BY u.created_at ASC;
+        `;
+        const result = await pool.query(query);
+        res.json({ success: true, users: result.rows });
+    } catch (err) {
+        console.error('Error listando usuarios para superadmin:', err);
+        res.status(500).json({ error: 'Error cargando usuarios' });
+    }
+});
+
+// 10. Crear nuevo usuario (Superadmin)
+app.post('/api/superadmin/users', requireSuperadmin, async (req, res) => {
+    try {
+        const { fullName, email, password, phone, isSuperadmin, companyId, roleId } = req.body;
+        const cleanEmail = (email || '').trim().toLowerCase();
+        const cleanName = (fullName || '').trim();
+
+        if (!cleanEmail || !password || !cleanName) {
+            return res.status(400).json({ error: 'Nombre completo, correo y contraseña son obligatorios' });
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+        }
+
+        const existing = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1', [cleanEmail]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: 'El correo electrónico ya se encuentra registrado' });
+        }
+
+        const userId = 'usr_' + Date.now();
+        const passwordHash = await authService.hashPassword(password);
+
+        await pool.query(`
+            INSERT INTO users (id, email, password_hash, full_name, phone, is_active, must_change_password, is_superadmin)
+            VALUES ($1, $2, $3, $4, $5, TRUE, FALSE, $6)
+        `, [userId, cleanEmail, passwordHash, cleanName, phone || null, Boolean(isSuperadmin)]);
+
+        // Si se asignó empresa
+        if (companyId && roleId) {
+            await pool.query(`
+                INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
+                VALUES ($1, $2, $3, $4, FALSE, 'active')
+                ON CONFLICT (user_id, company_id) DO NOTHING
+            `, [`cu_${companyId}_${userId}`, userId, companyId, roleId]);
+        }
+
+        res.json({ success: true, userId, message: 'Usuario creado exitosamente' });
+    } catch (err) {
+        console.error('Error creando usuario desde superadmin:', err);
+        res.status(500).json({ error: err.message || 'Error creando usuario' });
+    }
+});
+
+// 11. Modificar usuario (Superadmin)
+app.put('/api/superadmin/users/:id', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fullName, email, phone, isActive } = req.body;
+
+        const cleanEmail = (email || '').trim().toLowerCase();
+        const cleanName = (fullName || '').trim();
+
+        if (cleanEmail) {
+            const checkEmail = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1 AND id != $2', [cleanEmail, id]);
+            if (checkEmail.rows.length > 0) {
+                return res.status(400).json({ error: 'El correo electrónico ya está en uso por otro usuario' });
+            }
+        }
+
+        await pool.query(`
+            UPDATE users SET
+                full_name = COALESCE($1, full_name),
+                email = COALESCE($2, email),
+                phone = COALESCE($3, phone),
+                is_active = COALESCE($4, is_active),
+                updated_at = NOW()
+            WHERE id = $5
+        `, [cleanName || null, cleanEmail || null, phone || null, isActive !== undefined ? Boolean(isActive) : null, id]);
+
+        res.json({ success: true, message: 'Usuario actualizado exitosamente' });
+    } catch (err) {
+        console.error('Error modificando usuario:', err);
+        res.status(500).json({ error: err.message || 'Error actualizando usuario' });
+    }
+});
+
+// 12. Eliminar usuario (Superadmin)
+app.delete('/api/superadmin/users/:id', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.user.id === id) {
+            return res.status(400).json({ error: 'No puedes eliminar tu propia cuenta de superusuario en uso' });
+        }
+
+        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Usuario eliminado exitosamente' });
+    } catch (err) {
+        console.error('Error eliminando usuario:', err);
+        res.status(500).json({ error: err.message || 'Error eliminando usuario' });
+    }
+});
+
+// 13. Restablecer contraseña de usuario (Superadmin)
+app.post('/api/superadmin/users/:id/reset-password', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { newPassword, requireChangeOnLogin } = req.body;
+
+        if (!newPassword || newPassword.trim().length < 6) {
+            return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres' });
+        }
+
+        const passwordHash = await authService.hashPassword(newPassword.trim());
+        await pool.query(`
+            UPDATE users SET
+                password_hash = $1,
+                must_change_password = $2,
+                updated_at = NOW()
+            WHERE id = $3
+        `, [passwordHash, Boolean(requireChangeOnLogin), id]);
+
+        res.json({
+            success: true,
+            message: 'Contraseña restablecida exitosamente.',
+            temporaryPassword: newPassword.trim()
+        });
+    } catch (err) {
+        console.error('Error restableciendo contraseña:', err);
+        res.status(500).json({ error: err.message || 'Error al restablecer contraseña' });
+    }
+});
+
+// 14. Promover / Degradar Superusuario
+app.post('/api/superadmin/users/:id/toggle-superadmin', requireSuperadmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isSuperadmin } = req.body;
+
+        if (!isSuperadmin && req.user.id === id) {
+            const countRes = await pool.query('SELECT count(*) as count FROM users WHERE is_superadmin = TRUE AND id != $1', [id]);
+            if (parseInt(countRes.rows[0].count, 10) === 0) {
+                return res.status(400).json({ error: 'No puedes revocar tu propio superusuario siendo el único superusuario del sistema.' });
+            }
+        }
+
+        await pool.query('UPDATE users SET is_superadmin = $1, updated_at = NOW() WHERE id = $2', [Boolean(isSuperadmin), id]);
+
+        res.json({
+            success: true,
+            isSuperadmin: Boolean(isSuperadmin),
+            message: isSuperadmin ? 'El usuario ahora es Superusuario del sistema.' : 'Se revocaron los privilegios de Superusuario.'
+        });
+    } catch (err) {
+        console.error('Error cambiando rol de superusuario:', err);
+        res.status(500).json({ error: err.message || 'Error actualizando permisos' });
+    }
+});
+
+// 15. Vincular usuario a empresa (Superadmin)
+app.post('/api/superadmin/users/:id/companies', requireSuperadmin, async (req, res) => {
+    try {
+        const { id: userId } = req.params;
+        const { companyId, roleId, isOwner } = req.body;
+
+        if (!companyId || !roleId) {
+            return res.status(400).json({ error: 'Empresa y Rol son obligatorios' });
+        }
+
+        await pool.query(`
+            INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
+            VALUES ($1, $2, $3, $4, $5, 'active')
+            ON CONFLICT (user_id, company_id) DO UPDATE SET
+                role_id = EXCLUDED.role_id,
+                is_owner = EXCLUDED.is_owner,
+                status = 'active';
+        `, [`cu_${companyId}_${userId}`, userId, companyId, roleId, Boolean(isOwner)]);
+
+        res.json({ success: true, message: 'Usuario vinculado a la empresa exitosamente' });
+    } catch (err) {
+        console.error('Error vinculando usuario a empresa:', err);
+        res.status(500).json({ error: err.message || 'Error vinculando usuario a empresa' });
+    }
+});
+
+// 16. Desvincular usuario de empresa (Superadmin)
+app.delete('/api/superadmin/users/:id/companies/:companyId', requireSuperadmin, async (req, res) => {
+    try {
+        const { id: userId, companyId } = req.params;
+        await pool.query('DELETE FROM company_users WHERE user_id = $1 AND company_id = $2', [userId, companyId]);
+        res.json({ success: true, message: 'Usuario desvinculado de la empresa exitosamente' });
+    } catch (err) {
+        console.error('Error desvinculando usuario de empresa:', err);
+        res.status(500).json({ error: err.message || 'Error desvinculando usuario' });
+    }
 });
 
 // =========================================================================

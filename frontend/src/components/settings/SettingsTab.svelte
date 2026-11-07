@@ -4,7 +4,7 @@
         geminiStatus,
         saveSettings,
     } from '../../stores/settings';
-    import { hasPermission } from '../../stores/auth';
+    import { hasPermission, isSuperadmin } from '../../stores/auth';
     import GeminiKeyModal from './GeminiKeyModal.svelte';
 
     let businessName = $state('');
@@ -84,34 +84,60 @@
                             </p>
                         </div>
                     </div>
-                    <div class="gemini-badges-row">
+                    <div class="gemini-badges-col">
+                        <!-- 1. status-badge encima de la aclaración -->
+                        <div class="badge-wrapper">
+                            {#if $geminiStatus.isCustom}
+                                <span
+                                    class="status-badge is-custom"
+                                    title="Esta empresa tiene su propia API Key"
+                                >
+                                    🔑 Clave Exclusiva ({$geminiStatus.maskedKey ||
+                                        'Configurada'})
+                                </span>
+                            {:else if $geminiStatus.hasGlobalKey}
+                                <span
+                                    class="status-badge is-global"
+                                    title="Esta empresa comparte la clave global del servidor"
+                                >
+                                    🌐 Clave Global
+                                </span>
+                            {:else}
+                                <span
+                                    class="status-badge no-key"
+                                    title="No hay ninguna clave configurada"
+                                >
+                                    ⚠️ Sin Clave de Gemini
+                                </span>
+                            {/if}
+                        </div>
+
+                        <!-- 2. Subtítulo con las implicaciones de la key usada -->
                         {#if $geminiStatus.isCustom}
-                            <span
-                                class="status-badge is-custom"
-                                title="Esta empresa tiene su propia API Key"
-                            >
-                                🔑 Clave Exclusiva ({$geminiStatus.maskedKey ||
-                                    'Configurada'})
-                            </span>
+                            <p class="gemini-subtitle key-implications">
+                                Estás usando la versión premium de nuestro
+                                servicio de chatbot, esto implica que tienes
+                                un bot dedicado exclusivamente a tu
+                                servicio, por lo que tendrás velocidades de
+                                respuesta más rápidas.
+                            </p>
                         {:else if $geminiStatus.hasGlobalKey}
-                            <span
-                                class="status-badge is-global"
-                                title="Esta empresa comparte la clave global del servidor"
-                            >
-                                🌐 Clave Global
-                            </span>
-                        {:else}
-                            <span
-                                class="status-badge no-key"
-                                title="No hay ninguna clave configurada"
-                            >
-                                ⚠️ Sin Clave de Gemini
-                            </span>
+                            <p class="gemini-subtitle key-implications">
+                                Estás usando la versión regular de nuestro
+                                servicio de chatbot, esto implica que las
+                                velocidades de respuesta se pueden ver
+                                afectadas, si quieres más velocidad de
+                                respuesta paga por nuestra versión premium.
+                            </p>
                         {/if}
-                        <span class="model-badge"
-                            >⚡ {$geminiStatus.model ||
-                                'gemini-3.5-flash-lite'}</span
-                        >
+
+                        <!-- 3. model-badge debajo de esa aclaración -->
+                        <div class="badge-wrapper">
+                            <span class="model-badge"
+                                >⚡ {$geminiStatus.model ||
+                                    'gemini-3.5-flash-lite'}</span
+                            >
+                        </div>
                     </div>
                 </div>
 
@@ -133,7 +159,7 @@
 
                     <div class="gemini-key-action-col">
                         <div class="btn-spacer" aria-hidden="true"></div>
-                        {#if $hasPermission('settings:edit')}
+                        {#if $isSuperadmin}
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-configure-key"
@@ -288,11 +314,20 @@
         line-height: 1.4;
     }
 
-    .gemini-badges-row {
+    .gemini-badges-col {
         display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: wrap;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+        max-width: 480px;
+    }
+    .badge-wrapper {
+        display: inline-flex;
+    }
+    .key-implications {
+        margin: 2px 0 !important;
+        font-size: 12px !important;
+        line-height: 1.35 !important;
     }
 
     .gemini-card-body {

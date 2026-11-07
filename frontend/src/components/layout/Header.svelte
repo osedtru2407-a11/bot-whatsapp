@@ -16,9 +16,10 @@
     currentUser, 
     userMembership, 
     hasPermission, 
+    isSuperadmin,
     logout 
   } from '../../stores/auth';
-  import { isChangePasswordModalOpen } from '../../stores/ui';
+  import { isChangePasswordModalOpen, activeTab } from '../../stores/ui';
 
   let { onCompanySwitched } = $props();
 
@@ -65,12 +66,17 @@
         onchange={handleCompanyChange}
         class="company-select" 
         aria-label="Seleccionar Empresa"
+        disabled={$companies.length === 0}
       >
-        {#each $companies as comp (comp.id)}
-          <option value={comp.id}>
-            {comp.name}{comp.phone ? ` (+${comp.phone})` : (comp.status === 'ready' ? ' (Conectado)' : ' (Sin vincular)')}
-          </option>
-        {/each}
+        {#if $companies.length === 0}
+          <option value="">(Sin empresas vinculadas)</option>
+        {:else}
+          {#each $companies as comp (comp.id)}
+            <option value={comp.id}>
+              {comp.name}{comp.phone ? ` (+${comp.phone})` : (comp.status === 'ready' ? ' (Conectado)' : ' (Sin vincular)')}
+            </option>
+          {/each}
+        {/if}
       </select>
     </div>
 
@@ -180,6 +186,19 @@
       </button>
     {/if}
 
+    <!-- Botón de Acceso Permanente a Panel Superadmin (Solo visible para Superadmins) -->
+    {#if $isSuperadmin}
+      <button 
+        type="button" 
+        class="btn btn-superadmin-header {$activeTab === 'tab-superadmin' ? 'active' : ''}" 
+        onclick={() => activeTab.set('tab-superadmin')}
+        title="Abrir Panel de Superusuario Global (ROOT)"
+      >
+        <span class="header-crown-icon">👑</span>
+        <span class="header-superadmin-text">Panel Superadmin</span>
+      </button>
+    {/if}
+
     <!-- User Profile & Session -->
     {#if $currentUser}
       <div class="user-header-profile">
@@ -190,7 +209,7 @@
           <div class="user-info-text">
             <span class="user-name">{$currentUser.fullName || $currentUser.username}</span>
             <span class="user-role-pill">
-              {$userMembership?.roleName || '👑 Administrador'}
+              {$userMembership?.roleName || ($isSuperadmin ? '⭐ Superusuario' : '👑 Administrador')}
             </span>
           </div>
         </div>
@@ -294,5 +313,37 @@
 
   input:checked + .slider:before {
     transform: translateX(18px);
+  }
+
+  .btn-superadmin-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.28));
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    color: #fef08a;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .btn-superadmin-header:hover {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.32), rgba(217, 119, 6, 0.45));
+    border-color: #f59e0b;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  }
+  .btn-superadmin-header.active {
+    background: #f59e0b;
+    color: #000;
+    border-color: #fbbf24;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.6);
+  }
+  .header-crown-icon {
+    font-size: 0.95rem;
+    line-height: 1;
   }
 </style>

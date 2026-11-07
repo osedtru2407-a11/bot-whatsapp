@@ -94,6 +94,7 @@ async function initDb() {
                 phone VARCHAR(50),
                 is_active BOOLEAN DEFAULT TRUE,
                 must_change_password BOOLEAN DEFAULT FALSE,
+                is_superadmin BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
@@ -321,6 +322,12 @@ async function initDb() {
             UPDATE company_settings SET gemini_model = 'gemini-3.5-flash-lite' WHERE gemini_model = 'gemini-2.5-flash' OR gemini_model IS NULL;
         `);
 
+        // 16. Rol de Superusuario del sistema
+        await client.query(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superadmin BOOLEAN DEFAULT FALSE;
+            UPDATE users SET is_superadmin = TRUE WHERE LOWER(email) = 'admin@admin.com';
+        `);
+
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
             await client.query(`
@@ -363,26 +370,24 @@ async function initDb() {
             const adminId = 'usr_' + Date.now();
 
             await client.query(`
-                INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password)
-                VALUES ($1, $2, $3, $4, TRUE, FALSE)
+                INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password, is_superadmin)
+                VALUES ($1, $2, $3, $4, TRUE, FALSE, TRUE)
                 ON CONFLICT (email) DO NOTHING;
             `, [adminId, defaultEmail, passwordHash, 'Oscar']);
 
             console.log(`👤 Usuario Administrador por defecto inicializado: ${defaultEmail}`);
         }
 
-        // Asegurar membresía de admin en empresas existentes
-        const companiesRes = await client.query('SELECT id FROM companies');
+        // Asegurar membresía de admin únicamente en la empresa por defecto 'default'
+        const defaultCompRes = await client.query("SELECT id FROM companies WHERE id = 'default'");
         const adminRes = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [`${(process.env.POSTGRES_USER || 'oscar').toLowerCase()}@admin.com`]);
-        if (adminRes.rows.length > 0) {
+        if (adminRes.rows.length > 0 && defaultCompRes.rows.length > 0) {
             const adminId = adminRes.rows[0].id;
-            for (const comp of companiesRes.rows) {
-                await client.query(`
-                    INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
-                    VALUES ($1, $2, $3, 'role_admin', TRUE, 'active')
-                    ON CONFLICT (user_id, company_id) DO NOTHING;
-                `, [`cu_${comp.id}_${adminId}`, adminId, comp.id]);
-            }
+            await client.query(`
+                INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
+                VALUES ($1, $2, 'default', 'role_admin', TRUE, 'active')
+                ON CONFLICT (user_id, company_id) DO NOTHING;
+            `, [`cu_default_${adminId}`, adminId]);
         }
 
         await client.query('COMMIT');

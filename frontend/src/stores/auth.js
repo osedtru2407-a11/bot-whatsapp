@@ -1,7 +1,9 @@
 // frontend/src/stores/auth.js
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { api, getStoredToken, setStoredToken, setStoredCompanyId, setUnauthorizedHandler } from '../services/api';
 import { showToast } from './toast';
+import { activeTab } from './ui';
+import { clearSuperadminStores } from './superadmin';
 
 export const currentUser = writable(null);
 export const userMembership = writable(null);
@@ -12,6 +14,11 @@ export const isAuthModalOpen = writable(false);
 export const isAuthenticated = derived(
   [currentUser, authToken],
   ([$user, $token]) => !!($user && $token)
+);
+
+export const isSuperadmin = derived(
+  currentUser,
+  ($user) => Boolean($user?.isSuperadmin)
 );
 
 export const hasPermission = derived(permissions, ($perms) => {
@@ -34,6 +41,10 @@ export async function checkAuth() {
     currentUser.set(null);
     userMembership.set(null);
     permissions.set(new Set());
+    clearSuperadminStores();
+    if (get(activeTab) === 'tab-superadmin') {
+      activeTab.set('tab-rules');
+    }
     isAuthModalOpen.set(true);
     return false;
   }
@@ -44,6 +55,14 @@ export async function checkAuth() {
     userMembership.set(data.membership || null);
     const permsList = data.membership?.permissions || [];
     permissions.set(new Set(permsList));
+
+    if (!data.user?.isSuperadmin) {
+      clearSuperadminStores();
+      if (get(activeTab) === 'tab-superadmin') {
+        activeTab.set('tab-rules');
+      }
+    }
+
     isAuthModalOpen.set(false);
     return true;
   } catch (err) {
@@ -52,6 +71,10 @@ export async function checkAuth() {
     currentUser.set(null);
     userMembership.set(null);
     permissions.set(new Set());
+    clearSuperadminStores();
+    if (get(activeTab) === 'tab-superadmin') {
+      activeTab.set('tab-rules');
+    }
     isAuthModalOpen.set(true);
     return false;
   }
@@ -73,6 +96,15 @@ export async function login(identifier, password) {
 
     const permsList = data.membership?.permissions || [];
     permissions.set(new Set(permsList));
+
+    // Si el usuario que ingresa NO es superadmin, limpiar datos y salir del panel superadmin
+    if (!data.user?.isSuperadmin) {
+      clearSuperadminStores();
+      if (get(activeTab) === 'tab-superadmin') {
+        activeTab.set('tab-rules');
+      }
+    }
+
     isAuthModalOpen.set(false);
 
     showToast(`¡Bienvenido de vuelta, ${data.user.fullName || data.user.username}!`, 'success');
@@ -104,6 +136,10 @@ export async function register(fullName, email, password, companyName) {
 
     const permsList = data.membership?.permissions || ['*'];
     permissions.set(new Set(permsList));
+    clearSuperadminStores();
+    if (get(activeTab) === 'tab-superadmin') {
+      activeTab.set('tab-rules');
+    }
     isAuthModalOpen.set(false);
 
     showToast(`¡Cuenta creada con éxito! Bienvenido, ${data.user.fullName}!`, 'success');
@@ -119,6 +155,8 @@ export function logout(notify = true) {
   currentUser.set(null);
   userMembership.set(null);
   permissions.set(new Set());
+  clearSuperadminStores();
+  activeTab.set('tab-rules');
   isAuthModalOpen.set(true);
   if (notify) {
     showToast('Sesión cerrada correctamente', 'info');

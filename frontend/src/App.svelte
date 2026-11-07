@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
-    import { isAuthenticated, checkAuth } from './stores/auth';
+    import { isAuthenticated, checkAuth, isSuperadmin } from './stores/auth';
     import { loadCompanies, currentCompanyId } from './stores/company';
     import {
         startStatusPolling,
@@ -52,6 +52,7 @@
     import LibraryTab from './components/library/LibraryTab.svelte';
     import SettingsTab from './components/settings/SettingsTab.svelte';
     import TeamTab from './components/team/TeamTab.svelte';
+    import SuperAdminTab from './components/superadmin/SuperAdminTab.svelte';
 
     async function refreshAllCompanyData() {
         await Promise.all([
@@ -84,7 +85,13 @@
     // Watch for auth state changes
     $effect(() => {
         if ($isAuthenticated) {
-            loadCompanies().then(() => refreshAllCompanyData());
+            loadCompanies().then((comps) => {
+                if (comps && comps.length > 0) {
+                    refreshAllCompanyData();
+                } else if ($isSuperadmin) {
+                    activeTab.set('tab-superadmin');
+                }
+            });
             startStatusPolling(3500);
         } else {
             stopStatusPolling();
@@ -96,6 +103,13 @@
     $effect(() => {
         if ($isAuthenticated && $currentCompanyId) {
             initCompanyRealtimeEvents($currentCompanyId);
+        }
+    });
+
+    // Bloquear acceso a tab-superadmin si el usuario no es superadmin
+    $effect(() => {
+        if (!$isSuperadmin && $activeTab === 'tab-superadmin') {
+            activeTab.set('tab-rules');
         }
     });
 </script>
@@ -123,6 +137,8 @@
                 <SettingsTab />
             {:else if $activeTab === 'tab-team'}
                 <TeamTab />
+            {:else if $activeTab === 'tab-superadmin' && $isSuperadmin}
+                <SuperAdminTab />
             {/if}
         </main>
     </div>

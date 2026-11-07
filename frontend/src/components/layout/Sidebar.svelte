@@ -4,7 +4,7 @@
   import { botStatus, isQrModalOpen } from '../../stores/botStatus';
   import { libraryStats } from '../../stores/library';
   import { teamMembers } from '../../stores/team';
-  import { hasPermission } from '../../stores/auth';
+  import { hasPermission, isSuperadmin } from '../../stores/auth';
 
   function setTab(tabId) {
     activeTab.set(tabId);
@@ -17,6 +17,34 @@
 
 <aside class="sidebar-wrapper {$isSidebarCollapsed ? 'collapsed' : ''}" aria-label="Navegación principal">
   <div class="sidebar-scroll-area">
+    <!-- Grupo 0: Panel de Superusuario Global (ROOT) - Siempre visible al inicio para Superadmins -->
+    {#if $isSuperadmin}
+      <div class="nav-section superadmin-nav-group top">
+        {#if !$isSidebarCollapsed}
+          <span class="nav-section-title superadmin-title">👑 Sistema Global</span>
+        {/if}
+
+        <button 
+          type="button" 
+          class="sidebar-nav-item superadmin-btn {$activeTab === 'tab-superadmin' ? 'active' : ''}" 
+          onclick={() => setTab('tab-superadmin')}
+          title="Panel de Superusuario (Programador / Admin Global)"
+        >
+          <div class="nav-icon-box crown-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          {#if !$isSidebarCollapsed}
+            <span class="nav-label superadmin-label">Panel Superadmin</span>
+            <span class="sidebar-badge superadmin-badge">ROOT</span>
+          {:else}
+            <span class="collapsed-dot superadmin-dot" title="Panel Superadmin"></span>
+          {/if}
+        </button>
+      </div>
+    {/if}
+
     <!-- Grupo 1: Operación & Mensajes -->
     <div class="nav-section">
       {#if !$isSidebarCollapsed}
@@ -384,6 +412,52 @@
     background: rgba(16, 185, 129, 0.2);
     color: #34d399;
   }
+  .sidebar-badge.superadmin-badge {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.4));
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    letter-spacing: 0.5px;
+  }
+
+  .superadmin-nav-group {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(245, 158, 11, 0.25);
+  }
+  .superadmin-nav-group.top {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-top: 0;
+    padding-bottom: 10px;
+    border-top: none;
+    border-bottom: 1px dashed rgba(245, 158, 11, 0.25);
+  }
+  .superadmin-title {
+    color: #fbbf24 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+  }
+  .superadmin-btn {
+    border: 1px solid rgba(245, 158, 11, 0.15) !important;
+    background: rgba(245, 158, 11, 0.04) !important;
+  }
+  .superadmin-btn:hover {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.35) !important;
+  }
+  .superadmin-btn.active {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.1)) !important;
+    border-left: 3px solid #f59e0b !important;
+    border-color: rgba(245, 158, 11, 0.5) !important;
+    color: #fff !important;
+  }
+  .crown-icon {
+    color: #fbbf24;
+  }
+  .superadmin-label {
+    font-weight: 600;
+    color: #fef3c7;
+  }
 
   .collapsed-dot {
     position: absolute;
@@ -396,6 +470,7 @@
   .collapsed-dot.schedules { background: #38bdf8; }
   .collapsed-dot.library { background: #c084fc; }
   .collapsed-dot.team { background: #34d399; }
+  .collapsed-dot.superadmin-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 
   /* Pie de la barra lateral */
   .sidebar-footer {

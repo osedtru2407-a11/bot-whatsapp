@@ -32,7 +32,8 @@ function generateToken(user) {
             id: user.id,
             userId: user.id,
             email: user.email,
-            fullName: user.full_name
+            fullName: user.full_name || user.fullName,
+            isSuperadmin: Boolean(user.is_superadmin || user.isSuperadmin)
         },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
@@ -100,7 +101,8 @@ function verifyToken(token) {
                 username: user.email ? user.email.split('@')[0] : cleanIdentifier,
                 fullName: user.full_name,
                 phone: user.phone,
-                mustChangePassword: Boolean(user.must_change_password)
+                mustChangePassword: Boolean(user.must_change_password),
+                isSuperadmin: Boolean(user.is_superadmin)
             },
             token,
         companies,
@@ -176,7 +178,8 @@ function verifyToken(token) {
                     id: userId,
                     email: cleanEmail,
                     fullName: cleanName,
-                    mustChangePassword: false
+                    mustChangePassword: false,
+                    isSuperadmin: false
                 },
                 token,
                 companies,
@@ -224,7 +227,7 @@ function verifyToken(token) {
      * Obtener perfil completo y contexto de permisos para una empresa específica
      */
     async function getUserContext(userId, companyId) {
-        const userRes = await pool.query('SELECT id, email, full_name, phone, must_change_password FROM users WHERE id = $1', [userId]);
+        const userRes = await pool.query('SELECT id, email, full_name, phone, must_change_password, is_superadmin FROM users WHERE id = $1', [userId]);
         if (userRes.rows.length === 0) return null;
 
         const user = userRes.rows[0];
@@ -241,7 +244,8 @@ function verifyToken(token) {
                 email: user.email,
                 fullName: user.full_name,
                 phone: user.phone,
-                mustChangePassword: Boolean(user.must_change_password)
+                mustChangePassword: Boolean(user.must_change_password),
+                isSuperadmin: Boolean(user.is_superadmin)
             },
             companies,
             activeCompany: activeCompany || null,
@@ -574,6 +578,7 @@ function verifyToken(token) {
         createCustomRole,
         deleteCustomRole,
         changePassword,
+        hashPassword,
         authenticateToken,
         generateToken,
         verifyToken
