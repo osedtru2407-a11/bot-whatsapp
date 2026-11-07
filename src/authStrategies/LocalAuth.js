@@ -55,17 +55,19 @@ class LocalAuth extends BaseAuthStrategy {
 
     async logout() {
         if (this.userDataDir) {
-            await fs.promises
-                .rm(this.userDataDir, {
-                    recursive: true,
-                    force: true,
-                    maxRetries: this.rmMaxRetries,
-                })
-                .catch((e) => {
-                    throw new Error(e);
+                    try {
+                        await fs.promises.rm(this.userDataDir, {
+                            recursive: true,
+                            force: true,
+                                maxRetries: this.rmMaxRetries ?? 5,
+                                    retryDelay: 300,
                 });
-        }
+                    } catch(e) {
+                        // En Windows/OneDrive Chromium retiene archivos temporales (.db-journal) brevemente
+                        console.warn(`[LocalAuth] Aviso limpiando sesión en logout (${this.userDataDir}):`, e.message);
+                    }
+                }
     }
-}
+    }
 
 module.exports = LocalAuth;

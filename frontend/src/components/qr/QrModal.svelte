@@ -1,7 +1,13 @@
 <script>
-  import { botStatus, isQrModalOpen, autoCloseNotice, restartBot, disconnectBot } from '../../stores/botStatus';
+  import { botStatus, isQrModalOpen, autoCloseNotice, restartBot, disconnectBot, fetchBotStatus } from '../../stores/botStatus';
   import { activeCompany } from '../../stores/company';
   import Modal from '../common/Modal.svelte';
+
+  $effect(() => {
+    if ($isQrModalOpen) {
+      fetchBotStatus();
+    }
+  });
 
   function handleClose() {
     isQrModalOpen.set(false);
@@ -12,6 +18,13 @@
       return;
     }
     await disconnectBot();
+  }
+
+  async function handleForceClean() {
+    if (!confirm('¿Deseas limpiar las credenciales locales anteriores y forzar la generación de un nuevo código QR limpio?')) {
+      return;
+    }
+    await restartBot(true);
   }
 </script>
 
@@ -80,6 +93,23 @@
         </div>
       </div>
 
+    {:else if $botStatus.status === 'authenticated'}
+      <!-- Vista Sincronizando / Restaurando sesión -->
+      <div class="qr-view-box">
+        <div class="qr-loading-box">
+          <div class="spinner"></div>
+          <h4>Sincronizando con WhatsApp...</h4>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">
+            Sesión detectada. Sincronizando chats y preparando el bot para "{$activeCompany?.name || 'esta empresa'}".
+          </p>
+          <div style="margin-top: 16px;">
+            <button type="button" class="btn-clean-link" onclick={handleForceClean}>
+              ¿El teléfono se desvinculó o no avanza? Limpiar y forzar nuevo QR
+            </button>
+          </div>
+        </div>
+      </div>
+
     {:else}
       <!-- Vista Cargando / Generando -->
       <div class="qr-view-box">
@@ -89,16 +119,34 @@
           <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">
             Iniciando sesión aislada de WhatsApp Web para "{$activeCompany?.name || 'esta empresa'}". Por favor espera unos segundos.
           </p>
+          <div style="margin-top: 16px;">
+            <button type="button" class="btn-clean-link" onclick={handleForceClean}>
+              ¿No aparece el QR o se desvinculó tu teléfono? Limpiar y forzar nuevo QR
+            </button>
+          </div>
         </div>
       </div>
     {/if}
   </div>
 
   {#snippet actions()}
-    <div style="display: flex; justify-content: space-between; width: 100%;">
-      <button type="button" class="btn btn-secondary" onclick={restartBot}>
-        🔄 Regenerar Código QR
-      </button>
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; flex-wrap: wrap;">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" onclick={() => restartBot(false)}>
+          🔄 Regenerar QR
+        </button>
+        {#if $botStatus.status !== 'ready'}
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" 
+            onclick={handleForceClean}
+            title="Borra la sesión local y genera un nuevo QR de cero"
+          >
+            🗑️ Limpiar y Forzar QR
+          </button>
+        {/if}
+      </div>
       <button type="button" class="btn btn-primary" onclick={handleClose}>
         Cerrar
       </button>
@@ -127,6 +175,21 @@
   }
   .btn-disconnect:hover {
     background: rgba(244, 63, 94, 0.15);
+  }
+
+  .btn-clean-link {
+    font-size: 12px;
+    color: var(--accent-rose);
+    background: transparent;
+    border: 1px dashed rgba(244, 63, 94, 0.4);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-clean-link:hover {
+    background: rgba(244, 63, 94, 0.12);
+    border-color: var(--accent-rose);
   }
 
   .qr-auto-close-notice {

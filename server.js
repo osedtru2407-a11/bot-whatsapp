@@ -11,6 +11,17 @@ const dataStore = require('./dataStore');
 const authService = require('./authService');
 const contactsService = require('./contactsService');
 
+// Protección global ante bloqueos EBUSY en Windows / OneDrive
+process.on('unhandledRejection', (reason) => {
+    console.warn('⚠️ [Process] Rechazo de promesa no manejado interceptado:', reason?.message || reason);
+});
+process.on('uncaughtException', (err) => {
+    console.warn('⚠️ [Process] Excepción no capturada:', err?.message || err);
+    if (err?.code === 'EBUSY') {
+        console.warn('⚠️ [Process] Error EBUSY (archivo temporal ocupado por Chromium o OneDrive). El servidor continúa operando normalmente.');
+    }
+});
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
@@ -233,6 +244,8 @@ function initCompanyWhatsAppClient(companyId) {
 
     state.client = clientInstance;
 
+    let authTimeout = null;
+
     clientInstance.on('qr', async (qr) => {
         console.log(`[Empresa: ${company.name}] Nuevo código QR recibido`);
         state.status = 'qr_ready';
@@ -251,14 +264,34 @@ function initCompanyWhatsAppClient(companyId) {
         console.log(`[Empresa: ${company.name}] Autenticado correctamente`);
         state.status = 'authenticated';
         state.qrCode = null;
+
+        // Si la sesión no pasa a 'ready' tras 45s (credenciales locales revocadas externamente), reiniciar limpio
+        if (authTimeout) clearTimeout(authTimeout);
+        authTimeout = setTimeout(async () => {
+            if (state.status === 'authenticated') {
+                console.warn(`[Empresa: ${company.name}] ⚠️ Sesión de WhatsApp atascada en 'authenticated'. Restaurando credenciales limpias...`);
+                try {
+                    await unlinkCompanyWhatsApp(companyId);
+                } catch (e) {
+                    console.error(`[Empresa: ${company.name}] Error en autorecuperación:`, e.message);
+                }
+            }
+        }, 45000);
     });
 
-    clientInstance.on('auth_failure', (msg) => {
+    clientInstance.on('auth_failure', async (msg) => {
         console.error(`[Empresa: ${company.name}] Fallo de autenticación:`, msg);
         state.status = 'auth_failure';
+        if (authTimeout) clearTimeout(authTimeout);
+        try {
+            await unlinkCompanyWhatsApp(companyId);
+        } catch (e) {
+            console.error(`[Empresa: ${company.name}] Error reiniciando tras auth_failure:`, e.message);
+        }
     });
 
     clientInstance.on('ready', async () => {
+        if (authTimeout) clearTimeout(authTimeout);
         console.log(`[Empresa: ${company.name}] WhatsApp LISTO para enviar y recibir`);
         state.status = 'ready';
         state.qrCode = null;
@@ -274,6 +307,7 @@ function initCompanyWhatsAppClient(companyId) {
     });
 
     clientInstance.on('disconnected', (reason) => {
+        if (authTimeout) clearTimeout(authTimeout);
         console.log(`[Empresa: ${company.name}] Desconectado:`, reason);
         state.status = 'disconnected';
         state.clientInfo = null;
@@ -348,20 +382,31 @@ async function unlinkCompanyWhatsApp(companyId) {
         const holder = companyClients.get(companyId);
         if (holder && holder.client) {
             try {
-                await holder.client.logout();
-            } catch (e) { }
-            try {
                 await holder.client.destroy();
-            } catch (e) { }
-        }
-        companyClients.delete(companyId);
-    }
-    const sessionDir = path.join(__dirname, '.wwebjs_auth', `session-${companyId}`);
-    if (fs.existsSync(sessionDir)) {
-        try {
-            fs.rmSync(sessionDir, { recursive: true, force: true });
         } catch (e) {
-            console.error(`Error borrando sesión de WhatsApp para ${companyId}:`, e.message);
+            console.warn(`Aviso cerrando cliente de ${companyId}:`, e.message);
+        }
+    }
+    companyClients.delete(companyId);
+}
+
+// Pausa preventiva para que Chromium y Windows/OneDrive liberen descriptores de archivos
+await new Promise(r => setTimeout(r, 600));
+
+const authClientId = (companyId === 'default') ? null : companyId;
+const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
+if (fs.existsSync(sessionDir)) {
+        for (let attempt = 1; attempt <= 4; attempt++) {
+            try {
+                fs.rmSync(sessionDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
+                break;
+            } catch (e) {
+                if (attempt === 4) {
+                    console.warn(`Aviso borrando sesión de WhatsApp para ${companyId} (${e.code}):`, e.message);
+                } else {
+                    await new Promise(r => setTimeout(r, 400));
+                }
+            }
         }
     }
     initCompanyWhatsAppClient(companyId);
@@ -1527,8 +1572,13 @@ app.post('/api/upload', (req, res) => {
 // 3. Reiniciar cliente WhatsApp de la empresa seleccionada
 app.post('/api/bot/restart', resolveCompany, async (req, res) => {
     try {
-        await stopCompanyWhatsAppClient(req.companyId);
-        initCompanyWhatsAppClient(req.companyId);
+        const shouldClean = req.query.clean === 'true' || req.body?.clean === true;
+        if (shouldClean) {
+            await unlinkCompanyWhatsApp(req.companyId);
+        } else {
+            await stopCompanyWhatsAppClient(req.companyId);
+            initCompanyWhatsAppClient(req.companyId);
+        }
         res.json({ success: true, message: `Reiniciando cliente de WhatsApp para ${req.company.name}...` });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -1538,17 +1588,7 @@ app.post('/api/bot/restart', resolveCompany, async (req, res) => {
 // Desvincular / Cerrar sesión de WhatsApp de la empresa para permitir vincular un número nuevo
 app.post('/api/bot/disconnect', resolveCompany, async (req, res) => {
     try {
-        await stopCompanyWhatsAppClient(req.companyId);
-        const authClientId = (req.companyId === 'default') ? null : req.companyId;
-        const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
-        if (fs.existsSync(sessionDir)) {
-            try {
-                fs.rmSync(sessionDir, { recursive: true, force: true });
-            } catch (err) {
-                console.warn('Aviso limpiando carpeta de sesión:', err.message);
-            }
-        }
-        initCompanyWhatsAppClient(req.companyId);
+        await unlinkCompanyWhatsApp(req.companyId);
         res.json({ success: true, message: `Sesión de WhatsApp cerrada para ${req.company.name}. Generando nuevo código QR...` });
     } catch (e) {
         res.status(500).json({ error: e.message });

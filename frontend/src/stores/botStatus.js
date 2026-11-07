@@ -112,11 +112,12 @@ export async function toggleBot() {
   }
 }
 
-export async function restartBot() {
+export async function restartBot(clean = false) {
   const targetId = get(currentCompanyId);
   try {
-    await api.post(`/api/bot/restart?companyId=${encodeURIComponent(targetId)}`, {});
-    showToast('Reinicio de conexión solicitado. Espera unos segundos.', 'info');
+    const url = `/api/bot/restart?companyId=${encodeURIComponent(targetId)}${clean ? '&clean=true' : ''}`;
+    await api.post(url, {});
+    showToast(clean ? 'Sesión limpiada. Generando nuevo código QR...' : 'Reinicio de conexión solicitado. Espera unos segundos.', 'info');
     fetchBotStatus();
   } catch (err) {
     showToast(err.message, 'error');
