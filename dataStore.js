@@ -28,7 +28,9 @@ async function loadAllAppData() {
             typingDelaySeconds: s.typing_delay_seconds || 2,
             ignoreGroups: s.ignore_groups !== false,
             fallbackMessage: s.fallback_message || `¡Hola! Gracias por comunicarte con ${c.name}.`,
-            geminiEnabled: s.gemini_enabled !== false
+            geminiEnabled: s.gemini_enabled !== false,
+            geminiApiKey: s.gemini_api_key || null,
+            geminiModel: s.gemini_model || 'gemini-3.5-flash-lite'
         };
 
         // Rules
@@ -203,8 +205,8 @@ async function deleteCompanyFromDb(companyId) {
  */
 async function saveCompanySettingsInDb(companyId, settings) {
     await pool.query(`
-        INSERT INTO company_settings (company_id, business_name, bot_enabled, simulate_typing, typing_delay_seconds, ignore_groups, fallback_message, gemini_enabled, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        INSERT INTO company_settings (company_id, business_name, bot_enabled, simulate_typing, typing_delay_seconds, ignore_groups, fallback_message, gemini_enabled, gemini_api_key, gemini_model, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
         ON CONFLICT (company_id) DO UPDATE SET
             business_name = EXCLUDED.business_name,
             bot_enabled = EXCLUDED.bot_enabled,
@@ -213,6 +215,8 @@ async function saveCompanySettingsInDb(companyId, settings) {
             ignore_groups = EXCLUDED.ignore_groups,
             fallback_message = EXCLUDED.fallback_message,
             gemini_enabled = EXCLUDED.gemini_enabled,
+            gemini_api_key = EXCLUDED.gemini_api_key,
+            gemini_model = EXCLUDED.gemini_model,
             updated_at = NOW();
     `, [
         companyId,
@@ -222,7 +226,9 @@ async function saveCompanySettingsInDb(companyId, settings) {
         settings.typingDelaySeconds || 2,
         settings.ignoreGroups !== false,
         settings.fallbackMessage || '',
-        settings.geminiEnabled !== false
+        settings.geminiEnabled !== false,
+        settings.geminiApiKey || null,
+        settings.geminiModel || 'gemini-3.5-flash-lite'
     ]);
 }
 

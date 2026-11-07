@@ -1,6 +1,6 @@
 // frontend/src/stores/auth.js
 import { writable, derived } from 'svelte/store';
-import { api, getStoredToken, setStoredToken, setUnauthorizedHandler } from '../services/api';
+import { api, getStoredToken, setStoredToken, setStoredCompanyId, setUnauthorizedHandler } from '../services/api';
 import { showToast } from './toast';
 
 export const currentUser = writable(null);
@@ -67,12 +67,47 @@ export async function login(identifier, password) {
     currentUser.set(data.user);
     userMembership.set(data.membership || null);
 
+    if (data.activeCompany?.id) {
+      setStoredCompanyId(data.activeCompany.id);
+    }
+
     const permsList = data.membership?.permissions || [];
     permissions.set(new Set(permsList));
     isAuthModalOpen.set(false);
 
     showToast(`¡Bienvenido de vuelta, ${data.user.fullName || data.user.username}!`, 'success');
     return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function register(fullName, email, password, companyName) {
+  try {
+    const data = await api.post('/api/auth/register', {
+      fullName: (fullName || '').trim(),
+      email: (email || '').trim(),
+      password,
+      companyName: companyName ? companyName.trim() : undefined
+    });
+    if (!data.token) throw new Error('Respuesta inválida del servidor');
+
+    setStoredToken(data.token);
+    authToken.set(data.token);
+    currentUser.set(data.user);
+    userMembership.set(data.membership || null);
+
+    const compId = data.activeCompanyId || data.company?.id;
+    if (compId) {
+      setStoredCompanyId(compId);
+    }
+
+    const permsList = data.membership?.permissions || ['*'];
+    permissions.set(new Set(permsList));
+    isAuthModalOpen.set(false);
+
+    showToast(`¡Cuenta creada con éxito! Bienvenido, ${data.user.fullName}!`, 'success');
+    return { success: true, activeCompanyId: compId };
   } catch (err) {
     return { success: false, error: err.message };
   }

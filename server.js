@@ -13,7 +13,6 @@ const contactsService = require('./contactsService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'sales_bot_data.json');
 const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 
 // Asegurar directorios de subida y archivos
@@ -93,79 +92,17 @@ function createDefaultCompany(name = 'Digital Pass', id = 'default') {
     };
 }
 
-function loadData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const raw = fs.readFileSync(DATA_FILE, 'utf8');
-            const parsed = JSON.parse(raw);
-
-            // Migración automática: De sistema mono-empresa plano a sistema multi-empresa
-            if (parsed && !parsed.companies && parsed.rules) {
-                console.log('🔄 Migrando datos existentes a formato multi-empresa...');
-                const defaultCompany = {
-                    id: 'default',
-                    name: parsed.settings?.businessName || 'Digital Pass',
-                    settings: parsed.settings || {
-                        businessName: "Digital Pass",
-                        botEnabled: true,
-                        simulateTyping: true,
-                        typingDelaySeconds: 2,
-                        ignoreGroups: true,
-                        fallbackMessage: "Escribe *menu* para ver las opciones disponibles.",
-                        geminiEnabled: true
-                    },
-                    rules: parsed.rules || [],
-                    schedules: parsed.schedules || [],
-                    leads: parsed.leads || [],
-                    library: parsed.library || []
-                };
-
-                const multiData = {
-                    activeCompanyId: 'default',
-                    companies: [defaultCompany]
-                };
-                saveData(multiData);
-                return multiData;
-            }
-
-            // Si ya tiene el esquema multi-empresa
-            if (parsed && Array.isArray(parsed.companies)) {
-                if (parsed.companies.length === 0) {
-                    parsed.companies.push(createDefaultCompany());
-                }
-                if (!parsed.activeCompanyId) {
-                    parsed.activeCompanyId = parsed.companies[0].id;
-                }
-                parsed.companies.forEach(comp => {
-                    if (!comp.rules) comp.rules = [];
-                    if (!comp.schedules) comp.schedules = [];
-                    if (!comp.leads) comp.leads = [];
-                    comp.leads = comp.leads.filter(l => l && l.phone !== 'status@broadcast' && !String(l.phone).includes('@broadcast'));
-                    if (!comp.library) comp.library = [];
-                    if (!comp.settings) comp.settings = { businessName: comp.name || 'Mi Negocio', botEnabled: true };
-                });
-                return parsed;
-            }
-        }
-    } catch (e) {
-        console.error('Error al cargar datos:', e);
-    }
-
-    return {
-        activeCompanyId: 'default',
-        companies: [createDefaultCompany()]
-    };
-}
-
+// La persistencia de datos (prospectos, contactos, reglas, archivos, campañas y mensajes)
+// se almacena exclusivamente en PostgreSQL a través de dataStore para garantizar seguridad y privacidad.
 function saveData(data) {
-    try {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
-    } catch (e) {
-        console.error('Error al guardar datos:', e);
-    }
+    // Operación en memoria para el estado en tiempo de ejecución.
+    // Todas las operaciones persistentes se canalizan a PostgreSQL vía dataStore.
 }
 
-let appData = loadData();
+let appData = {
+    activeCompanyId: 'default',
+    companies: [createDefaultCompany()]
+};
 
 // =========================================================================
 // GESTOR DE CLIENTES WHATSAPP MULTI-INSTANCIA
@@ -177,6 +114,9 @@ const companyClients = new Map();
 // Clientes SSE para transmisión de chat en tiempo real: Map<`${companyId}_${phone}`, Set<res>>
 const chatSSEClients = new Map();
 
+// Clientes SSE para eventos generales de la empresa (actualización en vivo de prospectos/CRM): Map<companyId, Set<res>>
+const companyEventsClients = new Map();
+
 function broadcastChatMessage(companyId, phone, messageData) {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     if (!cleanPhone) return;
@@ -187,6 +127,21 @@ function broadcastChatMessage(companyId, phone, messageData) {
         for (const clientRes of clients) {
             try {
                 clientRes.write(payload);
+            } catch (e) {
+                clients.delete(clientRes);
+            }
+        }
+    }
+}
+
+function broadcastCompanyEvent(companyId, eventName, payload) {
+    if (!companyId) return;
+    const clients = companyEventsClients.get(companyId);
+    if (clients && clients.size > 0) {
+        const data = `data: ${JSON.stringify({ event: eventName, payload, timestamp: Date.now() })}\n\n`;
+        for (const clientRes of clients) {
+            try {
+                clientRes.write(data);
             } catch (e) {
                 clients.delete(clientRes);
             }
@@ -324,6 +279,15 @@ function initCompanyWhatsAppClient(companyId) {
                             type: msg.type || 'chat',
                             hasMedia: Boolean(msg.hasMedia)
                         });
+
+                        // Actualizar prospecto en tiempo real
+                        if (!company.leads) company.leads = [];
+                        let lead = company.leads.find(l => l.phone === recipientPhone);
+                        if (lead) {
+                            lead.lastMessage = `Tú: ${text}`;
+                            lead.lastInteraction = new Date().toISOString();
+                            persistLead(companyId, lead);
+                        }
                     }
                 }
             }
@@ -366,11 +330,16 @@ function getCleanCaption(body) {
     return trimmed;
 }
 
-// Persistir lead en PostgreSQL de manera asíncrona
+// Persistir lead en PostgreSQL de manera asíncrona y emitir evento en tiempo real
 function persistLead(companyId, lead) {
     saveData(appData);
+    const company = appData.companies?.find(c => c.id === companyId);
+    if (company) {
+        company._lastLeadUpdate = Date.now();
+    }
     if (companyId && lead) {
         dataStore.upsertLeadInDb(companyId, lead).catch(e => console.error(`[DB] Error guardando lead ${lead.phone}:`, e.message));
+        broadcastCompanyEvent(companyId, 'lead_updated', lead);
     }
 }
 
@@ -527,9 +496,11 @@ async function handleIncomingMessage(companyId, msg) {
         filename: receivedMedia?.filename || null
     });
 
+    // Persistir y emitir actualización inmediata del prospecto en la lista de CRM
+    persistLead(companyId, lead);
+
     if (lead.humanPaused) {
         console.log(`[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`);
-        persistLead(companyId, lead);
         return;
     }
 
@@ -568,7 +539,7 @@ async function handleIncomingMessage(companyId, msg) {
         // 4. Enviar respuesta con el cliente de WhatsApp de esta empresa
         await sendRuleResponse(companyId, msg, matchedRule);
 
-    } else if (company.settings.geminiEnabled !== false && geminiService.isConfigured() && libraryService.hasActiveKnowledge(company.library) && (text.length > 0 || rawAudioMedia)) {
+    } else if (company.settings.geminiEnabled !== false && geminiService.isConfigured(company.settings.geminiApiKey) && libraryService.hasActiveKnowledge(company.library) && (text.length > 0 || rawAudioMedia)) {
         persistLead(companyId, lead);
         if (rawAudioMedia) {
             console.log(`[${company.name}] 🎙️ Escuchando nota de voz de ${senderPhone} con Gemini (Base de conocimiento activa)...`);
@@ -593,7 +564,14 @@ async function handleIncomingMessage(companyId, msg) {
 
             // Sesión de Gemini aislada por empresa y remitente
             const sessionKey = `${companyId}_${senderPhone}`;
-            const aiReply = await geminiService.sendMessage(sessionKey, geminiInput, businessName, company.library || []);
+            const aiReply = await geminiService.sendMessage(
+                sessionKey,
+                geminiInput,
+                businessName,
+                company.library || [],
+                company.settings.geminiApiKey,
+                company.settings.geminiModel
+            );
 
             if (chat) {
                 try { await chat.clearStateTyping(); } catch (e) { }
@@ -1221,6 +1199,15 @@ app.post('/api/companies/:id/roles', requireAuth, async (req, res) => {
     }
 });
 
+app.delete('/api/companies/:id/roles/:roleId', requireAuth, async (req, res) => {
+    try {
+        await authService.deleteCustomRole(req.params.id, req.params.roleId);
+        res.json({ success: true, message: 'Rol eliminado exitosamente' });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 // =========================================================================
 // RUTAS DE GESTIÓN DE EMPRESAS (MULTI-TENANT CON PERSISTENCIA EN DB)
 // =========================================================================
@@ -1366,6 +1353,7 @@ app.get('/api/status', resolveCompany, (req, res) => {
         botEnabled: req.company.settings.botEnabled,
         rulesCount: (req.company.rules || []).length,
         leadsCount: (req.company.leads || []).length,
+        lastLeadUpdate: req.company._lastLeadUpdate || 0,
         pendingSchedulesCount: (req.company.schedules || []).filter(s => s.status === 'pending').length
     });
 });
@@ -2253,7 +2241,7 @@ app.get('/api/leads/:phone/stream', resolveCompany, (req, res) => {
         'X-Accel-Buffering': 'no'
     });
 
-    const key = `${req.companyId}_${cleanPhone}`;
+    const key = `${req.companyId}_${streamTarget}`;
     if (!chatSSEClients.has(key)) {
         chatSSEClients.set(key, new Set());
     }
@@ -2261,7 +2249,7 @@ app.get('/api/leads/:phone/stream', resolveCompany, (req, res) => {
     clientSet.add(res);
 
     // Saludo de conexión
-    res.write(`data: ${JSON.stringify({ type: 'connected', phone: cleanPhone })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'connected', phone: streamTarget })}\n\n`);
 
     // Heartbeat cada 20 segundos
     const heartbeat = setInterval(() => {
@@ -2277,6 +2265,41 @@ app.get('/api/leads/:phone/stream', resolveCompany, (req, res) => {
         clientSet.delete(res);
         if (clientSet.size === 0) {
             chatSSEClients.delete(key);
+        }
+    });
+});
+
+// 8.4. Transmisión SSE en tiempo real de eventos de la empresa (prospectos, CRM en vivo)
+app.get('/api/events', resolveCompany, (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+    });
+
+    if (!companyEventsClients.has(req.companyId)) {
+        companyEventsClients.set(req.companyId, new Set());
+    }
+    const clientSet = companyEventsClients.get(req.companyId);
+    clientSet.add(res);
+
+    // Saludo de conexión inicial con conteo actual de prospectos
+    res.write(`data: ${JSON.stringify({ event: 'connected', companyId: req.companyId, leadsCount: (req.company.leads || []).length })}\n\n`);
+
+    const heartbeat = setInterval(() => {
+        try {
+            res.write(': heartbeat\n\n');
+        } catch (e) {
+            clearInterval(heartbeat);
+        }
+    }, 20000);
+
+    req.on('close', () => {
+        clearInterval(heartbeat);
+        clientSet.delete(res);
+        if (clientSet.size === 0) {
+            companyEventsClients.delete(req.companyId);
         }
     });
 });
@@ -2307,7 +2330,7 @@ app.post('/api/simulate', resolveCompany, async (req, res) => {
             leadTag: matched.leadTag,
             pauseBot: matched.pauseBot
         });
-    } else if (req.company.settings.geminiEnabled !== false && geminiService.isConfigured() && libraryService.hasActiveKnowledge(req.company.library) && (rawText || audio)) {
+    } else if (req.company.settings.geminiEnabled !== false && geminiService.isConfigured(req.company.settings.geminiApiKey) && libraryService.hasActiveKnowledge(req.company.library) && (rawText || audio)) {
         simulatorLastSentRuleId.set(req.companyId, 'gemini');
         try {
             const businessName = req.company.settings.businessName || req.company.name || 'Mi Negocio';
@@ -2317,7 +2340,14 @@ app.post('/api/simulate', resolveCompany, async (req, res) => {
             } : rawText;
 
             const sessionKey = `sim_${req.companyId}`;
-            const aiReply = await geminiService.sendMessage(sessionKey, geminiInput, businessName, req.company.library || []);
+            const aiReply = await geminiService.sendMessage(
+                sessionKey,
+                geminiInput,
+                businessName,
+                req.company.library || [],
+                req.company.settings.geminiApiKey,
+                req.company.settings.geminiModel
+            );
             res.json({
                 matched: false,
                 isGemini: true,
@@ -2349,28 +2379,111 @@ app.post('/api/gemini/reset', resolveCompany, (req, res) => {
     res.json({ success: true, message: `Sesión de ${sessionId} reiniciada.` });
 });
 
-app.get('/api/gemini/status', (req, res) => {
+app.get('/api/gemini/status', resolveCompany, (req, res) => {
+    const customKey = req.company?.settings?.geminiApiKey || null;
+    const model = req.company?.settings?.geminiModel || 'gemini-3.5-flash-lite';
+    const hasGlobalKey = geminiService.hasGlobalKey();
+    const configured = geminiService.isConfigured(customKey);
+    const maskedKey = customKey ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
+
     res.json({
-        configured: geminiService.isConfigured(),
-        model: 'gemini-2.5-flash',
+        configured,
+        isCustom: Boolean(customKey),
+        maskedKey,
+        model,
+        hasGlobalKey,
         supportsAudio: true
     });
 });
 
+// Probar conexión de API Key de Gemini
+app.post('/api/gemini/test-key', resolveCompany, async (req, res) => {
+    try {
+        const { apiKey, model } = req.body;
+        const candidateKey = (apiKey && !apiKey.includes('...')) ? apiKey.trim() : (req.company?.settings?.geminiApiKey || null);
+        const candidateModel = model || req.company?.settings?.geminiModel || 'gemini-3.5-flash-lite';
+
+        const result = await geminiService.testApiKey(candidateKey, candidateModel);
+        res.json({
+            success: true,
+            message: `¡Conexión exitosa con Gemini usando el modelo ${result.model}!`,
+            details: result
+        });
+    } catch (err) {
+        console.error('Error probando Gemini API Key:', err);
+        res.status(400).json({
+            success: false,
+            error: err.message || 'No se pudo conectar con la API de Gemini.'
+        });
+    }
+});
+
+// Guardar configuración exclusiva de Gemini para esta empresa
+app.post('/api/gemini/config', resolveCompany, async (req, res) => {
+    try {
+        const { apiKey, model } = req.body;
+        req.company.settings = req.company.settings || {};
+
+        if (apiKey === null || apiKey === '') {
+            req.company.settings.geminiApiKey = null;
+        } else if (apiKey && !apiKey.includes('...')) {
+            req.company.settings.geminiApiKey = apiKey.trim();
+        }
+
+        if (model) {
+            req.company.settings.geminiModel = model.trim();
+        }
+
+        saveData(appData);
+        await dataStore.saveCompanySettingsInDb(req.companyId, req.company.settings).catch(e => console.error('Error guardando configuración en DB:', e));
+
+        const customKey = req.company.settings.geminiApiKey || null;
+        const maskedKey = customKey ? (customKey.length > 8 ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}` : '******') : null;
+
+        res.json({
+            success: true,
+            configured: geminiService.isConfigured(customKey),
+            isCustom: Boolean(customKey),
+            maskedKey,
+            model: req.company.settings.geminiModel || 'gemini-3.5-flash-lite',
+            hasGlobalKey: geminiService.hasGlobalKey()
+        });
+    } catch (err) {
+        console.error('Error guardando configuración de Gemini:', err);
+        res.status(500).json({ error: 'Error al guardar la configuración de Gemini' });
+    }
+});
+
 // 10. Configuración General de la empresa seleccionada
 app.get('/api/settings', resolveCompany, (req, res) => {
-    res.json(req.company.settings || {});
+    const s = req.company.settings || {};
+    const maskedKey = s.geminiApiKey ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
+    res.json({
+        ...s,
+        geminiApiKeyMasked: maskedKey,
+        isCustomGeminiKey: Boolean(s.geminiApiKey)
+    });
 });
 
 app.post('/api/settings', resolveCompany, async (req, res) => {
+    const prevApiKey = req.company.settings?.geminiApiKey;
     req.company.settings = { ...req.company.settings, ...req.body };
+    if (req.body.geminiApiKey && req.body.geminiApiKey.includes('...')) {
+        req.company.settings.geminiApiKey = prevApiKey;
+    }
     if (req.body.businessName) {
         req.company.name = req.body.businessName;
     }
     saveData(appData);
     await dataStore.saveCompanySettingsInDb(req.companyId, req.company.settings).catch(e => console.error('Error guardando configuración en DB:', e));
 
-    res.json(req.company.settings);
+    const s = req.company.settings;
+    const maskedKey = s.geminiApiKey ? (s.geminiApiKey.length > 8 ? `${s.geminiApiKey.slice(0, 6)}...${s.geminiApiKey.slice(-4)}` : '******') : null;
+    res.json({
+        ...s,
+        geminiApiKeyMasked: maskedKey,
+        isCustomGeminiKey: Boolean(s.geminiApiKey)
+    });
 });
 
 // 11. Biblioteca de Contexto de la empresa seleccionada
@@ -2506,6 +2619,10 @@ app.listen(PORT, async () => {
         if (dbData && dbData.companies && dbData.companies.length > 0) {
             appData = dbData;
             console.log(`🗄️ Datos cargados exitosamente desde PostgreSQL (${appData.companies.length} empresas registradas)`);
+        } else {
+            console.log('🏢 Inicializando empresa por defecto en PostgreSQL...');
+            await dataStore.createCompanyInDb('default', 'Digital Pass');
+            appData = await dataStore.loadAllAppData();
         }
         for (const comp of appData.companies) {
             if (comp.leads) {

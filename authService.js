@@ -488,6 +488,33 @@ function verifyToken(token) {
     }
 
     /**
+     * Eliminar un rol personalizado de una empresa
+     */
+    async function deleteCustomRole(companyId, roleId) {
+        const checkRole = await pool.query(
+            'SELECT * FROM roles WHERE id = $1 AND (company_id = $2 OR company_id IS NULL)',
+            [roleId, companyId]
+        );
+        if (checkRole.rows.length === 0) {
+            throw new Error('Rol no encontrado.');
+        }
+        if (checkRole.rows[0].is_system_default) {
+            throw new Error('No se pueden eliminar los roles predeterminados del sistema.');
+        }
+
+        const usersWithRole = await pool.query(
+            'SELECT COUNT(*)::int as count FROM company_users WHERE company_id = $1 AND role_id = $2',
+            [companyId, roleId]
+        );
+        if (usersWithRole.rows[0].count > 0) {
+            throw new Error(`Hay ${usersWithRole.rows[0].count} colaborador(es) asignados a este rol. Reasigna sus roles antes de eliminarlo.`);
+        }
+
+        await pool.query('DELETE FROM roles WHERE id = $1 AND company_id = $2', [roleId, companyId]);
+        return { success: true };
+    }
+
+    /**
      * Cambiar contraseña de usuario
      */
     async function changePassword(userId, currentPassword, newPassword) {
@@ -545,6 +572,7 @@ function verifyToken(token) {
         removeTeamMember,
         getCompanyRoles,
         createCustomRole,
+        deleteCustomRole,
         changePassword,
         authenticateToken,
         generateToken,

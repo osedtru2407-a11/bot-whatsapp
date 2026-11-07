@@ -3,6 +3,7 @@ import { writable, get } from 'svelte/store';
 import { api } from '../services/api';
 import { currentCompanyId, companies } from './company';
 import { showToast } from './toast';
+import { loadLeads } from './leads';
 
 export const botStatus = writable({
   status: 'initializing', // 'ready' | 'qr_ready' | 'authenticated' | 'initializing' | 'disconnected'
@@ -19,6 +20,8 @@ export const autoCloseNotice = writable(null);
 let pollTimer = null;
 let wasScanning = false;
 let autoCloseTimer = null;
+const lastKnownLeadsCount = new Map();
+const lastKnownLeadUpdate = new Map();
 
 export async function fetchBotStatus() {
   const targetId = get(currentCompanyId);
@@ -46,6 +49,18 @@ export async function fetchBotStatus() {
     // Update phone in companies list if available
     if (phoneVal) {
       companies.update(list => list.map(c => c.id === targetId ? { ...c, phone: phoneVal, status: data.status } : c));
+    }
+
+    // Detección automática y sincronización de nuevos prospectos o mensajes entrantes
+    if (data.leadsCount !== undefined) {
+      const prevCount = lastKnownLeadsCount.get(targetId);
+      const prevUpdate = lastKnownLeadUpdate.get(targetId);
+
+      if (prevCount !== undefined && (data.leadsCount !== prevCount || (data.lastLeadUpdate && data.lastLeadUpdate !== prevUpdate))) {
+        loadLeads();
+      }
+      lastKnownLeadsCount.set(targetId, data.leadsCount);
+      lastKnownLeadUpdate.set(targetId, data.lastLeadUpdate || 0);
     }
 
     // Auto-close handling on connection

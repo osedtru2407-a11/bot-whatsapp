@@ -148,6 +148,8 @@ async function initDb() {
                 ignore_groups BOOLEAN DEFAULT TRUE,
                 fallback_message TEXT,
                 gemini_enabled BOOLEAN DEFAULT TRUE,
+                gemini_api_key TEXT,
+                gemini_model VARCHAR(100) DEFAULT 'gemini-3.5-flash-lite',
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
         `);
@@ -310,6 +312,13 @@ async function initDb() {
             WHERE (tag IN ('Importado Google', 'Importado WhatsApp', 'Agenda WhatsApp') OR tag ILIKE 'Importado%')
               AND (last_message IS NULL OR last_message = '')
               AND (received_files IS NULL OR jsonb_array_length(received_files) = 0);
+        `);
+
+        // 15. Configuración de API Key individual de Gemini por empresa
+        await client.query(`
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS gemini_api_key TEXT;
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS gemini_model VARCHAR(100) DEFAULT 'gemini-3.5-flash-lite';
+            UPDATE company_settings SET gemini_model = 'gemini-3.5-flash-lite' WHERE gemini_model = 'gemini-2.5-flash' OR gemini_model IS NULL;
         `);
 
         // 10. Sembrar roles preestablecidos del sistema si no existen

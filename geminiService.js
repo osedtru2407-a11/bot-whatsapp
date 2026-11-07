@@ -2,23 +2,42 @@
 
 require('dotenv').config();
 const { GoogleGenAI } = require('@google/genai');
+const libraryService = require('./libraryService');
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.KEY;
-let ai = null;
+const globalApiKey = process.env.GEMINI_API_KEY || process.env.KEY || null;
+const clientsCache = new Map();
 
-if (apiKey) {
+if (globalApiKey) {
     try {
-        ai = new GoogleGenAI({ apiKey });
-        console.log('✅ Gemini AI inicializado correctamente.');
+        clientsCache.set(globalApiKey, new GoogleGenAI({ apiKey: globalApiKey }));
+        console.log('✅ Gemini AI inicializado correctamente con clave global.');
     } catch (e) {
-        console.error('❌ Error inicializando GoogleGenAI:', e.message);
+        console.error('❌ Error inicializando GoogleGenAI global:', e.message);
     }
 } else {
-    console.warn('⚠️ No se encontró GEMINI_API_KEY o KEY en el archivo .env');
+    console.warn('⚠️ No se encontró GEMINI_API_KEY o KEY en el archivo .env (modo multi-tenant puro)');
 }
 
-// Almacén de sesiones de conversación en memoria (por número de teléfono o ID de sesión)
-// Estructura: Map<sessionId, { chat, lastActivity }>
+/**
+ * Obtiene o crea un cliente GoogleGenAI para una API Key específica
+ */
+function getClient(customApiKey = null) {
+    const effectiveKey = (customApiKey && typeof customApiKey === 'string' && customApiKey.trim()) ? customApiKey.trim() : globalApiKey;
+    if (!effectiveKey) return null;
+    if (!clientsCache.has(effectiveKey)) {
+        try {
+            const client = new GoogleGenAI({ apiKey: effectiveKey });
+            clientsCache.set(effectiveKey, client);
+        } catch (e) {
+            console.error('❌ Error inicializando GoogleGenAI para clave personalizada:', e.message);
+            return null;
+        }
+    }
+    return clientsCache.get(effectiveKey);
+}
+
+// Almacén de sesiones de conversación en memoria (por clave y remitente)
+// Estructura: Map<compositeSessionId, { chat, lastActivity }>
 const sessions = new Map();
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutos de inactividad
 
@@ -33,11 +52,14 @@ const cleanupInterval = setInterval(() => {
 }, 5 * 60 * 1000);
 if (cleanupInterval.unref) cleanupInterval.unref();
 
-function isConfigured() {
-    return Boolean(ai && apiKey);
+function hasGlobalKey() {
+    return Boolean(globalApiKey && globalApiKey.trim());
 }
 
-const libraryService = require('./libraryService');
+function isConfigured(customApiKey = null) {
+    const effectiveKey = (customApiKey && typeof customApiKey === 'string' && customApiKey.trim()) ? customApiKey.trim() : globalApiKey;
+    return Boolean(effectiveKey && effectiveKey.trim());
+}
 
 function getSystemInstruction(businessName = 'nuestro negocio', libraryContext = '') {
     let instruction = `Eres un asistente virtual de atención y ventas por WhatsApp para "${businessName}".
@@ -95,15 +117,24 @@ function formatForWhatsApp(text) {
 }
 
 const PRIMARY_MODEL = 'gemini-3.5-flash-lite';
-const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'];
 
 /**
  * Obtiene o crea una sesión de chat para un usuario
  */
-function getOrCreateChat(sessionId, businessName, libraryList = [], modelName = PRIMARY_MODEL) {
+function getOrCreateChat(sessionId, businessName, libraryList = [], modelName = PRIMARY_MODEL, customApiKey = null) {
+    const effectiveKey = (customApiKey && typeof customApiKey === 'string' && customApiKey.trim()) ? customApiKey.trim() : globalApiKey;
+    const client = getClient(effectiveKey);
+    if (!client) {
+        throw new Error('Gemini no está configurado. No se encontró ninguna API Key válida.');
+    }
+
+    const keyPrefix = effectiveKey ? effectiveKey.slice(-8) : 'global';
+    const cacheKey = `${keyPrefix}_${sessionId}`;
     const now = Date.now();
-    if (sessions.has(sessionId)) {
-        const session = sessions.get(sessionId);
+
+    if (sessions.has(cacheKey)) {
+        const session = sessions.get(cacheKey);
         session.lastActivity = now;
         return session.chat;
     }
@@ -111,14 +142,14 @@ function getOrCreateChat(sessionId, businessName, libraryList = [], modelName = 
     const { contextText } = libraryService.getActiveLibraryContext(libraryList);
     const systemPrompt = getSystemInstruction(businessName, contextText);
 
-    const chat = ai.chats.create({
+    const chat = client.chats.create({
         model: modelName,
         config: {
             systemInstruction: systemPrompt
         }
     });
 
-    sessions.set(sessionId, {
+    sessions.set(cacheKey, {
         chat,
         lastActivity: now
     });
@@ -127,22 +158,65 @@ function getOrCreateChat(sessionId, businessName, libraryList = [], modelName = 
 }
 
 /**
+ * Prueba la validez de una API Key enviando una petición mínima de verificación
+ */
+async function testApiKey(candidateKey = null, modelName = 'gemini-3.5-flash-lite') {
+    const effectiveKey = (candidateKey && typeof candidateKey === 'string' && candidateKey.trim()) ? candidateKey.trim() : globalApiKey;
+    if (!effectiveKey) {
+        throw new Error('No se ha proporcionado ninguna API Key y no hay una clave global configurada en el sistema.');
+    }
+
+    const client = new GoogleGenAI({ apiKey: effectiveKey });
+    const testModel = modelName || 'gemini-2.5-flash';
+
+    try {
+        const response = await client.models.generateContent({
+            model: testModel,
+            contents: 'Responde únicamente con la palabra "OK".'
+        });
+        const reply = response.text ? response.text.trim() : 'OK';
+        return {
+            success: true,
+            model: testModel,
+            reply
+        };
+    } catch (err) {
+        console.error(`❌ [Gemini testApiKey] Error probando clave con modelo ${testModel}:`, err.message || err);
+        let userMessage = err.message || 'Error al conectar con la API de Gemini';
+        if (userMessage.includes('API_KEY_INVALID') || userMessage.includes('403') || userMessage.includes('key not valid')) {
+            userMessage = 'La API Key proporcionada no es válida o ha sido revocada por Google.';
+        } else if (userMessage.includes('QUOTA_EXCEEDED') || userMessage.includes('429')) {
+            userMessage = 'La API Key es válida pero ha excedido la cuota de peticiones permitida de Google Gemini.';
+        } else if (userMessage.includes('not found') || userMessage.includes('unsupported')) {
+            userMessage = `El modelo ${testModel} no está disponible con esta API Key.`;
+        }
+        throw new Error(userMessage);
+    }
+}
+
+/**
  * Envía un mensaje (texto y/o nota de voz) a Gemini y obtiene la respuesta
  * @param {string} sessionId - Número de teléfono o ID de simulador
  * @param {string|object} input - Texto del mensaje o { text, audio: { data, mimetype } }
  * @param {string} businessName - Nombre del negocio configurado
  * @param {Array} libraryList - Lista de documentos en appData.library
+ * @param {string|null} customApiKey - API Key personalizada de la empresa (opcional)
+ * @param {string|null} preferredModel - Modelo preferido de la empresa (opcional)
  * @returns {Promise<string>}
  */
-async function sendMessage(sessionId, input, businessName, libraryList = []) {
-    if (!isConfigured()) {
-        throw new Error('Gemini no está configurado. Verifica la clave KEY o GEMINI_API_KEY en el archivo .env');
+async function sendMessage(sessionId, input, businessName, libraryList = [], customApiKey = null, preferredModel = null) {
+    if (!isConfigured(customApiKey)) {
+        throw new Error('Gemini no está configurado para esta empresa. Ingresa una API Key en Configuración o configura la clave global en .env.');
     }
 
     // Regla estricta: Si la biblioteca está vacía o sin documentos activos, Gemini no debe operar para evitar alucinaciones
     if (!libraryService.hasActiveKnowledge(libraryList)) {
         throw new Error('La biblioteca no contiene documentos activos con información. Gemini no puede operar sin base de conocimiento autorizada.');
     }
+
+    const effectiveKey = (customApiKey && typeof customApiKey === 'string' && customApiKey.trim()) ? customApiKey.trim() : globalApiKey;
+    const keyPrefix = effectiveKey ? effectiveKey.slice(-8) : 'global';
+    const cacheKey = `${keyPrefix}_${sessionId}`;
 
     let messagePayload;
     let logDescription = '';
@@ -154,7 +228,7 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
         // Si el usuario quiere reiniciar la conversación
         const lower = cleanMsg.toLowerCase();
         if (lower === 'reiniciar' || lower === 'reset' || lower === 'olvida la conversacion') {
-            sessions.delete(sessionId);
+            sessions.delete(cacheKey);
             return '🔄 Conversación reiniciada. ¿En qué te puedo ayudar ahora?';
         }
 
@@ -193,10 +267,15 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
         return '';
     }
 
-    // Intento con modelo principal
+    const chosenModel = preferredModel || PRIMARY_MODEL;
+    const candidateModels = [chosenModel, PRIMARY_MODEL, ...FALLBACK_MODELS].filter((m, idx, arr) => arr.indexOf(m) === idx);
+    const primaryTarget = candidateModels[0];
+    const fallbackList = candidateModels.slice(1);
+
+    // Intento con modelo principal o preferido
     try {
-        const chat = getOrCreateChat(sessionId, businessName, libraryList, PRIMARY_MODEL);
-        console.log(`🤖 [Gemini] Consultando para ${sessionId}: ${logDescription}`);
+        const chat = getOrCreateChat(sessionId, businessName, libraryList, primaryTarget, customApiKey);
+        console.log(`🤖 [Gemini (${primaryTarget})] Consultando para ${sessionId}: ${logDescription}`);
 
         const response = await chat.sendMessage({ message: messagePayload });
         const replyText = response.text ? response.text.trim() : 'No pude generar una respuesta.';
@@ -205,12 +284,12 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
         console.log(`🤖 [Gemini] Respuesta recibida (${formattedReply.length} caracteres, formateada para WhatsApp)`);
         return formattedReply;
     } catch (err) {
-        console.warn(`⚠️ [Gemini] Error con ${PRIMARY_MODEL} (${err.message}). Probando modelos de respaldo...`);
-        sessions.delete(sessionId);
+        console.warn(`⚠️ [Gemini] Error con ${primaryTarget} (${err.message}). Probando modelos de respaldo...`);
+        sessions.delete(cacheKey);
 
-        for (const fallbackModel of FALLBACK_MODELS) {
+        for (const fallbackModel of fallbackList) {
             try {
-                const fallbackChat = getOrCreateChat(sessionId, businessName, libraryList, fallbackModel);
+                const fallbackChat = getOrCreateChat(sessionId, businessName, libraryList, fallbackModel, customApiKey);
                 console.log(`🔄 [Gemini] Intentando con modelo de respaldo ${fallbackModel}...`);
                 const response = await fallbackChat.sendMessage({ message: messagePayload });
                 const replyText = response.text ? response.text.trim() : 'No pude generar una respuesta.';
@@ -219,7 +298,7 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
                 return formattedReply;
             } catch (fallbackErr) {
                 console.warn(`⚠️ [Gemini] Falló ${fallbackModel}:`, fallbackErr.message);
-                sessions.delete(sessionId);
+                sessions.delete(cacheKey);
             }
         }
 
@@ -232,7 +311,11 @@ async function sendMessage(sessionId, input, businessName, libraryList = []) {
  * Reinicia la sesión de un usuario
  */
 function resetSession(sessionId) {
-    sessions.delete(sessionId);
+    for (const k of sessions.keys()) {
+        if (k === sessionId || k.endsWith(`_${sessionId}`)) {
+            sessions.delete(k);
+        }
+    }
 }
 
 /**
@@ -245,7 +328,9 @@ function clearAllSessions() {
 
 module.exports = {
     isConfigured,
+    hasGlobalKey,
     sendMessage,
+    testApiKey,
     resetSession,
     clearAllSessions,
     formatForWhatsApp

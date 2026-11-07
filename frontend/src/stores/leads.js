@@ -19,6 +19,72 @@ export const isLiveChat = writable(false);
 
 let activeEventSource = null;
 let chatPollTimer = null;
+let companyEventsSource = null;
+
+/**
+ * Inicia la transmisión de eventos en tiempo real para la empresa activa
+ * Mantiene la lista de prospectos sincronizada al segundo sin necesidad de recargar (F5)
+ */
+export function initCompanyRealtimeEvents(companyId) {
+  stopCompanyRealtimeEvents();
+  if (!companyId) return;
+
+  try {
+    const url = `/api/events?companyId=${encodeURIComponent(companyId)}`;
+    const es = new EventSource(url);
+    companyEventsSource = es;
+
+    es.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.event === 'connected') return;
+
+        if (msg.event === 'lead_updated' && msg.payload) {
+          const lead = msg.payload;
+          leads.update(list => {
+            const cleanTarget = (lead.phone || '').replace(/\D/g, '');
+            const idx = list.findIndex(l => l.phone === lead.phone || (cleanTarget && l.phone && l.phone.replace(/\D/g, '') === cleanTarget));
+            if (idx >= 0) {
+              const updated = { ...list[idx], ...lead };
+              const rest = list.filter((_, i) => i !== idx);
+              return [updated, ...rest];
+            } else {
+              // Nuevo prospecto que acaba de iniciar conversación: aparece de inmediato en la cima
+              return [lead, ...list];
+            }
+          });
+
+          selectedLead.update(curr => curr && curr.phone === lead.phone ? { ...curr, ...lead } : curr);
+          selectedChatLead.update(curr => curr && curr.phone === lead.phone ? { ...curr, ...lead } : curr);
+        }
+
+        if (msg.event === 'lead_deleted' && msg.payload?.phone) {
+          const delPhone = msg.payload.phone;
+          leads.update(list => list.filter(l => l.phone !== delPhone));
+        }
+
+        if (msg.event === 'leads_reloaded') {
+          loadLeads();
+        }
+      } catch (e) {
+        console.warn('Error procesando evento SSE de empresa:', e);
+      }
+    };
+
+    es.onerror = () => {
+      // EventSource reconecta automáticamente si se interrumpe la red
+    };
+  } catch (err) {
+    console.error('Error iniciando stream de eventos de empresa:', err);
+  }
+}
+
+export function stopCompanyRealtimeEvents() {
+  if (companyEventsSource) {
+    try { companyEventsSource.close(); } catch (e) { }
+    companyEventsSource = null;
+  }
+}
 
 export async function loadLeads() {
   try {

@@ -11,6 +11,25 @@
   } from '../../stores/team';
   import { hasPermission } from '../../stores/auth';
   import { formatDate } from '../../utils/formatters';
+  import { 
+    getPermissionMeta, 
+    groupPermissionsByCategory, 
+    isFullAdmin 
+  } from '../../utils/permissions';
+  import RoleDetailModal from './RoleDetailModal.svelte';
+
+  let selectedRoleForDetail = $state(null);
+  let isRoleDetailOpen = $state(false);
+
+  function openRoleDetail(role) {
+    selectedRoleForDetail = role;
+    isRoleDetailOpen = true;
+  }
+
+  function closeRoleDetail() {
+    selectedRoleForDetail = null;
+    isRoleDetailOpen = false;
+  }
 
   function openEditRole(member) {
     editingMember.set({
@@ -147,28 +166,96 @@
     {/if}
   </div>
 
-  <!-- Roles y Permisos Disponibles -->
+  <!-- Roles y Permisos Disponibles en Lenguaje Claro -->
   <div class="team-section-card" style="margin-top: 32px;">
-    <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 16px;">Roles y Permisos Granulares Disponibles</h3>
+    <div class="roles-section-header">
+      <div>
+        <h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 4px;">🛡️ Roles y Niveles de Acceso del Equipo</h3>
+        <p class="section-desc" style="margin: 0; font-size: 0.85rem;">
+          Conoce en español y lenguaje claro qué puede ver y hacer cada colaborador en tu empresa, desde ventas y atención hasta administración total.
+        </p>
+      </div>
+      {#if $hasPermission('roles:manage')}
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          onclick={() => isCustomRoleModalOpen.set(true)}
+        >
+          🛡️ Crear Rol Personalizado
+        </button>
+      {/if}
+    </div>
+
     <div class="roles-display-grid">
       {#each $companyRoles as r (r.id)}
-        <div class="role-card">
+        {@const perms = Array.isArray(r.permissions) ? r.permissions : []}
+        {@const isAll = isFullAdmin(r)}
+        {@const grouped = groupPermissionsByCategory(perms)}
+        {@const isSystem = Boolean(r.isSystemDefault || r.is_system_default)}
+
+        <div class="role-card {isAll ? 'admin-card' : ''}">
           <div class="role-card-header">
-            <span class="role-badge {r.is_system_default ? r.id : 'custom-role'}">{r.name}</span>
-            <span style="font-size: 0.7rem; color: {r.is_system_default ? 'var(--text-dim)' : '#a855f7'};">
-              {r.is_system_default ? 'Sistema' : 'Personalizado'}
+            <div class="role-card-title-group">
+              <span class="role-badge {isSystem ? (r.id || 'custom-role') : 'custom-role'}">{r.name}</span>
+              <span class="role-type-tag {isSystem ? 'system' : 'custom'}">
+                {isSystem ? 'Sistema' : 'Personalizado'}
+              </span>
+            </div>
+            <span class="role-perms-count-badge {isAll ? 'admin-badge' : ''}">
+              {isAll ? '⭐ Acceso Total' : `${perms.length} permisos`}
             </span>
           </div>
-          <p class="role-card-desc">{r.description || 'Sin descripción.'}</p>
-          <div class="role-card-perms">
-            {#each (r.permissions || []) as perm}
-              <span class="perm-chip">{perm}</span>
-            {/each}
+
+          <p class="role-card-desc">{r.description || 'Sin descripción asignada.'}</p>
+
+          <!-- Resumen comprensible de capacidades del rol en español -->
+          <div class="role-capabilities-summary">
+            {#if isAll}
+              <div class="admin-full-box">
+                <span class="admin-icon">👑</span>
+                <div class="admin-box-text">
+                  <strong>Control Total Sin Restricciones</strong>
+                  <p>Puede operar WhatsApp, configurar inteligencia artificial, ver y gestionar todos los clientes, programar difusiones y administrar colaboradores.</p>
+                </div>
+              </div>
+            {:else}
+              <div class="role-grouped-modules">
+                {#each grouped as cat}
+                  <div class="module-caps-row">
+                    <span class="module-caps-name">{cat.icon} {cat.name}:</span>
+                    <div class="module-caps-pills">
+                      {#each cat.permissions as perm}
+                        <span class="friendly-perm-pill" title={perm.description}>
+                          {perm.icon} {perm.shortLabel}
+                        </span>
+                      {/each}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="role-card-footer">
+            <button 
+              type="button" 
+              class="btn-inspect-role" 
+              onclick={() => openRoleDetail(r)}
+            >
+              🔍 Ver qué puede y qué no puede hacer ({perms.length})
+            </button>
           </div>
         </div>
       {/each}
     </div>
   </div>
+
+  <!-- Modal interactivo con el desglose comprensible de permisos -->
+  <RoleDetailModal 
+    role={selectedRoleForDetail} 
+    isOpen={isRoleDetailOpen} 
+    onClose={closeRoleDetail} 
+  />
 </section>
 
 <style>
@@ -178,6 +265,15 @@
     border-radius: var(--radius-lg);
     padding: 24px;
     margin-top: 20px;
+  }
+
+  .roles-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   .member-user-cell {
@@ -201,7 +297,178 @@
 
   .roles-display-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+  }
+
+  .role-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+  }
+  .role-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+  .role-card.admin-card {
+    border-color: rgba(234, 179, 8, 0.3);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+  }
+
+  .role-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .role-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .role-type-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 9999px;
+  }
+  .role-type-tag.system {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+  }
+  .role-type-tag.custom {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
+
+  .role-perms-count-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 9999px;
+    color: var(--text-muted);
+  }
+  .role-perms-count-badge.admin-badge {
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.35);
+  }
+
+  .role-card-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin: 0 0 14px 0;
+  }
+
+  .role-capabilities-summary {
+    flex: 1;
+    margin-bottom: 16px;
+  }
+
+  .admin-full-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(234, 179, 8, 0.08);
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    border-radius: var(--radius-sm);
+  }
+  .admin-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .admin-box-text strong {
+    display: block;
+    font-size: 0.84rem;
+    color: #fef08a;
+    margin-bottom: 3px;
+  }
+  .admin-box-text p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+    margin: 0;
+  }
+
+  .role-grouped-modules {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .module-caps-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .module-caps-name {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .module-caps-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .friendly-perm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: #e2e8f0;
+    line-height: 1.2;
+    transition: all 0.15s ease;
+  }
+  .friendly-perm-pill:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #fff;
+  }
+
+  .role-card-footer {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .btn-inspect-role {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: #38bdf8;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .btn-inspect-role:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: #38bdf8;
+    color: #fff;
   }
 </style>

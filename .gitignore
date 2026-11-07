@@ -83,3 +83,8 @@ typings/
 public/uploads/
 uploads/
 knowledge/
+
+# Datos y respaldos locales con información de clientes (seguridad y privacidad)
+sales_bot_data.json
+sales_bot_data.json.bak
+*.json.bak

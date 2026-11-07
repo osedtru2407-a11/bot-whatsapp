@@ -81,3 +81,16 @@ export async function createCustomRole(roleData) {
     return { success: false, error: err.message };
   }
 }
+
+export async function deleteCustomRole(roleId, roleName) {
+  const compId = get(currentCompanyId);
+  try {
+    await api.delete(`/api/companies/${compId}/roles/${roleId}`);
+    showToast(`Rol "${roleName}" eliminado correctamente`, 'info');
+    await loadTeamData();
+    return { success: true };
+  } catch (err) {
+    showToast(err.message, 'error');
+    return { success: false, error: err.message };
+  }
+}
