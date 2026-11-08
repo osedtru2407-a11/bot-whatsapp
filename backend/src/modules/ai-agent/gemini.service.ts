@@ -13,7 +13,7 @@ export class GeminiService {
   private readonly globalApiKey: string | null;
 
   constructor(private readonly libraryService: LibraryService) {
-    this.globalApiKey = process.env.GEMINI_API_KEY || process.env.KEY || null;
+    this.globalApiKey = process.env.GEMINI_API_KEY || process.env.KEY || process.env.GOOGLE_API_KEY || null;
     if (this.globalApiKey) {
       try {
         this.clientsCache.set(this.globalApiKey, new GoogleGenAI({ apiKey: this.globalApiKey }));
@@ -24,8 +24,25 @@ export class GeminiService {
     }
   }
 
+  getGlobalApiKey(): string | null {
+    return (
+      process.env.GEMINI_API_KEY ||
+      process.env.KEY ||
+      process.env.GOOGLE_API_KEY ||
+      process.env.GEMINI_KEY ||
+      this.globalApiKey ||
+      null
+    );
+  }
+
+  hasGlobalKey(): boolean {
+    const key = this.getGlobalApiKey();
+    return Boolean(key && key.trim());
+  }
+
   getClient(customApiKey?: string | null): any {
-    const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : this.globalApiKey;
+    const globalKey = this.getGlobalApiKey();
+    const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : globalKey;
     if (!effectiveKey) return null;
 
     if (!this.clientsCache.has(effectiveKey)) {
@@ -42,7 +59,8 @@ export class GeminiService {
   }
 
   isConfigured(customApiKey?: string | null): boolean {
-    const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : this.globalApiKey;
+    const globalKey = this.getGlobalApiKey();
+    const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : globalKey;
     return Boolean(effectiveKey && effectiveKey.trim());
   }
 

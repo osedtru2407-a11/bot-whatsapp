@@ -1,8 +1,24 @@
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Cargar .env de la raíz antes de inicializar la aplicación y módulos
+const candidateEnvs = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '..', '.env'),
+  path.resolve(__dirname, '..', '..', '.env'),
+  path.resolve(__dirname, '..', '..', '..', '.env'),
+];
+for (const envPath of candidateEnvs) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    break;
+  }
+}
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { json, urlencoded, static as expressStatic } from 'express';
-import * as path from 'path';
-import * as fs from 'fs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

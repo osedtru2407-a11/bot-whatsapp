@@ -274,5 +274,100 @@ export class AiAgentController {
   ) {
     return this.geminiService.testApiKey(apiKey, model);
   }
+
+  @Get('gemini/status')
+  async getGeminiStatus(
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    const s = await this.companySettingRepository.findOne({ where: { companyId } });
+    const customKey = s?.geminiApiKey || null;
+    const model = s?.geminiModel || 'gemini-3.5-flash-lite';
+    const hasGlobalKey = this.geminiService.hasGlobalKey();
+    const configured = this.geminiService.isConfigured(customKey);
+
+    const maskedKey = customKey
+      ? customKey.length > 8
+        ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}`
+        : '******'
+      : null;
+
+    return {
+      configured,
+      isCustom: Boolean(customKey),
+      maskedKey,
+      model,
+      hasGlobalKey,
+      canConfigure: true,
+      supportsAudio: true,
+    };
+  }
+
+  @Post('gemini/test-key')
+  async testGeminiKey(
+    @Body('apiKey') apiKey?: string,
+    @Body('model') model?: string,
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    const s = await this.companySettingRepository.findOne({ where: { companyId } });
+    const candidateKey = apiKey && !apiKey.includes('...') ? apiKey.trim() : s?.geminiApiKey || null;
+    const candidateModel = model || s?.geminiModel || 'gemini-3.5-flash-lite';
+
+    try {
+      const result = await this.geminiService.testApiKey(candidateKey, candidateModel);
+      return {
+        success: true,
+        message: `¡Conexión exitosa con Gemini usando el modelo ${result.model}!`,
+        details: result,
+      };
+    } catch (err: any) {
+      throw new BadRequestException(err.message || 'No se pudo conectar con la API de Gemini.');
+    }
+  }
+
+  @Post('gemini/config')
+  async saveGeminiConfig(
+    @Body('apiKey') apiKey?: string | null,
+    @Body('model') model?: string,
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    let s = await this.companySettingRepository.findOne({ where: { companyId } });
+    if (!s) {
+      s = this.companySettingRepository.create({ companyId });
+    }
+
+    if (apiKey === null || apiKey === '') {
+      s.geminiApiKey = null as any;
+    } else if (apiKey && !apiKey.includes('...')) {
+      s.geminiApiKey = apiKey.trim();
+    }
+
+    if (model) {
+      s.geminiModel = model.trim();
+    }
+
+    await this.companySettingRepository.save(s);
+    this.geminiService.clearAllSessions();
+
+    const customKey = s.geminiApiKey || null;
+    const maskedKey = customKey
+      ? customKey.length > 8
+        ? `${customKey.slice(0, 6)}...${customKey.slice(-4)}`
+        : '******'
+      : null;
+
+    return {
+      success: true,
+      configured: this.geminiService.isConfigured(customKey),
+      isCustom: Boolean(customKey),
+      maskedKey,
+      model: s.geminiModel,
+    };
+  }
 }
 
