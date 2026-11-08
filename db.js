@@ -379,6 +379,21 @@ async function initDb() {
             );
         }
 
+        // 17. Tabla de Solicitudes y Tokens de Recuperación de Contraseña
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id VARCHAR(100) PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                token VARCHAR(255) NOT NULL,
+                code VARCHAR(10),
+                expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+                used BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email);
+            CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+        `);
+
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
             await client.query(

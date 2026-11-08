@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
-    import { isAuthenticated, checkAuth, isSuperadmin, currentUser } from './stores/auth';
+    import { isAuthenticated, checkAuth, isSuperadmin, currentUser, isAuthModalOpen, pendingResetData } from './stores/auth';
     import { loadCompanies, currentCompanyId } from './stores/company';
     import {
         startStatusPolling,
@@ -70,6 +70,19 @@
     }
 
     onMount(async () => {
+        // Detectar si el usuario abrió un link de recuperación de contraseña (?resetToken=... o ?token=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const resetToken = urlParams.get('resetToken') || urlParams.get('token');
+        const resetEmail = urlParams.get('email');
+        if (resetToken) {
+            pendingResetData.set({
+                token: resetToken,
+                email: resetEmail || '',
+            });
+            isAuthModalOpen.set(true);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
         const isAuth = await checkAuth();
         if (isAuth) {
             await loadCompanies();

@@ -10,23 +10,25 @@ import { LeadsModule } from './modules/leads/leads.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { AiAgentModule } from './modules/ai-agent/ai-agent.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: ['../.env', '.env'],
-    }),
-    ScheduleModule.forRoot(),
-    DatabaseModule,
-    AuthModule,
-    CompaniesModule,
-    WhatsAppModule,
-    RulesModule,
-    LeadsModule,
-    ContactsModule,
-    AiAgentModule,
-    SchedulerModule,
-  ],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: ['../.env', '.env'],
+        }),
+        ScheduleModule.forRoot(),
+        DatabaseModule,
+        MailModule,
+        AuthModule,
+        CompaniesModule,
+        WhatsAppModule,
+        RulesModule,
+        LeadsModule,
+        ContactsModule,
+        AiAgentModule,
+        SchedulerModule,
+    ],
 })
 export class AppModule {}
