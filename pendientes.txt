@@ -1,4 +1,3 @@
 
-Al momento de que un admin de empresa quiera vincular a otro usuario, si el correo del usuario ya existe en el sistema él no puede asignarle nuevo password, simplemente se le asigna el rol, sin nuevo password. 
 Vincular un correo para enviar códigos de recuperación de contraseñas (crear una sección de recuperación de contraseñas)
 crear tunel para accederr a la página desde otro equipo

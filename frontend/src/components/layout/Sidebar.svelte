@@ -1,10 +1,10 @@
 <!-- frontend/src/components/layout/Sidebar.svelte -->
 <script>
-  import { activeTab, isSidebarCollapsed } from '../../stores/ui';
+  import { activeTab, isSidebarCollapsed, isProfileModalOpen } from '../../stores/ui';
   import { botStatus, isQrModalOpen } from '../../stores/botStatus';
   import { libraryStats } from '../../stores/library';
   import { teamMembers } from '../../stores/team';
-  import { hasPermission, isSuperadmin } from '../../stores/auth';
+  import { hasPermission, isSuperadmin, currentUser } from '../../stores/auth';
 
   function setTab(tabId) {
     activeTab.set(tabId);
@@ -239,6 +239,35 @@
         </button>
       {/if}
     </div>
+
+    <!-- Grupo 5: Mi Cuenta & Perfil -->
+    <div class="nav-section account-nav-group">
+      {#if !$isSidebarCollapsed}
+        <span class="nav-section-title">Mi Cuenta</span>
+      {/if}
+
+      <button 
+        type="button" 
+        class="sidebar-nav-item profile-nav-btn {$isProfileModalOpen ? 'active' : ''}" 
+        onclick={() => isProfileModalOpen.set(true)}
+        title="Editar Perfil y Contraseña"
+      >
+        <div class="nav-icon-box profile-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        {#if !$isSidebarCollapsed}
+          <span class="nav-label">Editar Perfil</span>
+          {#if $currentUser?.mustChangePassword}
+            <span class="sidebar-badge pwd-alert-badge" title="¡Debes cambiar tu contraseña!">!</span>
+          {/if}
+        {:else if $currentUser?.mustChangePassword}
+          <span class="collapsed-dot alert-dot" title="¡Debes cambiar tu contraseña!"></span>
+        {/if}
+      </button>
+    </div>
   </div>
 
   <!-- Pie de la barra lateral: Conexión rápida y botón de contraer -->
@@ -457,6 +486,57 @@
   .superadmin-label {
     font-weight: 600;
     color: #fef3c7;
+  }
+
+  .account-nav-group {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .profile-nav-btn {
+    color: #94a3b8;
+  }
+
+  .profile-nav-btn:hover {
+    color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+    border-color: rgba(56, 189, 248, 0.2) !important;
+  }
+
+  .profile-nav-btn.active {
+    background: rgba(56, 189, 248, 0.14) !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+    color: #38bdf8 !important;
+  }
+
+  .profile-nav-btn.active::before {
+    background: #38bdf8 !important;
+  }
+
+  .profile-icon {
+    color: #38bdf8;
+  }
+
+  .sidebar-badge.pwd-alert-badge {
+    background: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    animation: pulseAlert 2s infinite ease-in-out;
+  }
+
+  .collapsed-dot.alert-dot {
+    background: #ef4444;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
+    animation: pulseAlert 2s infinite ease-in-out;
+  }
+
+  @keyframes pulseAlert {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.15); }
   }
 
   .collapsed-dot {

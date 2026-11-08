@@ -210,7 +210,7 @@
         <div 
           class="user-badge" 
           onclick={() => isProfileModalOpen.set(true)} 
-          title="Ver y editar mi perfil"
+          title="Ver y editar mi perfil (haz clic para modificar datos o contraseña)"
         >
           <span class="user-avatar">
             {($currentUser.fullName || $currentUser.username || 'U').charAt(0).toUpperCase()}
@@ -221,6 +221,12 @@
               {$userMembership?.roleName || ($isSuperadmin ? '⭐ Superusuario' : '👑 Administrador')}
             </span>
           </div>
+          <span class="user-edit-hint" title="Editar mi perfil">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </span>
           {#if $currentUser?.mustChangePassword}
             <span class="header-pwd-alert-dot" title="¡Debes cambiar tu contraseña temporal!">!</span>
           {/if}
@@ -387,6 +393,22 @@
     color: #f87171 !important;
     background: rgba(239, 68, 68, 0.12) !important;
     animation: pulseAlert 1.5s infinite;
+  }
+
+  .user-edit-hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    margin-left: 2px;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+  }
+
+  .user-badge:hover .user-edit-hint {
+    color: #38bdf8;
+    opacity: 1;
+    transform: scale(1.15);
   }
 
   @keyframes pulseAlert {
