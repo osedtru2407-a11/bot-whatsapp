@@ -9,7 +9,9 @@ const DATA_FILE = path.join(__dirname, '..', 'sales_bot_data.json');
 const BACKUP_FILE = path.join(__dirname, '..', 'sales_bot_data.json.bak');
 
 async function migrate() {
-    console.log('🚀 Iniciando proceso de migración de datos hacia PostgreSQL...');
+    console.log(
+        '🚀 Iniciando proceso de migración de datos hacia PostgreSQL...',
+    );
 
     if (!fs.existsSync(DATA_FILE)) {
         throw new Error(`No se encontró el archivo de datos: ${DATA_FILE}`);
@@ -40,26 +42,39 @@ async function migrate() {
     try {
         await client.query('BEGIN');
 
-        // 1. Crear el primer Usuario Administrador (Oscar)
-        const userPassword = process.env.POSTGRES_PW || 'TestPass123!*';
+        // 1. Crear el primer Usuario Administrador
+        const crypto = require('crypto');
+        const userPassword =
+            process.env.INITIAL_ADMIN_PASSWORD ||
+            crypto.randomBytes(8).toString('hex') + 'A1!';
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(userPassword, salt);
         const userId = 'usr_' + Date.now();
-        const userEmail = (process.env.POSTGRES_USER || 'oscar') + '@admin.com';
-        const userName = 'Oscar';
+        const userEmail = (
+            process.env.INITIAL_ADMIN_EMAIL || 'admin@admin.com'
+        ).toLowerCase();
+        const userName =
+            process.env.INITIAL_ADMIN_NAME || 'Administrador Inicial';
 
-        console.log(`👤 Creando usuario inicial: ${userName} (${userEmail})...`);
-        const userRes = await client.query(`
+        console.log(
+            `👤 Creando usuario inicial: ${userName} (${userEmail})...`,
+        );
+        const userRes = await client.query(
+            `
             INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password)
             VALUES ($1, $2, $3, $4, TRUE, FALSE)
             ON CONFLICT (email) DO UPDATE SET
                 password_hash = EXCLUDED.password_hash,
                 full_name = EXCLUDED.full_name
             RETURNING id, email, full_name;
-        `, [userId, userEmail, passwordHash, userName]);
+        `,
+            [userId, userEmail, passwordHash, userName],
+        );
 
         const adminUser = userRes.rows[0];
-        console.log(`✅ Usuario Administrador listo: ID=${adminUser.id}, Email=${adminUser.email}`);
+        console.log(
+            `✅ Usuario Administrador listo: ID=${adminUser.id}, Email=${adminUser.email}`,
+        );
 
         // 2. Migrar cada empresa
         const companies = data.companies || [];
@@ -71,30 +86,39 @@ async function migrate() {
         let totalDocs = 0;
 
         for (const comp of companies) {
-            console.log(`\n📌 Procesando empresa: "${comp.name}" (ID: ${comp.id})...`);
+            console.log(
+                `\n📌 Procesando empresa: "${comp.name}" (ID: ${comp.id})...`,
+            );
 
             // Insertar empresa
-            await client.query(`
+            await client.query(
+                `
                 INSERT INTO companies (id, name, created_by)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name;
-            `, [comp.id, comp.name, adminUser.id]);
+            `,
+                [comp.id, comp.name, adminUser.id],
+            );
 
-            // Asignar al usuario Oscar como Owner y Administrador en esta empresa
+            // Asignar al usuario administrador como Owner y Administrador en esta empresa
             const membershipId = `cu_${comp.id}_${adminUser.id}`;
-            await client.query(`
+            await client.query(
+                `
                 INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
                 VALUES ($1, $2, $3, 'role_admin', TRUE, 'active')
                 ON CONFLICT (user_id, company_id) DO UPDATE SET
                     role_id = 'role_admin',
                     is_owner = TRUE,
                     status = 'active';
-            `, [membershipId, adminUser.id, comp.id]);
+            `,
+                [membershipId, adminUser.id, comp.id],
+            );
 
             // Insertar configuración de la empresa
             const settings = comp.settings || {};
-            await client.query(`
+            await client.query(
+                `
                 INSERT INTO company_settings (
                     company_id, business_name, bot_enabled, simulate_typing,
                     typing_delay_seconds, ignore_groups, fallback_message, gemini_enabled
@@ -107,21 +131,25 @@ async function migrate() {
                     ignore_groups = EXCLUDED.ignore_groups,
                     fallback_message = EXCLUDED.fallback_message,
                     gemini_enabled = EXCLUDED.gemini_enabled;
-            `, [
-                comp.id,
-                settings.businessName || comp.name,
-                settings.botEnabled !== false,
-                settings.simulateTyping !== false,
-                settings.typingDelaySeconds || 2,
-                settings.ignoreGroups !== false,
-                settings.fallbackMessage || `¡Hola! Gracias por comunicarte con ${comp.name}.`,
-                settings.geminiEnabled !== false
-            ]);
+            `,
+                [
+                    comp.id,
+                    settings.businessName || comp.name,
+                    settings.botEnabled !== false,
+                    settings.simulateTyping !== false,
+                    settings.typingDelaySeconds || 2,
+                    settings.ignoreGroups !== false,
+                    settings.fallbackMessage ||
+                        `¡Hola! Gracias por comunicarte con ${comp.name}.`,
+                    settings.geminiEnabled !== false,
+                ],
+            );
 
             // Migrar Reglas (Rules)
             const rules = comp.rules || [];
             for (const r of rules) {
-                await client.query(`
+                await client.query(
+                    `
                     INSERT INTO rules (
                         id, company_id, name, enabled, parent_rule_id,
                         trigger_type, match_type, triggers, response,
@@ -139,21 +167,23 @@ async function migrate() {
                         lead_tag = EXCLUDED.lead_tag,
                         pause_bot = EXCLUDED.pause_bot,
                         media_type_filter = EXCLUDED.media_type_filter;
-                `, [
-                    r.id,
-                    comp.id,
-                    r.name,
-                    r.enabled !== false,
-                    r.parentRuleId || null,
-                    r.triggerType || 'text',
-                    r.matchType || 'contains_any',
-                    JSON.stringify(r.triggers || []),
-                    r.response || '',
-                    r.media ? JSON.stringify(r.media) : null,
-                    r.leadTag || null,
-                    Boolean(r.pauseBot),
-                    r.mediaTypeFilter || 'any'
-                ]);
+                `,
+                    [
+                        r.id,
+                        comp.id,
+                        r.name,
+                        r.enabled !== false,
+                        r.parentRuleId || null,
+                        r.triggerType || 'text',
+                        r.matchType || 'contains_any',
+                        JSON.stringify(r.triggers || []),
+                        r.response || '',
+                        r.media ? JSON.stringify(r.media) : null,
+                        r.leadTag || null,
+                        Boolean(r.pauseBot),
+                        r.mediaTypeFilter || 'any',
+                    ],
+                );
                 totalRules++;
             }
 
@@ -161,7 +191,8 @@ async function migrate() {
             const leads = comp.leads || [];
             for (const l of leads) {
                 const leadId = `lead_${comp.id}_${l.phone.replace(/[^a-zA-Z0-9]/g, '_')}`;
-                await client.query(`
+                await client.query(
+                    `
                     INSERT INTO leads (
                         id, company_id, phone, name, tag,
                         last_message, last_sent_rule_id, human_paused,
@@ -175,18 +206,22 @@ async function migrate() {
                         human_paused = EXCLUDED.human_paused,
                         received_files = EXCLUDED.received_files,
                         last_interaction = EXCLUDED.last_interaction;
-                `, [
-                    leadId,
-                    comp.id,
-                    l.phone,
-                    l.name || null,
-                    l.tag || 'Nuevo',
-                    l.lastMessage || null,
-                    l.lastSentRuleId || null,
-                    Boolean(l.humanPaused),
-                    JSON.stringify(l.receivedFiles || []),
-                    l.lastInteraction ? new Date(l.lastInteraction) : new Date()
-                ]);
+                `,
+                    [
+                        leadId,
+                        comp.id,
+                        l.phone,
+                        l.name || null,
+                        l.tag || 'Nuevo',
+                        l.lastMessage || null,
+                        l.lastSentRuleId || null,
+                        Boolean(l.humanPaused),
+                        JSON.stringify(l.receivedFiles || []),
+                        l.lastInteraction
+                            ? new Date(l.lastInteraction)
+                            : new Date(),
+                    ],
+                );
                 totalLeads++;
             }
 
@@ -194,7 +229,8 @@ async function migrate() {
             const schedules = comp.schedules || [];
             for (const s of schedules) {
                 const recipientPhone = s.recipient || s.phone || '0000000000';
-                await client.query(`
+                await client.query(
+                    `
                     INSERT INTO schedules (
                         id, company_id, name, recipient, message,
                         media, scheduled_time, status, sent_at, created_at
@@ -207,25 +243,30 @@ async function migrate() {
                         scheduled_time = EXCLUDED.scheduled_time,
                         status = EXCLUDED.status,
                         sent_at = EXCLUDED.sent_at;
-                `, [
-                    s.id,
-                    comp.id,
-                    s.name || s.customerName || 'Envío Programado',
-                    recipientPhone,
-                    s.message,
-                    s.media ? JSON.stringify(s.media) : null,
-                    s.scheduledTime ? new Date(s.scheduledTime) : new Date(),
-                    s.status || 'pending',
-                    s.sentAt ? new Date(s.sentAt) : null,
-                    s.createdAt ? new Date(s.createdAt) : new Date()
-                ]);
+                `,
+                    [
+                        s.id,
+                        comp.id,
+                        s.name || s.customerName || 'Envío Programado',
+                        recipientPhone,
+                        s.message,
+                        s.media ? JSON.stringify(s.media) : null,
+                        s.scheduledTime
+                            ? new Date(s.scheduledTime)
+                            : new Date(),
+                        s.status || 'pending',
+                        s.sentAt ? new Date(s.sentAt) : null,
+                        s.createdAt ? new Date(s.createdAt) : new Date(),
+                    ],
+                );
                 totalSchedules++;
             }
 
             // Migrar Documentos de la Biblioteca
             const library = comp.library || [];
             for (const doc of library) {
-                await client.query(`
+                await client.query(
+                    `
                     INSERT INTO library_documents (
                         id, company_id, name, original_filename,
                         word_count, char_count, size, active, created_at
@@ -237,24 +278,30 @@ async function migrate() {
                         char_count = EXCLUDED.char_count,
                         size = EXCLUDED.size,
                         active = EXCLUDED.active;
-                `, [
-                    doc.id,
-                    comp.id,
-                    doc.name,
-                    doc.originalFilename,
-                    doc.wordCount || 0,
-                    doc.charCount || 0,
-                    doc.size || 0,
-                    doc.active !== false,
-                    doc.createdAt ? new Date(doc.createdAt) : new Date()
-                ]);
+                `,
+                    [
+                        doc.id,
+                        comp.id,
+                        doc.name,
+                        doc.originalFilename,
+                        doc.wordCount || 0,
+                        doc.charCount || 0,
+                        doc.size || 0,
+                        doc.active !== false,
+                        doc.createdAt ? new Date(doc.createdAt) : new Date(),
+                    ],
+                );
                 totalDocs++;
             }
 
             console.log(`   ✔️ ${rules.length} rutas migradas`);
             console.log(`   ✔️ ${leads.length} prospectos migrados`);
-            console.log(`   ✔️ ${schedules.length} envíos programados migrados`);
-            console.log(`   ✔️ ${library.length} documentos de biblioteca migrados`);
+            console.log(
+                `   ✔️ ${schedules.length} envíos programados migrados`,
+            );
+            console.log(
+                `   ✔️ ${library.length} documentos de biblioteca migrados`,
+            );
         }
 
         await client.query('COMMIT');
@@ -267,14 +314,15 @@ async function migrate() {
         console.log('🎉 ¡MIGRACIÓN COMPLETADA EXITOSAMENTE EN POSTGRESQL! 🎉');
         console.log('======================================================');
         console.log(`👤 Usuario Administrador: ${adminUser.email}`);
-        console.log(`🔑 Contraseña: (La misma definida en tu .env: ${userPassword})`);
+        console.log(
+            `🔑 Contraseña: (La misma definida en tu .env: ${userPassword})`,
+        );
         console.log(`🏢 Empresas migradas: ${companies.length}`);
         console.log(`📜 Total Rutas de Venta: ${totalRules}`);
         console.log(`👥 Total Prospectos (CRM): ${totalLeads}`);
         console.log(`⏰ Total Envíos Programados: ${totalSchedules}`);
         console.log(`📚 Total Documentos en Biblioteca: ${totalDocs}`);
         console.log('======================================================\n');
-
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('❌ Error fatal durante la migración:', err);
@@ -285,7 +333,7 @@ async function migrate() {
     }
 }
 
-migrate().catch(e => {
+migrate().catch((e) => {
     console.error(e);
     process.exit(1);
 });

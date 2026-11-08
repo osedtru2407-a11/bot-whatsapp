@@ -128,7 +128,7 @@
                 type="text" 
                 id="login-identifier" 
                 class="auth-input" 
-                placeholder="ej. oscar o admin@admin.com" 
+                placeholder="ej. admin@empresa.com o tu_usuario" 
                 bind:value={identifier} 
                 required 
                 autocomplete="username" 
@@ -206,7 +206,7 @@
                 type="text" 
                 id="reg-fullname" 
                 class="auth-input" 
-                placeholder="Ej. Oscar Rodríguez" 
+                placeholder="Ej. Juan Pérez" 
                 bind:value={fullName} 
                 required 
                 autocomplete="name" 

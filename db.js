@@ -6,10 +6,19 @@ const bcrypt = require('bcryptjs');
 
 const pool = new Pool({
     host: process.env.PG_HOST || process.env.POSTGRES_HOST || 'localhost',
-    port: parseInt(process.env.PG_PORT || process.env.POSTGRES_PORT || '5432', 10),
-    user: process.env.POSTGRES_USER || process.env.PG_USER || 'oscar',
-    password: process.env.POSTGRES_PW || process.env.POSTGRES_PASSWORD || process.env.PG_PASSWORD,
-    database: process.env.POSTGRES_DB || process.env.PG_DATABASE || 'whatsapp_sales_bot',
+    port: parseInt(
+        process.env.PG_PORT || process.env.POSTGRES_PORT || '5432',
+        10,
+    ),
+    user: process.env.PG_USER || process.env.POSTGRES_USER || 'postgres',
+    password:
+        process.env.PG_PASSWORD ||
+        process.env.POSTGRES_PASSWORD ||
+        process.env.POSTGRES_PW,
+    database:
+        process.env.PG_DATABASE ||
+        process.env.POSTGRES_DB ||
+        'whatsapp_sales_bot',
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
@@ -24,56 +33,86 @@ const DEFAULT_SYSTEM_ROLES = [
     {
         id: 'role_admin',
         name: '👑 Administrador',
-        description: 'Acceso total y control absoluto de todas las funciones, vinculación de WhatsApp, roles y usuarios.',
+        description:
+            'Acceso total y control absoluto de todas las funciones, vinculación de WhatsApp, roles y usuarios.',
         is_system_default: true,
         permissions: [
-            'rules:view', 'rules:create', 'rules:edit', 'rules:delete',
-            'schedules:view', 'schedules:create', 'schedules:delete',
+            'rules:view',
+            'rules:create',
+            'rules:edit',
+            'rules:delete',
+            'schedules:view',
+            'schedules:create',
+            'schedules:delete',
             'simulator:use',
             'quick_send:use',
-            'leads:view', 'leads:pause', 'leads:delete',
-            'library:view', 'library:upload', 'library:edit', 'library:toggle', 'library:delete',
-            'settings:view', 'settings:edit',
-            'whatsapp:connect', 'whatsapp:disconnect', 'whatsapp:toggle',
-            'team:view', 'team:manage', 'roles:manage'
-        ]
+            'leads:view',
+            'leads:pause',
+            'leads:delete',
+            'library:view',
+            'library:upload',
+            'library:edit',
+            'library:toggle',
+            'library:delete',
+            'settings:view',
+            'settings:edit',
+            'whatsapp:connect',
+            'whatsapp:disconnect',
+            'whatsapp:toggle',
+            'team:view',
+            'team:manage',
+            'roles:manage',
+        ],
     },
     {
         id: 'role_sales_agent',
         name: '💼 Asesor / Agente de Ventas',
-        description: 'Atiende clientes, consulta prospectos (CRM), realiza envíos rápidos y prueba el simulador.',
+        description:
+            'Atiende clientes, consulta prospectos (CRM), realiza envíos rápidos y prueba el simulador.',
         is_system_default: true,
         permissions: [
-            'leads:view', 'leads:pause',
+            'leads:view',
+            'leads:pause',
             'quick_send:use',
-            'simulator:use'
-        ]
+            'simulator:use',
+        ],
     },
     {
         id: 'role_content_manager',
         name: '✍️ Gestor de Contenidos y Flujos',
-        description: 'Diseña rutas de respuesta, gestiona la biblioteca de conocimiento y programa envíos masivos.',
+        description:
+            'Diseña rutas de respuesta, gestiona la biblioteca de conocimiento y programa envíos masivos.',
         is_system_default: true,
         permissions: [
-            'rules:view', 'rules:create', 'rules:edit', 'rules:delete',
-            'library:view', 'library:upload', 'library:edit', 'library:toggle', 'library:delete',
-            'schedules:view', 'schedules:create', 'schedules:delete',
-            'simulator:use'
-        ]
+            'rules:view',
+            'rules:create',
+            'rules:edit',
+            'rules:delete',
+            'library:view',
+            'library:upload',
+            'library:edit',
+            'library:toggle',
+            'library:delete',
+            'schedules:view',
+            'schedules:create',
+            'schedules:delete',
+            'simulator:use',
+        ],
     },
     {
         id: 'role_viewer',
         name: '👀 Supervisor / Auditor (Solo Lectura)',
-        description: 'Visualiza métricas, prospectos, flujos y programación sin poder editar ni eliminar.',
+        description:
+            'Visualiza métricas, prospectos, flujos y programación sin poder editar ni eliminar.',
         is_system_default: true,
         permissions: [
             'rules:view',
             'schedules:view',
             'leads:view',
             'library:view',
-            'settings:view'
-        ]
-    }
+            'settings:view',
+        ],
+    },
 ];
 
 /**
@@ -325,73 +364,167 @@ async function initDb() {
         // 16. Rol de Superusuario del sistema
         await client.query(`
             ALTER TABLE users ADD COLUMN IF NOT EXISTS is_superadmin BOOLEAN DEFAULT FALSE;
-            UPDATE users SET is_superadmin = TRUE WHERE LOWER(email) = 'admin@admin.com';
         `);
+        if (process.env.INITIAL_ADMIN_EMAIL || process.env.SUPERADMIN_EMAIL) {
+            const superEmail = (
+                process.env.INITIAL_ADMIN_EMAIL || process.env.SUPERADMIN_EMAIL
+            )
+                .trim()
+                .toLowerCase();
+            await client.query(
+                `UPDATE users SET is_superadmin = TRUE WHERE LOWER(email) = $1`,
+                [superEmail],
+            );
+        }
 
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
-            await client.query(`
+            await client.query(
+                `
                 INSERT INTO roles (id, company_id, name, description, is_system_default, permissions)
                 VALUES ($1, NULL, $2, $3, $4, $5)
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     description = EXCLUDED.description,
                     permissions = EXCLUDED.permissions;
-            `, [role.id, role.name, role.description, role.is_system_default, JSON.stringify(role.permissions)]);
+            `,
+                [
+                    role.id,
+                    role.name,
+                    role.description,
+                    role.is_system_default,
+                    JSON.stringify(role.permissions),
+                ],
+            );
         }
 
         // Índices para optimizar velocidad de consultas frecuentes
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_rules_company ON rules(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_leads_company ON leads(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_leads_company_phone ON leads(company_id, phone);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_schedules_company_status ON schedules(company_id, status);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_library_company ON library_documents(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_user ON company_users(user_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_company_users_company ON company_users(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_company_phone ON messages(company_id, phone);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_contact_groups_company ON contact_groups(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_group_members_group ON lead_group_members(group_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_group_members_phone ON lead_group_members(lead_phone);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);`);
-        await client.query(`CREATE INDEX IF NOT EXISTS idx_contacts_company_phone ON contacts(company_id, phone);`);
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_rules_company ON rules(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_leads_company ON leads(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_leads_company_phone ON leads(company_id, phone);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_schedules_company_status ON schedules(company_id, status);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_library_company ON library_documents(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_company_users_user ON company_users(user_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_company_users_company ON company_users(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_messages_company_phone ON messages(company_id, phone);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_contact_groups_company ON contact_groups(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_group_members_group ON lead_group_members(group_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_group_members_phone ON lead_group_members(lead_phone);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_contacts_company ON contacts(company_id);`,
+        );
+        await client.query(
+            `CREATE INDEX IF NOT EXISTS idx_contacts_company_phone ON contacts(company_id, phone);`,
+        );
 
         // Limpiar registros espurios de estados de WhatsApp (Stories) guardados por error
-        await client.query(`DELETE FROM leads WHERE phone = 'status@broadcast' OR phone LIKE '%@broadcast%';`);
+        await client.query(
+            `DELETE FROM leads WHERE phone = 'status@broadcast' OR phone LIKE '%@broadcast%';`,
+        );
 
-        // 11. Asegurar que existe al menos un usuario administrador por defecto
-        const userCountRes = await client.query('SELECT count(*) as count FROM users');
+        // 11. Asegurar que existe al menos un usuario administrador inicial si la base está vacía
+        const userCountRes = await client.query(
+            'SELECT count(*) as count FROM users',
+        );
         if (parseInt(userCountRes.rows[0].count, 10) === 0) {
-            const defaultPass = process.env.POSTGRES_PW || 'TestPass123!*';
-            const defaultUser = (process.env.POSTGRES_USER || 'oscar').toLowerCase();
-            const defaultEmail = `${defaultUser}@admin.com`;
+            const crypto = require('crypto');
+            const adminEmail = (
+                process.env.INITIAL_ADMIN_EMAIL || 'admin@admin.com'
+            )
+                .trim()
+                .toLowerCase();
+            const adminName = (
+                process.env.INITIAL_ADMIN_NAME || 'Administrador'
+            ).trim();
+
+            let adminPass = process.env.INITIAL_ADMIN_PASSWORD;
+            let mustChange = false;
+
+            if (!adminPass) {
+                // Generar contraseña temporal segura aleatoria si no se especificó en las variables de entorno
+                adminPass = crypto.randomBytes(8).toString('hex') + 'A1!';
+                mustChange = true;
+            }
+
             const salt = await bcrypt.genSalt(10);
-            const passwordHash = await bcrypt.hash(defaultPass, salt);
+            const passwordHash = await bcrypt.hash(adminPass, salt);
             const adminId = 'usr_' + Date.now();
 
-            await client.query(`
+            await client.query(
+                `
                 INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password, is_superadmin)
-                VALUES ($1, $2, $3, $4, TRUE, FALSE, TRUE)
+                VALUES ($1, $2, $3, $4, TRUE, $5, TRUE)
                 ON CONFLICT (email) DO NOTHING;
-            `, [adminId, defaultEmail, passwordHash, 'Oscar']);
+            `,
+                [adminId, adminEmail, passwordHash, adminName, mustChange],
+            );
 
-            console.log(`👤 Usuario Administrador por defecto inicializado: ${defaultEmail}`);
-        }
+            console.log(
+                '\n========================================================================',
+            );
+            console.log(
+                '🛡️  USUARIO ADMINISTRADOR INICIAL GENERADO AUTOMÁTICAMENTE',
+            );
+            console.log(`   Email:        ${adminEmail}`);
+            if (mustChange) {
+                console.log(`   Contraseña:   ${adminPass}`);
+                console.log(
+                    '   ⚠️  Guarde esta contraseña temporal. Se le exigirá cambiarla al iniciar sesión.',
+                );
+            } else {
+                console.log(
+                    '   Contraseña:   [Configurada en .env vía INITIAL_ADMIN_PASSWORD]',
+                );
+            }
+            console.log(
+                '========================================================================\n',
+            );
 
-        // Asegurar membresía de admin únicamente en la empresa por defecto 'default'
-        const defaultCompRes = await client.query("SELECT id FROM companies WHERE id = 'default'");
-        const adminRes = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [`${(process.env.POSTGRES_USER || 'oscar').toLowerCase()}@admin.com`]);
-        if (adminRes.rows.length > 0 && defaultCompRes.rows.length > 0) {
-            const adminId = adminRes.rows[0].id;
-            await client.query(`
-                INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
-                VALUES ($1, $2, 'default', 'role_admin', TRUE, 'active')
-                ON CONFLICT (user_id, company_id) DO NOTHING;
-            `, [`cu_default_${adminId}`, adminId]);
+            // Asegurar membresía de admin en la empresa por defecto 'default'
+            const defaultCompRes = await client.query(
+                "SELECT id FROM companies WHERE id = 'default'",
+            );
+            if (defaultCompRes.rows.length > 0) {
+                await client.query(
+                    `
+                    INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
+                    VALUES ($1, $2, 'default', 'role_admin', TRUE, 'active')
+                    ON CONFLICT (user_id, company_id) DO NOTHING;
+                `,
+                    [`cu_default_${adminId}`, adminId],
+                );
+            }
         }
 
         await client.query('COMMIT');
-        console.log('✅ Esquema relacional PostgreSQL inicializado exitosamente.');
+        console.log(
+            '✅ Esquema relacional PostgreSQL inicializado exitosamente.',
+        );
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('❌ Error inicializando esquema PostgreSQL:', err);
@@ -405,5 +538,5 @@ module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
     initDb,
-    DEFAULT_SYSTEM_ROLES
+    DEFAULT_SYSTEM_ROLES,
 };

@@ -1,45 +1,16242 @@
-(function(){let e=document.createElement(`link`).relList;if(e&&e.supports&&e.supports(`modulepreload`))return;for(let e of document.querySelectorAll(`link[rel="modulepreload"]`))n(e);new MutationObserver(e=>{for(let t of e)if(t.type===`childList`)for(let e of t.addedNodes)e.tagName===`LINK`&&e.rel===`modulepreload`&&n(e)}).observe(document,{childList:!0,subtree:!0});function t(e){let t={};return e.integrity&&(t.integrity=e.integrity),e.referrerPolicy&&(t.referrerPolicy=e.referrerPolicy),t.credentials=e.crossOrigin===`use-credentials`?`include`:e.crossOrigin===`anonymous`?`omit`:`same-origin`,t}function n(e){if(e.ep)return;e.ep=!0;let n=t(e);fetch(e.href,n)}})();var e=Array.isArray,t=Array.prototype.indexOf,n=Array.prototype.includes,r=Array.from,i=Object.defineProperty,a=Object.getOwnPropertyDescriptor,o=Object.getOwnPropertyDescriptors,s=Object.prototype,c=Array.prototype,l=Object.getPrototypeOf,u=Object.isExtensible,d=()=>{};function f(e){return e()}function p(e){for(var t=0;t<e.length;t++)e[t]()}function m(){var e,t;return{promise:new Promise((n,r)=>{e=n,t=r}),resolve:e,reject:t}}var h=1024,g=2048,_=4096,v=8192,y=16384,b=32768,x=1<<25,S=65536,C=1<<19,w=1<<20,T=1<<25,E=1<<21,D=1<<22,O=1<<23,k=Symbol(`$state`),A=Symbol(`component`),ee=Symbol(`legacy props`),te=Symbol(``),ne=Symbol(`attributes`),re=Symbol(`class`),ie=Symbol(`style`),ae=Symbol(`text`),oe=Symbol(`form reset`),se=new class extends Error{name=`StaleReactionError`;message="The reaction that called `getAbortSignal()` was re-run or destroyed"},ce=!!globalThis.document?.contentType&&globalThis.document.contentType.includes(`xml`),le={},ue=Symbol(`uninitialized`),de=`http://www.w3.org/1999/xhtml`,fe=`http://www.w3.org/2000/svg`,pe=`http://www.w3.org/1998/Math/MathML`;function me(){console.warn(`https://svelte.dev/e/derived_inert`)}function he(e){console.warn(`https://svelte.dev/e/hydration_mismatch`)}function ge(){console.warn(`https://svelte.dev/e/select_multiple_invalid_value`)}function _e(){console.warn(`https://svelte.dev/e/svelte_boundary_reset_noop`)}var j=!1;function ve(e){j=e}var ye;function be(e){if(e===null)throw he(),le;return ye=e}function xe(){return be(sn(ye))}function M(e){if(j){if(sn(ye)!==null)throw he(),le;ye=e}}function N(e=1){if(j){for(var t=e,n=ye;t--;)n=sn(n);ye=n}}function Se(e=!0){for(var t=0,n=ye;;){if(n.nodeType===8){var r=n.data;if(r===`]`){if(t===0)return n;--t}else(r===`[`||r===`[!`||r[0]===`[`&&!isNaN(Number(r.slice(1))))&&(t+=1)}var i=sn(n);e&&n.remove(),n=i}}function Ce(e){if(!e||e.nodeType!==8)throw he(),le;return e.data}function we(e){return e===this.v}function Te(e,t){return e==e?e!==t||typeof e==`object`&&!!e||typeof e==`function`:t==t}function Ee(e){return!Te(e,this.v)}function De(e){throw Error(`https://svelte.dev/e/lifecycle_outside_component`)}function Oe(){throw Error(`https://svelte.dev/e/async_derived_orphan`)}function ke(e,t,n){throw Error(`https://svelte.dev/e/each_key_duplicate`)}function Ae(e){throw Error(`https://svelte.dev/e/effect_in_teardown`)}function je(){throw Error(`https://svelte.dev/e/effect_in_unowned_derived`)}function Me(e){throw Error(`https://svelte.dev/e/effect_orphan`)}function Ne(){throw Error(`https://svelte.dev/e/effect_update_depth_exceeded`)}function Pe(e){throw Error(`https://svelte.dev/e/props_invalid_value`)}function Fe(){throw Error(`https://svelte.dev/e/state_descriptors_fixed`)}function Ie(){throw Error(`https://svelte.dev/e/state_prototype_fixed`)}function Le(){throw Error(`https://svelte.dev/e/state_unsafe_mutation`)}function Re(){throw Error(`https://svelte.dev/e/svelte_boundary_reset_onerror`)}var ze=!1;function Be(){ze=!0}var Ve=null;function He(e){Ve=e}function Ue(e,t=!1,n){Ve={p:Ve,i:!1,c:null,e:null,s:e,x:null,r:Kn,l:ze&&!t?{s:null,u:null,$:[]}:null}}function We(e){var t=Ve,n=t.e;if(n!==null){t.e=null;for(var r of n)xn(r)}return e!==void 0&&(t.x=e),t.i=!0,Ve=t.p,Ge(e)}function Ge(e={}){return i(e,A,{value:!0}),e}function Ke(){return!ze||Ve!==null&&Ve.l===null}var qe=[];function Je(){var e=qe;qe=[],p(e)}function Ye(e){if(qe.length===0&&!wt){var t=qe;queueMicrotask(()=>{t===qe&&Je()})}qe.push(e)}function Xe(){for(;qe.length>0;)Je()}var Ze=~(g|_|h);function Qe(e,t){e.f=e.f&Ze|t}function $e(e){e.f&512||e.deps===null?Qe(e,h):Qe(e,_)}function et(e,t,n){e.f&2048?t.add(e):e.f&4096&&n.add(e),Qe(e,h)}function tt(e){j&&on(e)!==null&&ln(e)}var nt=!1;function rt(){nt||(nt=!0,document.addEventListener(`reset`,e=>{Promise.resolve().then(()=>{if(!e.defaultPrevented)for(let t of e.target.elements)t[oe]?.()})},{capture:!0}))}function it(e){var t=Un,n=Kn;Gn(null),qn(null);try{return e()}finally{Gn(t),qn(n)}}function at(e,t,n,r=n){e.addEventListener(t,()=>it(n));let i=e[oe];e[oe]=i?()=>{i(),r(!0)}:()=>r(!0),rt()}function ot(e,t,n,r){let i=Ke()?ut:pt;var a=e.filter(e=>!e.settled),o=t.map(i);if(n.length===0&&a.length===0){r(o);return}var s=Kn,c=st(),l=a.length===1?a[0].promise:a.length>1?Promise.all(a.map(e=>e.promise)):null;function u(e){if(!(s.f&16384)){c();try{r([...o,...e])}catch(e){mn(e,s)}ct()}}var d=lt();if(n.length===0){l.then(()=>u([])).finally(d);return}function f(){Promise.all(n.map(e=>ft(e))).then(u).catch(e=>mn(e,s)).finally(d)}l?l.then(()=>{s.f&16384?d():(c(),f(),ct())}):f()}function st(){var e=Kn,t=Un,n=Ve,r=bt;return function(i=!0){qn(e),Gn(t),He(n),i&&!(e.f&16384)&&(r?.activate(),r?.apply())}}function ct(e=!0){qn(null),Gn(null),He(null),e&&bt?.deactivate()}function lt(){var e=Kn,t=e.b,n=bt,r=!!t?.is_rendered();return t?.update_pending_count(1,n),n.increment(r,e),()=>{t?.update_pending_count(-1,n),n.decrement(r,e)}}function ut(e){var t=2|g;return Kn!==null&&(Kn.f|=C),{ctx:Ve,deps:null,effects:null,equals:we,f:t,fn:e,reactions:null,rv:0,v:ue,wv:0,parent:Kn,ac:null}}var dt=Symbol(`obsolete`);function ft(e,t,n){let r=Kn;r===null&&Oe();var i=void 0,a=Vt(ue),o=!Un,s=new Set;return Tn(()=>{var t=Kn,n=m();i=n.promise;try{Promise.resolve(e()).then(n.resolve,e=>{e!==se&&n.reject(e)}).finally(ct)}catch(e){n.reject(e),ct()}var c=bt;if(o){if(t.f&32768)var l=lt();if(r.b?.is_rendered())c.async_deriveds.get(t)?.reject(dt);else for(let e of s.values())e.reject(dt);s.add(n),c.async_deriveds.set(t,n)}let u=(e,t=void 0)=>{l?.(),s.delete(n),t!==dt&&(c.activate(),t?(a.f|=O,Gt(a,t)):(a.f&8388608&&(a.f^=O),Gt(a,e)),c.deactivate())};n.promise.then(u,e=>u(null,e||`unknown`))}),yn(()=>{for(let e of s)e.reject(dt)}),new Promise(e=>{function t(n){function r(){n===i?e(a):t(i)}n.then(r,r)}t(i)})}function P(e){let t=ut(e);return Yn(t),t}function pt(e){let t=ut(e);return t.equals=Ee,t}function mt(e){var t=e.effects;if(t!==null){e.effects=null;for(var n=0;n<t.length;n+=1)Mn(t[n])}}function ht(e){var t,n=Kn,r=e.parent;if(!Vn&&r!==null&&e.v!==ue&&r.f&24576)return me(),e.v;qn(r);try{mt(e),t=sr(e)}finally{qn(n)}return t}function gt(e){var t=ht(e);!e.equals(t)&&(e.wv=ir(),(!bt?.is_fork||e.deps===null)&&(bt===null?e.v=t:(bt.capture(e,t,!0),xt?.capture(e,t,!0)),e.deps===null))?Qe(e,h):Vn||(St===null?$e(e):(vn()||bt?.is_fork)&&St.set(e,t))}function _t(e){if(e.effects!==null)for(let t of e.effects)(t.teardown||t.ac)&&(t.teardown?.(),t.ac!==null&&it(()=>{t.ac.abort(se),t.ac=null}),t.fn!==null&&(t.teardown=d),ur(t,0),An(t))}function vt(e){if(e.effects!==null)for(let t of e.effects)t.teardown&&t.fn!==null&&dr(t)}var yt=null,bt=null,xt=null,St=null,Ct=null,wt=!1,Tt=!1,Et=null,Dt=null,Ot=0,kt=1,At=class e{id=kt++;#e=!1;linked=!0;#t=null;#n=null;async_deriveds=new Map;current=new Map;previous=new Map;#r=new Set;#i=new Set;#a=0;#o=new Map;#s=null;#c=[];#l=[];#u=new Set;#d=new Set;#f=new Map;#p=new Set;is_fork=!1;#m=!1;constructor(){yt===null?yt=this:(yt.#n=this,this.#t=yt),yt=this}#h(){if(this.is_fork)return!0;for(let n of this.#o.keys()){for(var e=n,t=!1;e.parent!==null;){if(this.#f.has(e)){t=!0;break}e=e.parent}if(!t)return!0}return!1}skip_effect(e){this.#f.has(e)||this.#f.set(e,{d:[],m:[]}),this.#p.delete(e)}unskip_effect(e,t=e=>this.schedule(e)){var n=this.#f.get(e);if(n){this.#f.delete(e);for(var r of n.d)Qe(r,g),t(r);for(r of n.m)Qe(r,_),t(r)}this.#p.add(e)}#g(){var e=[];for(let i of this.#c)if(!(i.f&16384||!(i.f&6144))){for(var t=i,n=!1;t.parent!==null;){t=t.parent;var r=t.f;if(r&96){if(!(r&1024)){n=!0;break}t.f^=h}}n||e.push(t)}return this.#c=[],e}#_(){this.#e=!0;for(let e of this.#u)this.#d.delete(e),Qe(e,g),this.schedule(e);for(let e of this.#d)Qe(e,_),this.schedule(e);this.apply();for(var t=Et=[],n=[],r=Dt=[];this.#c.length>0;){Ot++>1e3&&(this.#S(),Mt());for(let e of this.#g())try{this.#v(e,t,n)}catch(t){throw Lt(e),this.#h()||this.discard(),t}}if(bt=null,r.length>0){var i=e.ensure();for(let e of r)i.schedule(e)}if(Et=null,Dt=null,this.#h()){this.#x(n),this.#x(t);for(let[e,t]of this.#f)It(e,t);r.length>0&&bt.#_();return}let a=this.#y();if(a)this.#x(n),this.#x(t),a.#b(this);else{this.#u.clear(),this.#d.clear();for(let e of this.#r)e(this);this.#r.clear(),xt=this,Pt(n),Pt(t),xt=null,this.#s?.resolve();var o=bt;if(this.#a===0&&(this.#c.length===0||o!==null)&&this.#S(),this.#c.length>0){if(o!==null){for(let e of this.#c)o.#c.push(e);this.#c=[]}else o=this}o!==null&&(zt.clear(),o.#_())}}#v(e,t,n){e.f^=h;for(var r=e.first;r!==null;){var i=r.f,a=!!(i&96);if(!(a&&i&1024||i&8192||this.#f.has(r))&&r.fn!==null){a?r.f^=h:i&4?t.push(r):ar(r)&&(i&16&&this.#d.add(r),dr(r));var o=r.first;if(o!==null){r=o;continue}}for(;r!==null;){var s=r.next;if(s!==null){r=s;break}r=r.parent}}}#y(){for(var e=this.#t;e!==null;){if(!e.is_fork){for(let[t,[,n]]of this.current)if(e.current.has(t)&&!n)return e}e=e.#t}return null}#b(e){for(let[t,n]of e.current)!this.previous.has(t)&&e.previous.has(t)&&this.previous.set(t,e.previous.get(t)),this.current.set(t,n);for(let[t,n]of e.async_deriveds){let e=this.async_deriveds.get(t);e&&n.promise.then(e.resolve).catch(e.reject)}e.async_deriveds.clear(),this.transfer_effects(e.#u,e.#d);let t=e=>{var n=e.reactions;if(n!==null&&!(e.f&2&&!(e.f&6144)))for(let e of n){var r=e.f;if(r&2)t(e);else{var i=e;r&4194320&&!this.async_deriveds.has(i)&&(this.#d.delete(i),Qe(i,g),this.schedule(i))}}};for(let e of this.current.keys())t(e);this.oncommit(()=>e.discard()),e.#S(),bt=this,this.#_()}#x(e){for(var t=0;t<e.length;t+=1)et(e[t],this.#u,this.#d)}capture(e,t,n=!1){e.v!==ue&&!this.previous.has(e)&&this.previous.set(e,e.v),e.f&8388608||(this.current.set(e,[t,n]),St?.set(e,t)),this.is_fork||(e.v=t)}activate(){bt=this}deactivate(){bt=null,St=null}flush(){try{Tt=!0,bt=this,this.#_()}finally{Ot=0,Ct=null,Et=null,Dt=null,Tt=!1,bt=null,St=null,zt.clear()}}discard(){for(let e of this.#i)e(this);this.#i.clear();for(let e of this.async_deriveds.values())e.reject(dt);this.#S(),this.#s?.resolve()}register_created_effect(e){this.#l.push(e)}increment(e,t){if(this.#a+=1,e){let e=this.#o.get(t)??0;this.#o.set(t,e+1)}}decrement(e,t){if(--this.#a,e){let e=this.#o.get(t)??0;e===1?this.#o.delete(t):this.#o.set(t,e-1)}this.#m||(this.#m=!0,Ye(()=>{this.#m=!1,this.linked&&this.flush()}))}transfer_effects(e,t){for(let t of e)this.#u.add(t);for(let e of t)this.#d.add(e);e.clear(),t.clear()}oncommit(e){this.#r.add(e)}ondiscard(e){this.#i.add(e)}settled(){return(this.#s??=m()).promise}static ensure(){if(bt===null){let t=bt=new e;!Tt&&!wt&&Ye(()=>{t.#e||t.flush()})}return bt}apply(){St=null}schedule(e){Ct=e,e.b?.is_pending&&e.f&16777228&&!(e.f&32768)?e.b.defer_effect(e):this.#c.push(e)}#S(){if(this.linked){var e=this.#t,t=this.#n;e===null||(e.#n=t),t===null?yt=e:t.#t=e,this.linked=!1}}};function jt(e){var t=wt,n=xt;xt=null,wt=!0;try{var r;for(e&&(jt(),r=e());;){if(Xe(),bt===null)return r;bt.flush()}}finally{wt=t,xt=n}}function Mt(){try{Ne()}catch(e){mn(e,Ct)}}var Nt=null;function Pt(e){var t=e.length;if(t!==0){for(var n=0;n<t;){var r=e[n++];if(!(r.f&24576)&&ar(r)&&(Nt=new Set,dr(r),r.deps===null&&r.first===null&&r.nodes===null&&r.teardown===null&&r.ac===null&&Pn(r),Nt?.size>0)){zt.clear();for(let e of Nt){if(e.f&24576)continue;let t=[e],n=e.parent;for(;n!==null;)Nt.has(n)&&(Nt.delete(n),t.push(n)),n=n.parent;for(let e=t.length-1;e>=0;e--){let n=t[e];n.f&24576||dr(n)}}Nt.clear()}}Nt=null}}function Ft(e){bt.schedule(e)}function It(e,t){if(!(e.f&32&&e.f&1024)){e.f&2048?t.d.push(e):e.f&4096&&t.m.push(e),Qe(e,h);for(var n=e.first;n!==null;)It(n,t),n=n.next}}function Lt(e){Qe(e,h);for(var t=e.first;t!==null;)Lt(t),t=t.next}var Rt=new Set,zt=new Map,Bt=!1;function Vt(e,t){return{f:0,v:e,reactions:null,equals:we,rv:0,wv:0}}function F(e,t){let n=Vt(e,t);return Yn(n),n}function Ht(e,t=!1,n=!0){let r=Vt(e);return t||(r.equals=Ee),ze&&n&&Ve!==null&&Ve.l!==null&&(Ve.l.s??=[]).push(r),r}function I(e,t,n=!1){return Un!==null&&(!Wn||Un.f&131072)&&Ke()&&Un.f&4325394&&(Jn===null||!Jn.has(e))&&Le(),Gt(e,n?Xt(t):t,Dt)}var Ut=null,Wt=0;function Gt(e,t,n=null){if(!e.equals(t)){Vn?zt.set(e,t):zt.has(e)||zt.set(e,e.v);var r=At.ensure();if(r.capture(e,t),e.f&2){let t=e;e.f&2048&&ht(t),St===null&&$e(t)}e.wv=ir(),Ut=null,Wt=0,Yt(e,g,n),Ut=null,Ke()&&Kn!==null&&Kn.f&1024&&!(Kn.f&96)&&(Qn===null?$n([e]):Qn.push(e)),!r.is_fork&&Rt.size>0&&!Bt&&Kt()}return t}function Kt(){Bt=!1;for(let e of Rt){e.f&1024&&Qe(e,_);let t;try{t=ar(e)}catch{t=!0}t&&dr(e)}Rt.clear()}function qt(e,t=1){var n=V(e),r=t===1?n++:n--;return I(e,n),r}function Jt(e){I(e,e.v+1)}function Yt(e,t,n){var r=e.reactions;if(r!==null){var i=Ke(),a=r.length;if(Wt+=a,Wt>1e5&&Ut===null&&(Ut=new Set),Ut!==null){if(Ut.has(e))return;Ut.add(e)}for(var o=0;o<a;o++){var s=r[o],c=s.f;if(i||s!==Kn){var l=(c&g)===0;if(l&&Qe(s,t),c&131072)Rt.add(s);else if(c&2){var u=s;St?.delete(u),Yt(u,_,n)}else if(l){var d=s;c&16&&Nt!==null&&Nt.add(d),n===null?Ft(d):n.push(d)}}}}}function Xt(t){if(typeof t!=`object`||!t||k in t||A in t)return t;let n=l(t);if(n!==s&&n!==c)return t;var r=new Map,i=e(t),o=F(0),u=null,d=nr,f=e=>{if(nr===d)return e();var t=Un,n=nr;Gn(null),rr(d);var r=e();return Gn(t),rr(n),r};return i&&r.set(`length`,F(t.length,u)),new Proxy(t,{defineProperty(e,t,n){`value`in n&&n.configurable!==!1&&n.enumerable!==!1&&n.writable!==!1||Fe();var i=r.get(t);return i===void 0?f(()=>{var e=F(n.value,u);return r.set(t,e),e}):I(i,n.value,!0),!0},deleteProperty(e,t){var n=r.get(t);if(n===void 0){if(t in e){let e=f(()=>F(ue,u));r.set(t,e),Jt(o)}}else I(n,ue),Jt(o);return!0},get(e,n,i){if(n===k)return t;var o=r.get(n),s=n in e;if(o===void 0&&(!s||a(e,n)?.writable)&&(o=f(()=>F(Xt(s?e[n]:ue),u)),r.set(n,o)),o!==void 0){var c=V(o);return c===ue?void 0:c}return Reflect.get(e,n,i)},getOwnPropertyDescriptor(e,t){this.has?.(e,t);var n=Reflect.getOwnPropertyDescriptor(e,t),i=r.get(t);if(i!==void 0){var a=V(i);if(a===ue)return;if(n&&`value`in n)n.value=a;else return{enumerable:!0,configurable:!0,value:a,writable:!0}}return n},has(e,t){if(t===k)return!0;var n=r.get(t),i=n!==void 0&&n.v!==ue||Reflect.has(e,t);return(n!==void 0||Kn!==null&&(!i||a(e,t)?.writable))&&(n===void 0&&(n=f(()=>F(i?Xt(e[t]):ue,u)),r.set(t,n)),V(n)===ue)?!1:i},set(e,t,n,s){var c=r.get(t),l=t in e;if(i&&t===`length`)for(var d=n;d<c.v;d+=1){var p=r.get(d+``);p===void 0?d in e&&(p=f(()=>F(ue,u)),r.set(d+``,p)):I(p,ue)}if(c===void 0)(!l||a(e,t)?.writable)&&(c=f(()=>F(void 0,u)),I(c,Xt(n)),r.set(t,c));else{l=c.v!==ue;var m=f(()=>Xt(n));I(c,m)}var h=Reflect.getOwnPropertyDescriptor(e,t);if(h?.set&&h.set.call(s,n),!l){if(i&&typeof t==`string`){var g=r.get(`length`),_=Number(t);Number.isInteger(_)&&_>=g.v&&I(g,_+1)}Jt(o)}return!0},ownKeys(e){V(o);var t=Reflect.ownKeys(e).filter(e=>{var t=r.get(e);return t===void 0||t.v!==ue});for(var[n,i]of r)i.v!==ue&&!(n in e)&&t.push(n);return t},setPrototypeOf(){Ie()}})}function Zt(e){try{if(typeof e==`object`&&e&&k in e)return e[k]}catch{}return e}function Qt(e,t){return Object.is(Zt(e),Zt(t))}var $t,en,tn,nn;function rn(){if($t===void 0){$t=window,en=/Firefox/.test(navigator.userAgent);var e=Element.prototype,t=Node.prototype,n=Text.prototype;tn=a(t,`firstChild`).get,nn=a(t,`nextSibling`).get,u(e)&&(e[re]=void 0,e[ne]=null,e[ie]=void 0,e.__e=void 0),u(n)&&(n[ae]=void 0)}}function an(e=``){return document.createTextNode(e)}function on(e){return tn.call(e)}function sn(e){return nn.call(e)}function L(e,t){if(!j)return on(e);var n=on(ye);if(n===null)n=ye.appendChild(an());else if(t&&n.nodeType!==3){var r=an();return n?.before(r),be(r),r}return t&&fn(n),be(n),n}function cn(e,t=!1){if(!j){var n=on(e);return n instanceof Comment&&n.data===``?sn(n):n}if(t){if(ye?.nodeType!==3){var r=an();return ye?.before(r),be(r),r}fn(ye)}return ye}function R(e,t=!1){if(!j)return on(e);var n=L(e,t);return M(e),n}function z(e,t=1,n=!1){let r=j?ye:e;for(var i;t--;)i=r,r=sn(r);if(!j)return r;if(n){if(r?.nodeType!==3){var a=an();return r===null?i?.after(a):r.before(a),be(a),a}fn(r)}return be(r),r}function ln(e){e.textContent=``}function un(){return!1}function dn(e,t,n){return t==null||t===`http://www.w3.org/1999/xhtml`?n?document.createElement(e,{is:n}):document.createElement(e):n?document.createElementNS(t,e,{is:n}):document.createElementNS(t,e)}function fn(e){if(e.nodeValue.length<65536)return;let t=e.nextSibling;for(;t!==null&&t.nodeType===3;)t.remove(),e.nodeValue+=t.nodeValue,t=e.nextSibling}function pn(e){var t=Kn;if(t===null)return Un.f|=O,e;if(!(t.f&32768)&&!(t.f&4))throw e;mn(e,t)}function mn(e,t){if(e===le)throw e;if(!(t!==null&&t.f&16384)){for(;t!==null;){if(t.f&128&&!(t.f&33570816)){if(!(t.f&32768))throw e;try{t.b.error(e);return}catch(t){e=t}}t=t.parent}throw e}}function hn(e){Kn===null&&(Un===null&&Me(e),je()),Vn&&Ae(e)}function gn(e,t){var n=t.last;n===null?t.last=t.first=e:(n.next=e,e.prev=n,t.last=e)}function _n(e,t){var n=Kn;n!==null&&n.f&8192&&(e|=v);var r={ctx:Ve,deps:null,nodes:null,f:e|g|512,first:null,fn:t,last:null,next:null,parent:n,b:n&&n.b,prev:null,teardown:null,wv:0,ac:null};bt?.register_created_effect(r);var i=r;if(e&4)Et===null?At.ensure().schedule(r):Et.push(r);else if(t!==null){try{dr(r)}catch(e){throw Mn(r),e}i.deps===null&&i.teardown===null&&i.nodes===null&&i.first===i.last&&!(i.f&524288)&&(i=i.first,e&16&&e&65536&&i!==null&&(i.f|=S))}if(i!==null&&(i.parent=n,n!==null&&gn(i,n),Un!==null&&Un.f&2&&!(e&64))){var a=Un;(a.effects??=[]).push(i)}return r}function vn(){return Un!==null&&!Wn}function yn(e){let t=_n(8,null);return Qe(t,h),t.teardown=e,t}function bn(e){hn(`$effect`);var t=Kn.f;if(!Un&&t&32&&Ve!==null&&!Ve.i){var n=Ve;(n.e??=[]).push(e)}else return xn(e)}function xn(e){return _n(4|w,e)}function Sn(e){return hn(`$effect.pre`),_n(8|w,e)}function Cn(e){At.ensure();let t=_n(64|C,e);return(e={})=>new Promise(n=>{e.outro?Fn(t,()=>{Mn(t),n(void 0)}):(Mn(t),n(void 0))})}function wn(e){return _n(4,e)}function Tn(e){return _n(D|C,e)}function En(e,t=0){return _n(8|t,e)}function B(e,t=[],n=[],r=[]){ot(r,t,n,t=>{_n(8,()=>{e(...t.map(V))})})}function Dn(e,t=0){return _n(16|t,e)}function On(e){return _n(32|C,e)}function kn(e){var t=e.teardown;if(t!==null){let n=Vn,r=Un;Hn(!0),Gn(null);try{t.call(null)}catch(t){mn(t,e.parent)}finally{Hn(n),Gn(r)}}}function An(e,t=!1){var n=e.first;for(e.first=e.last=null;n!==null;){let e=n.ac;e!==null&&it(()=>{e.abort(se)});var r=n.next;n.f&64?n.parent=null:Mn(n,t),n=r}}function jn(e){for(var t=e.first;t!==null;){var n=t.next;t.f&32||Mn(t),t=n}}function Mn(e,t=!0){var n=!1;(t||e.f&262144)&&e.nodes!==null&&e.nodes.end!==null&&(Nn(e.nodes.start,e.nodes.end),n=!0),e.f|=x,An(e,t&&!n),ur(e,0);var r=e.nodes&&e.nodes.t;if(r!==null)for(let e of r)e.stop();kn(e),e.f^=x,e.f|=y;var i=e.parent;i!==null&&i.first!==null&&Pn(e),e.next=e.prev=e.teardown=e.ctx=e.deps=e.fn=e.nodes=e.ac=e.b=null}function Nn(e,t){for(;e!==null;){var n=e===t?null:sn(e);e.remove(),e=n}}function Pn(e){var t=e.parent,n=e.prev,r=e.next;n!==null&&(n.next=r),r!==null&&(r.prev=n),t!==null&&(t.first===e&&(t.first=r),t.last===e&&(t.last=n))}function Fn(e,t,n=!0){var r=[];e.f|=256,In(e,r,!0);var i=()=>{n&&Mn(e),t&&t()},a=r.length;if(a>0){var o=()=>--a||i();for(var s of r)s.out(o)}else i()}function In(e,t,n){if(!(e.f&8192)){e.f^=v;var r=e.nodes&&e.nodes.t;if(r!==null)for(let e of r)(e.is_global||n)&&t.push(e);for(var i=e.first;i!==null;){var a=i.next;if(!(i.f&64)){var o=!!(i.f&65536)||!!(i.f&32)&&!!(e.f&16);In(i,t,o?n:!1)}i=a}}}function Ln(e){e.f&=-257,Rn(e,!0)}function Rn(e,t){if(!(e.f&256)&&e.f&8192){e.f^=v,e.f&1024||(Qe(e,g),At.ensure().schedule(e));for(var n=e.first;n!==null;){var r=n.next,i=!!(n.f&65536)||!!(n.f&32);Rn(n,i?t:!1),n=r}var a=e.nodes&&e.nodes.t;if(a!==null)for(let e of a)(e.is_global||t)&&e.in()}}function zn(e,t){if(e.nodes)for(var n=e.nodes.start,r=e.nodes.end;n!==null;){var i=n===r?null:sn(n);t.append(n),n=i}}var Bn=null,Vn=!1;function Hn(e){Vn=e}var Un=null,Wn=!1;function Gn(e){Un=e}var Kn=null;function qn(e){Kn=e}var Jn=null;function Yn(e){Un!==null&&(Un.f&2097152||Un.f&2)&&(Jn??=new Set).add(e)}var Xn=null,Zn=0,Qn=null;function $n(e){Qn=e}var er=1,tr=0,nr=tr;function rr(e){nr=e}function ir(){return++er}function ar(e){var t=e.f;if(t&2048)return!0;if(t&4096){for(var n=e.deps,r=n.length,i=0;i<r;i++){var a=n[i];if(ar(a)&&gt(a),a.wv>e.wv)return!0}t&512&&St===null&&Qe(e,h)}return!1}function or(e,t,n=!0){var r=e.reactions;if(r!==null&&!(Jn!==null&&Jn.has(e)))for(var i=0;i<r.length;i++){var a=r[i];a.f&2?or(a,t,!1):t===a&&(n?Qe(a,g):a.f&1024&&Qe(a,_),Ft(a))}}function sr(e){var t=Xn,n=Zn,r=Qn,i=Un,a=Jn,o=Ve,s=Wn,c=nr,l=e.f;Xn=null,Zn=0,Qn=null,Un=l&96?null:e,Jn=null,He(e.ctx),Wn=!1,nr=++tr,e.ac!==null&&(it(()=>{e.ac.abort(se)}),e.ac=null);try{e.f|=E;var u=e.fn,d=u();e.f|=b;var f=cr(e);if(Ke()&&Qn!==null&&!Wn&&f!==null&&!(e.f&6146))for(var p=0;p<Qn.length;p++)or(Qn[p],e);if(i!==null&&i!==e){if(tr++,i.deps!==null)for(let e=0;e<n;e+=1)i.deps[e].rv=tr;if(t!==null)for(let e of t)e.rv=tr;Qn!==null&&(r===null?r=Qn:r.push(...Qn))}return e.f&8388608&&(e.f^=O),d}catch(t){return cr(e),pn(t)}finally{e.f^=E,Xn=t,Zn=n,Qn=r,Un=i,Jn=a,He(o),Wn=s,nr=c}}function cr(e){var t=e.deps,n=bt?.is_fork;if(Xn!==null){var r;if(n||ur(e,Zn),t!==null&&Zn>0)for(t.length=Zn+Xn.length,r=0;r<Xn.length;r++)t[Zn+r]=Xn[r];else e.deps=t=Xn;if(vn()&&e.f&512)for(r=Zn;r<t.length;r++)(t[r].reactions??=[]).push(e)}else!n&&t!==null&&Zn<t.length&&(ur(e,Zn),t.length=Zn);return t}function lr(e,r){let i=r.reactions;if(i!==null){var a=t.call(i,e);if(a!==-1){var o=i.length-1;o===0?i=r.reactions=null:(i[a]=i[o],i.pop())}}if(i===null&&r.f&2&&(Xn===null||!n.call(Xn,r))){var s=r;s.f&512&&(s.f^=512),s.v!==ue&&$e(s),s.ac!==null&&it(()=>{s.ac.abort(se),s.ac=null,Qe(s,g)}),_t(s),ur(s,0)}}function ur(e,t){var n=e.deps;if(n!==null)for(var r=t;r<n.length;r++)lr(e,n[r])}function dr(e){var t=e.f;if(!(t&16384)){Qe(e,h);var n=Kn;Kn=e;try{t&16777232?jn(e):An(e),kn(e);var r=sr(e);e.teardown=typeof r==`function`?r:null,e.wv=er}finally{Kn=n}}}async function fr(){await Promise.resolve(),jt()}function V(e){var t=!!(e.f&2);if(Bn?.add(e),Un!==null&&!Wn&&!(Kn!==null&&Kn.f&16384)&&(Jn===null||!Jn.has(e))){var r=Un.deps;if(Un.f&2097152)e.rv<tr&&(e.rv=tr,Xn===null&&r!==null&&r[Zn]===e?Zn++:Xn===null?Xn=[e]:Xn.push(e));else{Un.deps??=[],n.call(Un.deps,e)||Un.deps.push(e);var i=e.reactions;i===null?e.reactions=[Un]:n.call(i,Un)||i.push(Un)}}if(Vn&&zt.has(e))return zt.get(e);if(t){var a=e;if(Vn){var o=a.v;return(!(a.f&1024)&&a.reactions!==null||mr(a))&&(o=ht(a)),zt.set(a,o),o}var s=!(a.f&512)&&!Wn&&Un!==null&&!!(Un.f&512),c=(a.f&b)===0;ar(a)&&(s&&(a.f|=512),gt(a)),s&&!c&&(vt(a),pr(a))}if(St?.has(e))return St.get(e);if(e.f&8388608)throw e.v;return e.v}function pr(e){if(e.f|=512,e.deps!==null)for(let r of e.deps){var t=r.reactions;t===null?r.reactions=[e]:n.call(t,e)||t.push(e),r.f&2&&!(r.f&512)&&(vt(r),pr(r))}}function mr(e){if(e.v===ue)return!0;if(e.deps===null)return!1;for(let t of e.deps)if(zt.has(t)||t.f&2&&mr(t))return!0;return!1}function hr(e){var t=Wn;try{return Wn=!0,e()}finally{Wn=t}}function gr(e){if(!(typeof e!=`object`||!e||e instanceof EventTarget)){if(k in e)_r(e);else if(!Array.isArray(e))for(let t in e){let n=e[t];typeof n==`object`&&n&&k in n&&_r(n)}}}function _r(e,t=new Set){if(typeof e==`object`&&e&&!(e instanceof EventTarget)&&!t.has(e)){t.add(e),e instanceof Date&&e.getTime();for(let n in e)try{_r(e[n],t)}catch{}let n=l(e);if(n!==Object.prototype&&n!==Array.prototype&&n!==Map.prototype&&n!==Set.prototype&&n!==Date.prototype){let t=o(n);for(let n in t){let r=t[n].get;if(r)try{r.call(e)}catch{}}}}}[...`allowfullscreen.async.autofocus.autoplay.checked.controls.default.disabled.formnovalidate.indeterminate.inert.ismap.loop.multiple.muted.nomodule.novalidate.open.playsinline.readonly.required.reversed.seamless.selected.webkitdirectory.defer.disablepictureinpicture.disableremoteplayback`.split(`.`)];var vr=[`touchstart`,`touchmove`];function yr(e){return vr.includes(e)}var br=Symbol(`events`),xr=new Set,Sr=new Set;function Cr(e,t,n,r={}){function i(e){if(r.capture||Or.call(t,e),!e.cancelBubble)return it(()=>n?.call(this,e))}return e.startsWith(`pointer`)||e.startsWith(`touch`)||e===`wheel`?(i.__removed=!1,Ye(()=>{i.__removed||t.addEventListener(e,i,r)})):t.addEventListener(e,i,r),i}function wr(e,t,n,r,i){var a={capture:r,passive:i},o=Cr(e,t,n,a);(t===document.body||t===window||t===document||t instanceof HTMLMediaElement)&&yn(()=>{o.__removed=!0,t.removeEventListener(e,o,a)})}function H(e,t,n){(t[br]??={})[e]=n}function Tr(e){for(var t=0;t<e.length;t++)xr.add(e[t]);for(var n of Sr)n(e)}var Er=null,Dr=!1;function Or(e){var t=this,n=t.ownerDocument,r=e.type,a=e.composedPath?.()||[],o=a[0]||e.target;Er=e,Dr||(Dr=!0,setTimeout(()=>{Dr=!1,Er=null}));var s=0,c=Er===e&&e[br];if(c){var l=a.indexOf(c);if(l!==-1&&(t===document||t===window)){e[br]=t;return}var u=a.indexOf(t);if(u===-1)return;l<=u&&(s=l)}if(o=a[s]||e.target,o!==t){i(e,`currentTarget`,{configurable:!0,get(){return o||n}});var d=Un,f=Kn;Gn(null),qn(null);try{for(var p,m=[];o!==null&&o!==t;){try{var h=o[br]?.[r];h==null||o.disabled&&e.target!==o||h.call(o,e)}catch(e){p?m.push(e):p=e}if(e.cancelBubble)break;s++,o=s<a.length?a[s]:null}if(p){for(let e of m)queueMicrotask(()=>{throw e});throw p}}finally{e[br]=t,delete e.currentTarget,Gn(d),qn(f)}}}var kr=globalThis?.window?.trustedTypes&&globalThis.window.trustedTypes.createPolicy(`svelte-trusted-html`,{createHTML:e=>e});function Ar(e){return kr?.createHTML(e)??e}function jr(e){var t=dn(`template`);return t.innerHTML=Ar(e.replaceAll(`<!>`,`<!---->`)),t.content}function Mr(e,t){var n=Kn;n.nodes===null&&(n.nodes={start:e,end:t,a:null,t:null})}function U(e,t){var n=!!(t&1),r=!!(t&2),i,a=!e.startsWith(`<!>`);return()=>{if(j)return Mr(ye,null),ye;i===void 0&&(i=jr(a?e:`<!>`+e),n||(i=on(i)));var t=r||en?document.importNode(i,!0):i.cloneNode(!0);if(n){var o=on(t),s=t.lastChild;Mr(o,s)}else Mr(t,t);return t}}function Nr(e,t,n=`svg`){var r=!e.startsWith(`<!>`),i=!!(t&1),a=`<${n}>${r?e:`<!>`+e}</${n}>`,o;return()=>{if(j)return Mr(ye,null),ye;if(!o){var e=on(jr(a));if(i)for(o=document.createDocumentFragment();on(e);)o.appendChild(on(e));else o=on(e)}var t=o.cloneNode(!0);if(i){var n=on(t),r=t.lastChild;Mr(n,r)}else Mr(t,t);return t}}function Pr(e,t){return Nr(e,t,`svg`)}function Fr(e=``){if(!j){var t=an(e+``);return Mr(t,t),t}var n=ye;return n.nodeType===3?fn(n):(n.before(n=an()),be(n)),Mr(n,n),n}function Ir(){if(j)return Mr(ye,null),ye;var e=document.createDocumentFragment(),t=document.createComment(``),n=an();return e.append(t,n),Mr(t,n),e}function W(e,t){if(j){var n=Kn;n.f&32768&&n.nodes.end!==null||(n.nodes.end=ye),xe()}else e!==null&&e.before(t)}function Lr(e){let t=0,n=Vt(0),r;return()=>{vn()&&(V(n),En(()=>(t===0&&(r=hr(()=>e(()=>Jt(n)))),t+=1,()=>{Ye(()=>{--t,t===0&&(r?.(),r=void 0,Jt(n))})})))}}var Rr=S|C;function zr(e,t,n,r){new Br(e,t,n,r)}var Br=class{parent;is_pending=!1;transform_error;#e;#t=j?ye:null;#n;#r;#i;#a=null;#o=null;#s=null;#c=null;#l=0;#u=0;#d=!1;#f=new Set;#p=new Set;#m=null;#h=Lr(()=>(this.#m=Vt(this.#l),()=>{this.#m=null}));constructor(e,t,n,r){this.#e=e,this.#n=t,this.#r=e=>{var t=Kn;t.b=this,t.f|=128,n(e)},this.parent=Kn.b,this.transform_error=r??this.parent?.transform_error??(e=>e),this.#i=Dn(()=>{if(j){let e=Ce(this.#t);xe();let t=e===`[!`;if(e.startsWith(`[?`)){let t=JSON.parse(e.slice(2));this.#_(t)}else t?this.#b():this.#g()}else this.#x()},Rr),j&&(this.#e=ye)}#g(){try{this.#a=On(()=>this.#r(this.#e))}catch(e){this.error(e)}}#_(e){let t=this.#n.failed,{reset:n,invoke_onerror:r}=this.#v(e);Ye(r),t&&(this.#s=On(()=>{t(this.#e,()=>e,()=>n)}))}#v(e){var t=!1,n=!1;let r=()=>{this.#y()||(t?_e():(t=!0,n&&Re(),this.#s!==null&&Fn(this.#s,()=>{this.#s=null}),this.#C(()=>{this.#x()})))};return{reset:r,invoke_onerror:()=>{if(!this.#y())try{n=!0,this.#n.onerror?.(e,r),n=!1}catch(e){mn(e,this.#i&&this.#i.parent)}}}}#y(){return(this.#i.f&(y|x))!==0}#b(){let e=this.#n.pending;e&&(this.is_pending=!0,this.#o=On(()=>e(this.#e)),Ye(()=>{if(!this.#y()){var e=this.#c=document.createDocumentFragment(),t=an(),n=!1;e.append(t),this.#a=this.#C(()=>{try{return On(()=>this.#r(t))}catch(e){try{this.error(e),n=!0}catch(e){mn(e,this.#i.parent)}return null}}),this.#a===null?(this.#c=null,n&&this.#S(bt)):this.#u===0&&(this.#e.before(e),this.#c=null,Fn(this.#o,()=>{this.#o=null}),this.#S(bt))}}))}#x(){try{if(this.is_pending=this.has_pending_snippet(),this.#u=0,this.#l=0,this.#a=On(()=>{this.#r(this.#e)}),this.#u>0){var e=this.#c=document.createDocumentFragment();zn(this.#a,e);let t=this.#n.pending;this.#o=On(()=>t(this.#e))}else this.#S(bt)}catch(e){this.error(e)}}#S(e){this.is_pending=!1,e.transfer_effects(this.#f,this.#p)}defer_effect(e){et(e,this.#f,this.#p)}is_rendered(){return!this.is_pending&&(!this.parent||this.parent.is_rendered())}has_pending_snippet(){return!!this.#n.pending}#C(e){var t=Kn,n=Un,r=Ve;qn(this.#i),Gn(this.#i),He(this.#i.ctx);try{return At.ensure(),e()}finally{qn(t),Gn(n),He(r)}}#w(e,t){this.has_pending_snippet()?(this.#u+=e,this.#u===0&&(this.#S(t),this.#o&&Fn(this.#o,()=>{this.#o=null}),this.#c&&=(this.#e.before(this.#c),null))):this.parent&&this.parent.#w(e,t)}update_pending_count(e,t){this.#w(e,t),this.#l+=e,!(!this.#m||this.#d)&&(this.#d=!0,Ye(()=>{this.#d=!1,this.#m&&Gt(this.#m,this.#l)}))}get_effect_pending(){return this.#h(),V(this.#m)}error(e){if(e===le||!this.#n.onerror&&!this.#n.failed)throw e;bt?.is_fork?(this.#a&&bt.skip_effect(this.#a),this.#o&&bt.skip_effect(this.#o),this.#s&&bt.skip_effect(this.#s),bt.oncommit(()=>{this.#y()||this.#T(e)})):this.#T(e)}#T(e){this.#a&&=(Mn(this.#a),null),this.#o&&=(Mn(this.#o),null),this.#s&&=(Mn(this.#s),null),j&&(be(this.#t),N(),be(Se()));let t=this.#n.failed,n=e=>{if(this.#y())return;let{reset:n,invoke_onerror:r}=this.#v(e);r(),t&&!this.#y()&&(this.#s=this.#C(()=>{try{return On(()=>{var r=Kn;r.b=this,r.f|=128,t(this.#e,()=>e,()=>n)})}catch(e){return mn(e,this.#i.parent),null}}))};Ye(()=>{if(!this.#y()){var t;try{t=this.transform_error(e)}catch(e){mn(e,this.#i&&this.#i.parent);return}typeof t==`object`&&t&&typeof t.then==`function`?t.then(n,e=>mn(e,this.#i&&this.#i.parent)):n(t)}})}};function G(e,t){var n=t==null?``:typeof t==`object`?`${t}`:t;n!==(e[ae]??=e.nodeValue)&&(e[ae]=n,e.nodeValue=`${n}`)}function Vr(e,t){return Ur(e,t)}var Hr=new Map;function Ur(e,{target:t,anchor:n,props:i={},events:a,context:o,intro:s=!0,transformError:c}){rn();var l=void 0,u=Cn(()=>{var s=n??t.appendChild(an());zr(s,{pending:()=>{}},t=>{Ue({});var n=Ve;if(o&&(n.c=o),a&&(i.$$events=a),j&&Mr(t,null),l=e(t,i)||Ge(),j&&(Kn.nodes.end=ye,ye===null||ye.nodeType!==8||ye.data!==`]`))throw he(),le;We()},c);var u=new Set,d=e=>{for(var n=0;n<e.length;n++){var r=e[n];if(!u.has(r)){u.add(r);var i=yr(r);for(let e of[t,document]){var a=Hr.get(e);a===void 0&&(a=new Map,Hr.set(e,a));var o=a.get(r);o===void 0?(e.addEventListener(r,Or,{passive:i}),a.set(r,1)):a.set(r,o+1)}}}};return d(r(xr)),Sr.add(d),()=>{for(var e of u)for(let n of[t,document]){var r=Hr.get(n),i=r.get(e);--i==0?(n.removeEventListener(e,Or),r.delete(e),r.size===0&&Hr.delete(n)):r.set(e,i)}Sr.delete(d),s!==n&&s.parentNode?.removeChild(s)}});return Wr.set(l,u),l}var Wr=new WeakMap,Gr=class{anchor;#e=new Map;#t=new Map;#n=new Map;#r=new Set;#i=!0;constructor(e,t=!0){this.anchor=e,this.#i=t}#a=e=>{if(this.#e.has(e)){var t=this.#e.get(e),n=this.#t.get(t);if(n)Ln(n),this.#r.delete(t);else{var r=this.#n.get(t);r&&(Ln(r.effect),this.#t.set(t,r.effect),this.#n.delete(t),r.fragment.lastChild.remove(),this.anchor.before(r.fragment),n=r.effect)}for(let[t,n]of this.#e){if(this.#e.delete(t),t===e)break;let r=this.#n.get(n);r&&(Mn(r.effect),this.#n.delete(n))}for(let[e,r]of this.#t){if(e===t||this.#r.has(e))continue;let i=()=>{if(Array.from(this.#e.values()).includes(e)){var t=document.createDocumentFragment();zn(r,t),t.append(an()),this.#n.set(e,{effect:r,fragment:t})}else Mn(r);this.#r.delete(e),this.#t.delete(e)};this.#i||!n?(this.#r.add(e),Fn(r,i,!1)):i()}}};#o=e=>{this.#e.delete(e);let t=Array.from(this.#e.values());for(let[e,n]of this.#n)t.includes(e)||(Mn(n.effect),this.#n.delete(e))};ensure(e,t){var n=bt,r=un();if(t&&!this.#t.has(e)&&!this.#n.has(e)){if(r){var i=document.createDocumentFragment(),a=an();i.append(a),this.#n.set(e,{effect:On(()=>t(a)),fragment:i})}else this.#t.set(e,On(()=>t(this.anchor)))}if(this.#e.set(n,e),r){for(let[t,r]of this.#t)t===e?n.unskip_effect(r):n.skip_effect(r);for(let[t,r]of this.#n)t===e?n.unskip_effect(r.effect):n.skip_effect(r.effect);n.oncommit(this.#a),n.ondiscard(this.#o)}else j&&(this.anchor=ye),this.#a(n)}};function K(e,t,n=!1){var r;j&&(r=ye,xe());var i=new Gr(e),a=n?S:0;function o(e,t){if(j){var n=Ce(r);if(e!==parseInt(n.substring(1))){var a=Se();be(a),i.anchor=a,ve(!1),i.ensure(e,t),ve(!0);return}}i.ensure(e,t)}Dn(()=>{var e=!1;t((t,n=0)=>{e=!0,o(n,t)}),e||o(-1,null)},a)}function Kr(e,t){return t}function qr(e,t,n){for(var i=[],a=t.length,o,s=t.length,c=0;c<a;c++){let n=t[c];Fn(n,()=>{if(o){if(o.pending.delete(n),o.done.add(n),o.pending.size===0){var t=e.outrogroups;Jr(e,r(o.done)),t.delete(o),t.size===0&&(e.outrogroups=null)}}else--s},!1)}if(s===0){var l=i.length===0&&n!==null&&e.pending.size===0;if(l){var u=n,d=u.parentNode;ln(d),d.append(u),e.items.clear()}Jr(e,t,!l)}else o={pending:new Set(t),done:new Set},(e.outrogroups??=new Set).add(o)}function Jr(e,t,n=!0){var r;if(e.pending.size>0){r=new Set;for(let t of e.pending.values())for(let n of t)r.add(e.items.get(n).e)}for(var i=0;i<t.length;i++){var a=t[i];r?.has(a)?(a.f|=T,zn(a,document.createDocumentFragment())):Mn(t[i],n)}}var Yr;function Xr(t,n,i,a,o,s=null){var c=t,l=new Map;if(n&4){var u=t;c=j?be(on(u)):u.appendChild(an())}j&&xe();var d=null,f=pt(()=>{var t=i();return e(t)?t:t==null?[]:r(t)}),p=new Map,m=!0;function h(e){if(!(_.effect.f&16384)){_.pending.delete(e);var t=V(f);_.fallback=d,Qr(_,t,c,n,a),d!==null&&(t.length===0?d.f&33554432?(d.f^=T,ei(d,null,c)):Ln(d):Fn(d,()=>{d=null}))}}function g(e){_.pending.delete(e)}var _={effect:Dn(()=>{var e=V(f),t=e.length;let r=!1;j&&Ce(c)===`[!`!=(t===0)&&(c=Se(),be(c),ve(!1),r=!0);for(var u=new Set,_=bt,v=un(),y=0;y<t;y+=1){j&&ye.nodeType===8&&ye.data===`]`&&(c=ye,r=!0,ve(!1));var b=e[y],x=a(b,y),S=m?null:l.get(x);S?(S.v&&Gt(S.v,b),S.i&&Gt(S.i,y),v&&_.unskip_effect(S.e)):(S=$r(l,m?c:Yr??=an(),b,x,y,o,n,i),m||(S.e.f|=T),l.set(x,S)),u.add(x)}if(t===0&&s&&!d&&(m?d=On(()=>s(c)):(d=On(()=>s(Yr??=an())),d.f|=T)),t>u.size&&ke(``,``,``),j&&t>0&&be(Se()),!m){if(p.set(_,u),v){for(let[e,t]of l)u.has(e)||_.skip_effect(t.e);_.oncommit(h),_.ondiscard(g)}else h(_)}r&&ve(!0),V(f)}),flags:n,items:l,pending:p,outrogroups:null,fallback:d};m=!1,j&&(c=ye)}function Zr(e){for(;e!==null&&!(e.f&32);)e=e.next;return e}function Qr(e,t,n,i,a){var o=!!(i&8),s=t.length,c=e.items,l=Zr(e.effect.first),u,d=null,f,p=[],m=[],h,g,_,v;if(o)for(v=0;v<s;v+=1)h=t[v],g=a(h,v),_=c.get(g).e,_.f&33554432||(_.nodes?.a?.measure(),(f??=new Set).add(_));for(v=0;v<s;v+=1){if(h=t[v],g=a(h,v),_=c.get(g).e,e.outrogroups!==null)for(let t of e.outrogroups)t.pending.delete(_),t.done.delete(_);if(_.f&8192&&(Ln(_),o&&(_.nodes?.a?.unfix(),(f??=new Set).delete(_))),_.f&33554432){if(_.f^=T,_===l)ei(_,null,n);else{var y=d?d.next:l;_===e.effect.last&&(e.effect.last=_.prev),_.prev&&(_.prev.next=_.next),_.next&&(_.next.prev=_.prev),ti(e,d,_),ti(e,_,y),ei(_,y,n),d=_,p=[],m=[],l=Zr(d.next);continue}}if(_!==l){if(u!==void 0&&u.has(_)){if(p.length<m.length){var b=m[0],x;d=b.prev;var S=p[0],C=p[p.length-1];for(x=0;x<p.length;x+=1)ei(p[x],b,n);for(x=0;x<m.length;x+=1)u.delete(m[x]);ti(e,S.prev,C.next),ti(e,d,S),ti(e,C,b),l=b,d=C,--v,p=[],m=[]}else u.delete(_),ei(_,l,n),ti(e,_.prev,_.next),ti(e,_,d===null?e.effect.first:d.next),ti(e,d,_),d=_;continue}for(p=[],m=[];l!==null&&l!==_;)(u??=new Set).add(l),m.push(l),l=Zr(l.next);if(l===null)continue}_.f&33554432||p.push(_),d=_,l=Zr(_.next)}if(e.outrogroups!==null){for(let t of e.outrogroups)t.pending.size===0&&(Jr(e,r(t.done)),e.outrogroups?.delete(t));e.outrogroups.size===0&&(e.outrogroups=null)}if(l!==null||u!==void 0){var w=[];if(u!==void 0)for(_ of u)_.f&8192||w.push(_);for(;l!==null;)!(l.f&8192)&&l!==e.fallback&&w.push(l),l=Zr(l.next);var E=w.length;if(E>0){var D=i&4&&s===0?n:null;if(o){for(v=0;v<E;v+=1)w[v].nodes?.a?.measure();for(v=0;v<E;v+=1)w[v].nodes?.a?.fix()}qr(e,w,D)}}o&&Ye(()=>{if(f!==void 0)for(_ of f)_.nodes?.a?.apply()})}function $r(e,t,n,r,i,a,o,s){var c=o&1?o&16?Vt(n):Ht(n,!1,!1):null,l=o&2?Vt(i):null;return{v:c,i:l,e:On(()=>(a(t,c??n,l??i,s),()=>{e.delete(r)}))}}function ei(e,t,n){if(e.nodes)for(var r=e.nodes.start,i=e.nodes.end,a=t&&!(t.f&33554432)?t.nodes.start:n;r!==null;){var o=sn(r);if(a.before(r),r===i)return;r=o}}function ti(e,t,n){t===null?e.effect.first=n:t.next=n,n===null?e.effect.last=t:n.prev=t}function ni(e,t,n=!1,r=!1,i=!1,a=!1){var o=e,s=``;if(n){var c=e;j&&(o=be(on(c)))}B(()=>{var e=Kn;if(s===(s=t()??``))j&&xe();else if(n&&!j)e.nodes=null,c.innerHTML=s,s!==``&&Mr(on(c),c.lastChild);else if(e.nodes!==null&&(Nn(e.nodes.start,e.nodes.end),e.nodes=null),s!==``){if(j){for(var a=ye.data,l=xe(),u=l;l!==null&&(l.nodeType!==8||l.data!==``);)u=l,l=sn(l);if(l===null)throw he(),le;Mr(ye,u),o=be(l)}else{var d=dn(r?`svg`:i?`math`:`template`,r?fe:i?pe:void 0);d.innerHTML=s;var f=r||i?d:d.content;if(Mr(on(f),f.lastChild),r||i)for(;on(f);)o.before(on(f));else o.before(f)}}})}function ri(e,t,...n){var r=new Gr(e);Dn(()=>{let e=t()??null;r.ensure(e,e&&(t=>e(t,...n)))},S)}function ii(e){var t,n,r=``;if(typeof e==`string`||typeof e==`number`)r+=e;else if(typeof e==`object`){if(Array.isArray(e)){var i=e.length;for(t=0;t<i;t++)e[t]&&(n=ii(e[t]))&&(r&&(r+=` `),r+=n)}else for(n in e)e[n]&&(r&&(r+=` `),r+=n)}return r}function ai(){for(var e,t,n=0,r=``,i=arguments.length;n<i;n++)(e=arguments[n])&&(t=ii(e))&&(r&&(r+=` `),r+=t);return r}function oi(e){return typeof e==`object`?ai(e):e??``}var si=[...` 	
-\r\f\xA0\v﻿`];function ci(e,t,n){var r=e==null?``:``+e;if(t&&(r=r?r+` `+t:t),n){for(var i of Object.keys(n))if(n[i])r=r?r+` `+i:i;else if(r.length)for(var a=i.length,o=0;(o=r.indexOf(i,o))>=0;){var s=o+a;(o===0||si.includes(r[o-1]))&&(s===r.length||si.includes(r[s]))?r=(o===0?``:r.substring(0,o))+r.substring(s+1):o=s}}return r===``?null:r}function li(e,t=!1){var n=t?` !important;`:`;`,r=``;for(var i of Object.keys(e)){var a=e[i];a!=null&&a!==``&&(r+=` `+i+`: `+a+n)}return r}function ui(e){return e[0]!==`-`||e[1]!==`-`?e.toLowerCase():e}function di(e,t){if(t){var n=``,r,i;if(Array.isArray(t)?(r=t[0],i=t[1]):r=t,e){e=String(e).replaceAll(/\/\*.*?\*\//g,``).trim();var a=!1,o=0,s=!1,c=[];r&&c.push(...Object.keys(r).map(ui)),i&&c.push(...Object.keys(i).map(ui));var l=0,u=-1;let t=e.length;for(var d=0;d<t;d++){var f=e[d];if(s?f===`/`&&e[d-1]===`*`&&(s=!1):a?a===f&&(a=!1):f===`/`&&e[d+1]===`*`?s=!0:f===`"`||f===`'`?a=f:f===`(`?o++:f===`)`&&o--,!s&&a===!1&&o===0){if(f===`:`&&u===-1)u=d;else if(f===`;`||d===t-1){if(u!==-1){var p=ui(e.substring(l,u).trim());if(!c.includes(p)){f!==`;`&&d++;var m=e.substring(l,d).trim();n+=` `+m+`;`}}l=d+1,u=-1}}}}return r&&(n+=li(r)),i&&(n+=li(i,!0)),n=n.trim(),n===``?null:n}return e==null?null:String(e)}function q(e,t,n,r,i,a){var o=e[re];if(j||o!==n||o===void 0){var s=ci(n,r,a);j&&s===e.getAttribute(`class`)||(s==null?e.removeAttribute(`class`):t?e.className=s:e.setAttribute(`class`,s)),e[re]=n}else if(a&&i!==a)for(var c in a){var l=!!a[c];(i==null||l!==!!i[c])&&e.classList.toggle(c,l)}return a}function fi(e,t={},n,r){for(var i in n){var a=n[i];t[i]!==a&&(n[i]==null?e.style.removeProperty(i):e.style.setProperty(i,a,r))}}function pi(e,t,n,r){var i=e[ie];if(j||i!==t){var a=di(t,r);j&&a===e.getAttribute(`style`)||(a==null?e.removeAttribute(`style`):e.style.cssText=a),e[ie]=t}else r&&(Array.isArray(r)?(fi(e,n?.[0],r[0]),fi(e,n?.[1],r[1],`important`)):fi(e,n,r));return r}function mi(e,t){t?e.hasAttribute(`selected`)||e.setAttribute(`selected`,``):e.removeAttribute(`selected`)}function hi(t,n){var r=t.__defaultValue,i=t.multiple,a=i?r??[]:null;if(!i||e(a)){var o=t.selectedIndex,s=n&&i?new Set(t.selectedOptions):null;for(var c of t.options){var l=yi(c);mi(c,i?a.includes(l):Qt(l,r))}if(n){if(s!==null)for(c of t.options){var u=s.has(c);c.selected!==u&&(c.selected=u)}else t.selectedIndex!==o&&(t.selectedIndex=o)}}}function gi(t,n,r=!1){if(t.multiple){if(n==null)return;if(!e(n))return ge();for(var i of t.options)i.selected=n.includes(yi(i))}else{for(i of t.options)if(Qt(yi(i),n)){i.selected=!0;return}r&&n===void 0||(t.selectedIndex=-1)}}function _i(e){var t=new MutationObserver(t=>{t.every(bi)||(`__defaultValue`in e&&hi(e,!1),`__value`in e&&gi(e,e.__value))});t.observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:[`value`]}),yn(()=>{t.disconnect()})}function vi(e,t,n=t){var r=new WeakSet,i=!0;at(e,`change`,t=>{var i=t?`[selected]`:`:checked`,a;if(e.multiple)a=[].map.call(e.querySelectorAll(i),yi);else{var o=e.querySelector(i)??e.querySelector(`option:not([disabled])`);a=o&&yi(o)}n(a),e.__value=a,bt!==null&&r.add(bt)}),wn(()=>{var a=t();if(e===document.activeElement){var o=bt;if(r.has(o))return}if(gi(e,a,i),i&&a===void 0){var s=e.querySelector(`:checked`);s!==null&&(a=yi(s),n(a))}e.__value=a,i=!1})}function yi(e){return`__value`in e?e.__value:e.value}function bi(e){if(e.target.closest(`selectedcontent`)!==null)return!0;if(e.type===`childList`){var t=[...e.addedNodes,...e.removedNodes];return t.length>0&&t.every(e=>e.nodeName===`SELECTEDCONTENT`)}return!1}var xi=Symbol(`is custom element`),Si=Symbol(`is html`),Ci=ce?`link`:`LINK`;function J(e){if(j){var t=!1,n=()=>{if(!t){if(t=!0,e.hasAttribute(`value`)){var n=e.value;Ti(e,`value`,null),e.value=n}if(e.hasAttribute(`checked`)){var r=e.checked;Ti(e,`checked`,null),e.checked=r}}};e[oe]=n,Ye(n),rt()}}function wi(e,t){var n=Ei(e);n.checked!==(n.checked=t??void 0)&&(e.checked=t)}function Ti(e,t,n,r){var i=Ei(e);j&&(i[t]=e.getAttribute(t),t===`src`||t===`srcset`||t===`href`&&e.nodeName===Ci)||i[t]!==(i[t]=n)&&(t===`loading`&&(e[te]=n),n==null?e.removeAttribute(t):typeof n!=`string`&&Oi(e).has(t)?e[t]=n:e.setAttribute(t,n))}function Ei(e){return e[ne]??={[xi]:e.nodeName.includes(`-`),[Si]:e.namespaceURI===de}}var Di=new Map;function Oi(e){var t=e.getAttribute(`is`)||e.nodeName,n=Di.get(t);if(n)return n;Di.set(t,n=new Set);for(var r,i=e,a=Element.prototype;a!==i;){for(var s in r=o(i),r)r[s].set&&s!==`innerHTML`&&s!==`textContent`&&s!==`innerText`&&n.add(s);i=l(i)}return n}function Y(e,t,n=t){var r=new WeakSet;at(e,`input`,async i=>{var a=i?e.defaultValue:e.value;if(a=Ai(e)?ji(a):a,n(a),bt!==null&&r.add(bt),await fr(),a!==(a=t())){var o=e.selectionStart,s=e.selectionEnd,c=e.value.length;if(e.value=a??``,s!==null){var l=e.value.length;o===s&&s===c&&l>c?(e.selectionStart=l,e.selectionEnd=l):(e.selectionStart=o,e.selectionEnd=Math.min(s,l))}}}),(j&&e.defaultValue!==e.value||hr(t)==null&&e.value)&&(n(Ai(e)?ji(e.value):e.value),bt!==null&&r.add(bt)),En(()=>{var n=t();if(e===document.activeElement){var i=bt;if(r.has(i))return}Ai(e)&&n===ji(e.value)||(e.type!==`date`||n||e.value)&&n!==e.value&&(e.value=n??``)})}function ki(e,t,n=t){at(e,`change`,t=>{n(t?e.defaultChecked:e.checked)}),(j&&e.defaultChecked!==e.checked||hr(t)==null)&&n(e.checked),En(()=>{e.checked=!!t()})}function Ai(e){var t=e.type;return t===`number`||t===`range`}function ji(e){return e===``?null:+e}function Mi(e,t){return e===t||e?.[k]===t}function Ni(e=Ge(),t,n,r){var i=Ve.r,a=Kn;return wn(()=>{var o,s;return En(()=>{o=s,s=r?.()||[],hr(()=>{Mi(n(...s),e)||(t(e,...s),o&&Mi(n(...o),e)&&t(null,...o))})}),()=>{let r=a;for(;r!==i&&r.parent!==null&&r.parent.f&33554432;)r=r.parent;let o=()=>{s&&Mi(n(...s),e)&&t(null,...s)},c=r.teardown;r.teardown=()=>{o(),c?.()}}}),e}function Pi(e=!1){let t=Ve,n=t.l.u;if(!n)return;let r=()=>gr(t.s);if(e){let e=0,n={},i=ut(()=>{let r=!1,i=t.s;for(let e in i)i[e]!==n[e]&&(n[e]=i[e],r=!0);return r&&e++,e});r=()=>V(i)}n.b.length&&Sn(()=>{Fi(t,r),p(n.b)}),bn(()=>{let e=hr(()=>n.m.map(f));return()=>{for(let t of e)typeof t==`function`&&t()}}),n.a.length&&bn(()=>{Fi(t,r),p(n.a)})}function Fi(e,t){if(e.l.s)for(let t of e.l.s)V(t);t()}function Ii(e,t,n){if(e==null)return t(void 0),n&&n(void 0),d;let r=hr(()=>e.subscribe(t,n));return r.unsubscribe?()=>r.unsubscribe():r}var Li=[];function Ri(e,t){return{subscribe:X(e,t).subscribe}}function X(e,t=d){let n=null,r=new Set;function i(t){if(Te(e,t)&&(e=t,n)){let t=!Li.length;for(let t of r)t[1](),Li.push(t,e);if(t){for(let e=0;e<Li.length;e+=2)Li[e][0](Li[e+1]);Li.length=0}}}function a(t){i(t(e))}function o(o,s=d){let c=[o,s];return r.add(c),r.size===1&&(n=t(i,a)||d),o(e),()=>{r.delete(c),r.size===0&&n&&(n(),n=null)}}return{set:i,update:a,subscribe:o}}function zi(e,t,n){let r=!Array.isArray(e),i=r?[e]:e;if(!i.every(Boolean))throw Error(`derived() expects stores as input, got a falsy value`);let a=t.length<2;return Ri(n,(e,n)=>{let o=!1,s=[],c=0,l=d,u=()=>{if(c)return;l();let i=t(r?s[0]:s,e,n);a?e(i):l=typeof i==`function`?i:d},f=i.map((e,t)=>Ii(e,e=>{s[t]=e,c&=~(1<<t),o&&u()},()=>{c|=1<<t}));return o=!0,u(),function(){p(f),l(),o=!1}})}function Bi(e){let t;return Ii(e,e=>t=e)(),t}var Vi=!1,Hi=Symbol(`unmounted`);function Z(e,t,n){let r=n[t]??={store:null,source:Ht(void 0),unsubscribe:d};if(r.store!==e&&!(Hi in n)){if(r.unsubscribe(),r.store=e??null,e==null)r.source.v=void 0,r.unsubscribe=d;else{var i=!0;r.unsubscribe=Ii(e,e=>{i?r.source.v=e:I(r.source,e)}),i=!1}}return e&&Hi in n?Bi(e):V(r.source)}function Ui(){let e={};function t(){yn(()=>{for(var t in e)e[t].unsubscribe();i(e,Hi,{enumerable:!1,value:!0})})}return[e,t]}function Wi(e){var t=Vi;try{return Vi=!1,[e(),Vi]}finally{Vi=t}}function Gi(e,t,n,r){var i=!ze||!!(n&2),o=!!(n&8),s=!!(n&16),c=r,l=!0,u=void 0,d=()=>s&&i?(u??=ut(r),V(u)):(l&&(l=!1,c=s?hr(r):r),c);let f;if(o){var p=k in e||ee in e;f=a(e,t)?.set??(p&&t in e?n=>e[t]=n:void 0)}var m,h=!1;o?[m,h]=Wi(()=>e[t]):m=e[t],m===void 0&&r!==void 0&&(m=d(),f&&(i&&Pe(t),f(m)));var g=i?()=>{var n=e[t];return n===void 0?d():(l=!0,n)}:()=>{var n=e[t];return n!==void 0&&(c=void 0),n===void 0?c:n};if(i&&!(n&4))return g;if(f){var _=e.$$legacy;return(function(e,t){return arguments.length>0?((!i||!t||_||h)&&f(t?g():e),e):g()})}var v=!1,y=(n&1?ut:pt)(()=>(v=!1,g()));o&&V(y);var b=Kn;return(function(e,t){if(arguments.length>0){let n=t?V(y):i&&o?Xt(e):e;return I(y,n),v=!0,c!==void 0&&(c=n),e}return Vn&&v||b.f&16384?y.v:V(y)})}function Ki(e){Ve===null&&De(`onMount`),ze&&Ve.l!==null?Ji(Ve).m.push(e):bn(()=>{let t=hr(e);if(typeof t==`function`)return t})}function qi(e){Ve===null&&De(`onDestroy`),Ki(()=>()=>hr(e))}function Ji(e){var t=e.l;return t.u??={a:[],b:[],m:[]}}typeof window<`u`&&((window.__svelte??={}).v??=new Set).add(`5`);var Yi=`whatsapp_bot_token`,Xi=`whatsapp_bot_company_id`;function Zi(){return localStorage.getItem(Yi)||null}function Qi(e){e?localStorage.setItem(Yi,e):localStorage.removeItem(Yi)}function $i(){return localStorage.getItem(Xi)||`default`}function ea(e){e?localStorage.setItem(Xi,e):localStorage.removeItem(Xi)}var ta=null;function na(e){ta=e}async function ra(e,t={}){let n=Zi(),r=$i();t.headers=t.headers||{},!(t.body instanceof FormData)&&!t.headers[`Content-Type`]&&t.method&&t.method!==`GET`&&(t.headers[`Content-Type`]=`application/json`),n&&!t.headers.Authorization&&!t.headers.authorization&&(t.headers.Authorization=`Bearer ${n}`),t.headers[`x-company-id`]||(t.headers[`x-company-id`]=r);let i=e;if(i.startsWith(`/api/`)&&!i.includes(`companyId=`)){let e=i.includes(`?`)?`&`:`?`;i=`${i}${e}companyId=${encodeURIComponent(r)}`}let a=await fetch(i,t);a.status===401&&!i.includes(`/api/auth/login`)&&!i.includes(`/api/auth/register`)&&ta&&ta();let o=a.headers.get(`content-type`)||``,s;if(s=o.includes(`application/json`)?await a.json():await a.text(),!a.ok){let e=s&&s.error?s.error:typeof s==`string`&&s?s:`Error HTTP ${a.status}`,t=Error(e);throw t.status=a.status,t.data=s,t}return s}var Q={get:(e,t)=>ra(e,{...t,method:`GET`}),post:(e,t,n)=>ra(e,{...n,method:`POST`,body:t instanceof FormData?t:JSON.stringify(t)}),put:(e,t,n)=>ra(e,{...n,method:`PUT`,body:t instanceof FormData?t:JSON.stringify(t)}),delete:(e,t)=>ra(e,{...t,method:`DELETE`}),upload:async(e,t=`rules`)=>{if(e.size>52428800)throw Error(`El archivo supera los 50 MB. Por favor elige un archivo más liviano.`);let n=await new Promise((t,n)=>{let r=new FileReader;r.onload=()=>t(r.result),r.onerror=n,r.readAsDataURL(e)}),r=await Q.post(`/api/upload`,{filename:e.name,mimetype:e.type||`application/octet-stream`,data:n,folder:t}),i=r.file||{url:r.url,filename:r.filename||e.name,mimetype:r.mimetype||e.type,size:r.size||e.size};return{success:!0,file:i,...i}}},ia=X([]),aa=0;function $(e,t=`info`,n=4e3){let r=++aa,i={id:r,message:e,type:t};return ia.update(e=>[...e,i]),n>0&&setTimeout(()=>{oa(r)},n),r}function oa(e){ia.update(t=>t.filter(t=>t.id!==e))}var sa=X(`tab-rules`),ca=X(!1),la=X(``),ua=X(typeof localStorage<`u`&&localStorage.getItem(`ws_bot_sidebar_collapsed`)===`true`);typeof localStorage<`u`&&ua.subscribe(e=>{localStorage.setItem(`ws_bot_sidebar_collapsed`,String(e))});var da=X([]),fa=X($i()),pa=X(!1),ma=X(`create`);function ha(){da.set([]),fa.set(null),ea(null)}var ga=zi([da,fa],([e,t])=>e.find(e=>e.id===t)||e[0]||null);async function _a(){try{let e=await Q.get(`/api/companies`),t=Array.isArray(e)?e:e.companies||[];da.set(t);let n=$i();if(!t.some(e=>e.id===n)&&t.length>0){let e=t[0].id;fa.set(e),ea(e)}return t}catch(e){return console.error(`Error cargando empresas:`,e),[]}}async function va(e,t){try{return fa.set(e),ea(e),await Q.post(`/api/companies/${e}/select`,{}),$(`Empresa cambiada a ${e}`,`info`),t&&await t(e),!0}catch(e){return $(e.message,`error`),!1}}async function ya(e){try{let t=await Q.post(`/api/companies`,e);return $(`Empresa creada exitosamente`,`success`),await _a(),t.company?.id&&await va(t.company.id),pa.set(!1),{success:!0,company:t.company}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function ba(e,t){try{let n=await Q.put(`/api/companies/${e}`,t);return $(`Datos de empresa actualizados`,`success`),await _a(),pa.set(!1),{success:!0,company:n.company}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function xa(e){try{await Q.delete(`/api/companies/${e}`),$(`Empresa eliminada`,`info`);let t=await _a();return t.length>0&&await va(t[0].id),pa.set(!1),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var Sa=X({companiesCount:0,usersCount:0,superadminsCount:0,leadsCount:0,messagesCount:0,activeBotsCount:0}),Ca=X([]),wa=X([]),Ta=X(!1);function Ea(){Sa.set({companiesCount:0,usersCount:0,superadminsCount:0,leadsCount:0,messagesCount:0,activeBotsCount:0}),Ca.set([]),wa.set([]),Ta.set(!1)}async function Da(){let e=!1;if(Rs.subscribe(t=>e=t)(),!e)return null;try{let e=await Q.get(`/api/superadmin/stats`);return e.stats&&Sa.set(e.stats),e.stats}catch(e){return console.error(`Error cargando métricas de superadmin:`,e),null}}async function Oa(){let e=!1;if(Rs.subscribe(t=>e=t)(),!e)return[];try{let e=(await Q.get(`/api/superadmin/companies`)).companies||[];return Ca.set(e),e}catch(e){return console.error(`Error cargando empresas:`,e),$(e.message,`error`),[]}}async function ka(){let e=!1;if(Rs.subscribe(t=>e=t)(),!e)return[];try{let e=(await Q.get(`/api/superadmin/users`)).users||[];return wa.set(e),e}catch(e){return console.error(`Error cargando usuarios:`,e),$(e.message,`error`),[]}}async function Aa(){let e=!1;if(Rs.subscribe(t=>e=t)(),!e)Ea();else{Ta.set(!0);try{await Promise.all([Da(),Oa(),ka()])}finally{Ta.set(!1)}}}async function ja(e){try{let t=await Q.post(`/api/superadmin/companies`,{name:e});return $(t.message||`Empresa creada con éxito`,`success`),await Oa(),await Da(),await _a(),{success:!0,companyId:t.companyId}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ma(e,t){try{return $((await Q.put(`/api/superadmin/companies/${e}`,t)).message||`Empresa actualizada`,`success`),await Oa(),await _a(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Na(e){try{return $((await Q.delete(`/api/superadmin/companies/${e}`)).message||`Empresa eliminada`,`success`),await Oa(),await Da(),await _a(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Pa(e){try{return $((await Q.post(`/api/superadmin/companies/${e}/disconnect-whatsapp`,{})).message||`WhatsApp desvinculado exitosamente`,`info`),await Oa(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Fa(e){try{return $((await Q.post(`/api/superadmin/companies/${e}/clean-data`,{})).message||`Data de la empresa limpiada`,`success`),await Oa(),await Da(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ia(e,t,n){try{let r=await Q.post(`/api/superadmin/companies/${e}/gemini-config`,{apiKey:t,model:n});return $(`Configuración de Gemini actualizada para la empresa`,`success`),await Oa(),{success:!0,data:r}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function La(e){try{let t=await Q.post(`/api/superadmin/users`,e);return $(t.message||`Usuario creado exitosamente`,`success`),await ka(),await Da(),{success:!0,userId:t.userId}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ra(e,t){try{return $((await Q.put(`/api/superadmin/users/${e}`,t)).message||`Usuario actualizado`,`success`),await ka(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function za(e){try{return $((await Q.delete(`/api/superadmin/users/${e}`)).message||`Usuario eliminado`,`success`),await ka(),await Da(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ba(e,t,n=!1){try{let r=await Q.post(`/api/superadmin/users/${e}/reset-password`,{newPassword:t,requireChangeOnLogin:n});return $(`Contraseña restablecida correctamente`,`success`),{success:!0,temporaryPassword:r.temporaryPassword}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Va(e,t){try{return $((await Q.post(`/api/superadmin/users/${e}/toggle-superadmin`,{isSuperadmin:t})).message||`Permiso de superusuario actualizado`,`info`),await ka(),await Da(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ha(e,t,n,r=!1){try{return $((await Q.post(`/api/superadmin/users/${e}/companies`,{companyId:t,roleId:n,isOwner:r})).message||`Usuario vinculado a la empresa`,`success`),await ka(),await Oa(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ua(e,t){try{return $((await Q.delete(`/api/superadmin/users/${e}/companies/${t}`)).message||`Usuario desvinculado de la empresa`,`info`),await ka(),await Oa(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var Wa=X([]),Ga=X(null),Ka=X(!1);async function qa(){try{let e=await Q.get(`/api/rules`),t=Array.isArray(e)?e:[];return Wa.set(t),t}catch(e){return console.error(`Error cargando reglas:`,e),[]}}async function Ja(e,t=null){try{return t?(await Q.put(`/api/rules/${t}`,e),$(`Ruta "${e.name}" actualizada con éxito`,`success`)):(await Q.post(`/api/rules`,e),$(`Ruta "${e.name}" creada con éxito`,`success`)),Ka.set(!1),Ga.set(null),await qa(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ya(e,t){try{await Q.put(`/api/rules/${e}`,{enabled:t}),Wa.update(n=>n.map(n=>n.id===e?{...n,enabled:t}:n)),$(t?`Ruta activada`:`Ruta desactivada`,`info`)}catch(e){$(e.message,`error`)}}async function Xa(e,t){try{await Q.delete(`/api/rules/${e}`),Wa.update(t=>t.filter(t=>t.id!==e)),$(`Ruta "${t}" eliminada`,`info`)}catch(e){$(e.message,`error`)}}var Za=X([]),Qa=X(!1);async function $a(){try{let e=await Q.get(`/api/groups`),t=Array.isArray(e)?e:[];return Za.set(t),t}catch(e){return console.error(`Error cargando grupos:`,e),[]}}async function eo(e){try{let t=await Q.post(`/api/groups`,e);return Za.update(e=>[...e,t]),$(`Grupo "${t.name}" creado con éxito`,`success`),{success:!0,group:t}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function to(e){try{return await Q.delete(`/api/groups/${e}`),Za.update(t=>t.filter(t=>t.id!==e)),$(`Grupo eliminado`,`info`),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function no(e){try{return(await Q.get(`/api/groups/${e}/members`)).members||[]}catch(e){return console.error(`Error obteniendo miembros del grupo:`,e),[]}}async function ro(e,t){try{return await Q.post(`/api/groups/${e}/members`,{phones:t}),$(`${t.length} contacto(s) añadidos al grupo`,`success`),await $a(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function io(e,t){try{return await Q.delete(`/api/groups/${e}/members/${encodeURIComponent(t)}`),$(`Contacto removido del grupo`,`info`),await $a(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var ao=X([]),oo=X(!1);async function so(){oo.set(!0);try{let e=await Q.get(`/api/contacts`),t=Array.isArray(e)?e:[];return ao.set(t),t}catch(e){return console.error(`Error cargando contactos:`,e),[]}finally{oo.set(!1)}}async function co(e){try{return await Q.delete(`/api/contacts/${encodeURIComponent(e)}`),ao.update(t=>t.filter(t=>t.phone!==e)),$(`Contacto eliminado de la agenda`,`info`),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function lo(e,t=`Importado Google`,n=`57`,r=null){try{let i=await Q.post(`/api/contacts/import-csv`,{csv:e,defaultTag:t,defaultPrefix:n,groupId:r});return $(`Se importaron ${i.importedCount} contactos a la agenda`,`success`),await so(),r&&await $a(),{success:!0,count:i.importedCount}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function uo(e=`Agenda WhatsApp`,t=null){try{let n=await Q.post(`/api/contacts/sync-whatsapp`,{defaultTag:e,groupId:t});return $(`Se sincronizaron ${n.syncedCount} contactos de WhatsApp a tu agenda`,`success`),await so(),t&&await $a(),{success:!0,count:n.syncedCount}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var fo=X([]),po=X(null),mo=X(!1),ho=X(!1),go=X(null),_o=X(!1),vo=X([]),yo=X(!1),bo=X(!1),xo=null,So=null,Co=null;function wo(e){if(To(),e)try{let t=`/api/events?companyId=${encodeURIComponent(e)}`,n=new EventSource(t);Co=n,n.onmessage=e=>{try{let t=JSON.parse(e.data);if(t.event===`connected`)return;if(t.event===`lead_updated`&&t.payload){let e=t.payload;fo.update(t=>{let n=(e.phone||``).replace(/\D/g,``),r=t.findIndex(t=>t.phone===e.phone||n&&t.phone&&t.phone.replace(/\D/g,``)===n);return r>=0?[{...t[r],...e},...t.filter((e,t)=>t!==r)]:[e,...t]}),po.update(t=>t&&t.phone===e.phone?{...t,...e}:t),go.update(t=>t&&t.phone===e.phone?{...t,...e}:t)}if(t.event===`lead_deleted`&&t.payload?.phone){let e=t.payload.phone;fo.update(t=>t.filter(t=>t.phone!==e))}t.event===`leads_reloaded`&&Eo()}catch(e){console.warn(`Error procesando evento SSE de empresa:`,e)}},n.onerror=()=>{}}catch(e){console.error(`Error iniciando stream de eventos de empresa:`,e)}}function To(){if(Co){try{Co.close()}catch{}Co=null}}async function Eo(){try{let e=await Q.get(`/api/leads`),t=Array.isArray(e)?e:[];return fo.set(t),t}catch(e){return console.error(`Error cargando prospectos:`,e),[]}}async function Do(e){try{let t=await Q.post(`/api/leads/${encodeURIComponent(e)}/toggle-pause`,{});return fo.update(n=>n.map(n=>n.phone===e?{...n,humanPaused:t.humanPaused}:n)),go.update(n=>n&&n.phone===e?{...n,humanPaused:t.humanPaused}:n),$(t.humanPaused?`Bot pausado para este cliente`:`Bot reactivado para este cliente`,`info`),{success:!0,humanPaused:t.humanPaused}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}function Oo(e){po.set(e),mo.set(!0)}async function ko(e){go.set(e),vo.set([]),_o.set(!0),await No(e.phone,!0),jo(e.phone)}function Ao(){Mo(),_o.set(!1),go.set(null)}function jo(e){Mo();let t=Bi(fa)||`default`,n=`/api/leads/${encodeURIComponent(e)}/stream?companyId=${encodeURIComponent(t)}`;try{let t=new EventSource(n);xo=t,t.onmessage=t=>{try{let n=JSON.parse(t.data);if(n.type===`connected`){bo.set(!0);return}vo.update(e=>e.some(e=>e.id===n.id||e.timestamp===n.timestamp&&e.body===n.body)?e:[...e,n]),fo.update(t=>t.map(t=>t.phone===e?{...t,lastMessage:n.body||(n.hasMedia?`📎 Archivo adjunto`:t.lastMessage),lastInteraction:new Date().toISOString()}:t))}catch(e){console.warn(`Error procesando evento SSE:`,e)}},t.onerror=()=>{}}catch(e){console.warn(`Error inicializando EventSource:`,e)}So=setInterval(()=>{Bi(_o)&&Bi(go)?.phone===e?No(e,!1):Mo()},3e3)}function Mo(){if(xo){try{xo.close()}catch{}xo=null}So&&=(clearInterval(So),null)}async function No(e,t=!0){t&&yo.set(!0);try{let t=await Q.get(`/api/leads/${encodeURIComponent(e)}/messages`),n=t.messages||[];return vo.update(e=>e.length===0||e.length!==n.length||e[e.length-1]?.id!==n[n.length-1]?.id?n:e),bo.set(!!t.liveFetched),t.leadName&&go.update(e=>e&&{...e,name:t.leadName,tag:t.leadTag,humanPaused:t.humanPaused}),n}catch(e){return t&&(console.error(`Error cargando historial de chat:`,e),$(`Error cargando chat: `+e.message,`error`),vo.set([])),[]}finally{t&&yo.set(!1)}}async function Po(e,t){if(!t||!t.trim())return{success:!1};try{let n=await Q.post(`/api/leads/${encodeURIComponent(e)}/messages`,{message:t.trim()});return n.message&&vo.update(e=>e.some(e=>e.id===n.message.id)?e:[...e,n.message]),fo.update(n=>n.map(n=>n.phone===e?{...n,lastMessage:t.trim(),lastInteraction:new Date().toISOString()}:n)),$(`Mensaje entregado al cliente`,`success`),{success:!0}}catch(e){return $(e.message||`Error al enviar mensaje`,`error`),{success:!1,error:e.message}}}var Fo=X([]),Io=X(!1),Lo=X(null),Ro=X(`create`);function zo(){Lo.set(null),Ro.set(`create`),Io.set(!0)}function Bo(e){Lo.set(e),Ro.set(`edit`),Io.set(!0)}function Vo(e){Lo.set(e),Ro.set(`duplicate`),Io.set(!0)}async function Ho(){try{let e=await Q.get(`/api/schedules`),t=Array.isArray(e)?e:[];return Fo.set(t),t}catch(e){return console.error(`Error cargando envíos programados:`,e),[]}}async function Uo(e){try{return await Q.post(`/api/schedules`,e),$(`Envío programado exitosamente`,`success`),Io.set(!1),Lo.set(null),await Ho(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Wo(e,t){try{return await Q.put(`/api/schedules/${e}`,t),$(`Campaña actualizada y reprogramada con éxito`,`success`),Io.set(!1),Lo.set(null),await Ho(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Go(e){try{let t=await Q.post(`/api/schedules/${e}/send-now`,{});if(t.error)throw Error(t.error);return $(`Campaña iniciada de inmediato`,`success`),await Ho(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Ko(e){try{return await Q.post(`/api/schedules/${e}/cancel`,{}),$(`Campaña cancelada`,`info`),await Ho(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function qo(e){try{return await Q.delete(`/api/schedules/${e}`),Fo.update(t=>t.filter(t=>t.id!==e)),$(`Envío programado eliminado`,`info`),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var Jo=X([]),Yo=X({activeDocuments:0,totalWords:0}),Xo=X(null),Zo=X(!1),Qo=X(!1),$o=X(null);async function es(){try{let e=await Q.get(`/api/library`),t=e.documents||[],n=e.stats||{activeDocuments:0,totalWords:0};return Jo.set(t),Yo.set(n),{docs:t,stats:n}}catch(e){return console.error(`Error cargando biblioteca:`,e),{docs:[],stats:{activeDocuments:0,totalWords:0}}}}async function ts(e,t,n){try{return $(`Documento agregado a la memoria: ${(await Q.post(`/api/library/upload`,{filename:e,data:t,name:n})).document.wordCount} palabras`,`success`),Qo.set(!1),await es(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function ns(e){try{let t=await Q.post(`/api/library/${e}/toggle`,{});return Jo.update(n=>n.map(n=>n.id===e?{...n,active:t.active}:n)),$(t.active?`Documento activado para Gemini`:`Documento pausado`,`info`),await es(),{success:!0,active:t.active}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function rs(e){try{return await Q.delete(`/api/library/${e}`),Jo.update(t=>t.filter(t=>t.id!==e)),$(`Documento eliminado de la memoria`,`info`),await es(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function is(e){try{let t=await Q.get(`/api/library/${e}`);return Xo.set({id:t.document.id,name:t.document.name||t.document.originalFilename,originalFilename:t.document.originalFilename,wordCount:t.document.wordCount,content:t.content||``}),Zo.set(!0),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function as(e,t){try{return await Q.put(`/api/library/${e}`,{content:t}),$(`Contenido del documento actualizado`,`success`),Zo.set(!1),Xo.set(null),await es(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var os=X([]),ss=X([]),cs=X(!1),ls=X(!1),us=X(!1),ds=X(null);async function fs(){let e=Bi(fa);if(e)try{let t=await Q.get(`/api/companies/${e}/team`);return os.set(t.members||[]),ss.set(t.roles||[]),t}catch(e){return console.error(`Error cargando equipo:`,e),{members:[],roles:[]}}}async function ps(e){let t=Bi(fa);try{return await Q.post(`/api/companies/${t}/team/members`,e),$(`Colaborador ${e.fullName} agregado con éxito`,`success`),cs.set(!1),await fs(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function ms(e,t){let n=Bi(fa);try{return await Q.put(`/api/companies/${n}/team/members/${e}`,{roleId:t}),$(`Rol de colaborador actualizado`,`success`),ls.set(!1),ds.set(null),await fs(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function hs(e,t){let n=Bi(fa);try{return await Q.delete(`/api/companies/${n}/team/members/${e}`),$(`${t} ha sido eliminado de la empresa`,`info`),await fs(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function gs(e){let t=Bi(fa);try{return await Q.post(`/api/companies/${t}/roles`,e),$(`Rol "${e.name}" creado exitosamente`,`success`),us.set(!1),await fs(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function _s(e,t){let n=Bi(fa);try{return await Q.delete(`/api/companies/${n}/roles/${e}`),$(`Rol "${t}" eliminado correctamente`,`info`),await fs(),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}var vs=X({status:`initializing`,phone:``,qrCode:null,botEnabled:!0,companyName:``,pendingSchedulesCount:0}),ys=X(!1),bs=X(null),xs=null,Ss=!1,Cs=null,ws=new Map,Ts=new Map;async function Es(){let e=Bi(fa);if(e)try{let t=await Q.get(`/api/status?companyId=${encodeURIComponent(e)}&_t=${Date.now()}`);if(t.companyId&&t.companyId!==Bi(fa))return;let n=t.clientInfo?.wid&&t.clientInfo.wid!==`Conectado`?t.clientInfo.wid:``;if(vs.set({status:t.status||`disconnected`,phone:n,qrCode:t.qrCode||null,botEnabled:!!t.botEnabled,companyName:t.companyName||``,pendingSchedulesCount:t.pendingSchedulesCount||0}),n&&da.update(r=>r.map(r=>r.id===e?{...r,phone:n,status:t.status}:r)),t.leadsCount!==void 0){let n=ws.get(e),r=Ts.get(e);n!==void 0&&(t.leadsCount!==n||t.lastLeadUpdate&&t.lastLeadUpdate!==r)&&Eo(),ws.set(e,t.leadsCount),Ts.set(e,t.lastLeadUpdate||0)}t.status===`ready`?Ss&&Bi(ys)&&(Ss=!1,bs.set(`¡Vinculado con éxito! Cerrando ventana en un momento...`),Cs&&clearTimeout(Cs),Cs=setTimeout(()=>{ys.set(!1),bs.set(null),$(`WhatsApp conectado correctamente`,`success`)},1800)):t.status===`qr_ready`&&(Ss=!0,Cs&&=(clearTimeout(Cs),null),bs.set(null))}catch{vs.update(e=>({...e,status:`disconnected`}))}}function Ds(e=3500){Os(),Es(),xs=setInterval(Es,e)}function Os(){xs&&=(clearInterval(xs),null)}async function ks(){try{let e=await Q.post(`/api/bot/toggle`,{});vs.update(t=>({...t,botEnabled:e.botEnabled})),$(e.botEnabled?`Bot activado`:`Bot pausado`,`info`)}catch(e){$(e.message,`error`)}}async function As(e=!1){let t=Bi(fa);try{let n=`/api/bot/restart?companyId=${encodeURIComponent(t)}${e?`&clean=true`:``}`;await Q.post(n,{}),$(e?`Sesión limpiada. Generando nuevo código QR...`:`Reinicio de conexión solicitado. Espera unos segundos.`,`info`),Es()}catch(e){$(e.message,`error`)}}async function js(){let e=Bi(fa);try{await Q.post(`/api/bot/disconnect?companyId=${encodeURIComponent(e)}`,{}),$(`Desvinculando WhatsApp de esta empresa...`,`info`),Es()}catch(e){$(e.message,`error`)}}var Ms=X(null),Ns=X(null),Ps=X(Zi()),Fs=X(new Set),Is=X(!1),Ls=zi([Ms,Ps],([e,t])=>!!(e&&t)),Rs=zi(Ms,e=>!!e?.isSuperadmin),zs=zi(Fs,e=>{let t=e.has(`*`)||e.has(`all`)||e.has(`admin`);return n=>t?!0:e.has(n)});na(()=>{Ws(!1),Is.set(!0)});async function Bs(){if(!Zi())return Us(),!1;try{let e=await Q.get(`/api/auth/me`);Ms.set(e.user),Ns.set(e.membership||null);let t=e.membership?.permissions||[];return Fs.set(new Set(t)),e.user?.isSuperadmin||(Ea(),Bi(sa)===`tab-superadmin`&&sa.set(`tab-rules`)),Is.set(!1),!0}catch{return Us(),!1}}async function Vs(e,t){try{let n=await Q.post(`/api/auth/login`,{identifier:e,password:t});if(!n.token)throw Error(`Respuesta inválida del servidor`);Qi(n.token),Ps.set(n.token),Ms.set(n.user),Ns.set(n.membership||null),n.activeCompany?.id&&ea(n.activeCompany.id);let r=n.membership?.permissions||[];return Fs.set(new Set(r)),n.user?.isSuperadmin||(Ea(),Bi(sa)===`tab-superadmin`&&sa.set(`tab-rules`)),Is.set(!1),$(`¡Bienvenido de vuelta, ${n.user.fullName||n.user.username}!`,`success`),{success:!0}}catch(e){return{success:!1,error:e.message}}}async function Hs(e,t,n,r){try{let i=await Q.post(`/api/auth/register`,{fullName:(e||``).trim(),email:(t||``).trim(),password:n,companyName:r?r.trim():void 0});if(!i.token)throw Error(`Respuesta inválida del servidor`);Qi(i.token),Ps.set(i.token),Ms.set(i.user),Ns.set(i.membership||null);let a=i.activeCompanyId||i.company?.id;a&&ea(a);let o=i.membership?.permissions||[`*`];return Fs.set(new Set(o)),Ea(),Bi(sa)===`tab-superadmin`&&sa.set(`tab-rules`),Is.set(!1),$(`¡Cuenta creada con éxito! Bienvenido, ${i.user.fullName}!`,`success`),{success:!0,activeCompanyId:a}}catch(e){return{success:!1,error:e.message}}}function Us(){Qi(null),Ps.set(null),Ms.set(null),Ns.set(null),Fs.set(new Set),Ea(),ha(),Wa.set([]),fo.set([]),po.set(null),go.set(null),vo.set([]),ao.set([]),Za.set([]),Fo.set([]),Jo.set([]),Yo.set({activeDocuments:0,totalWords:0}),os.set([]),ss.set([]),vs.set({status:`disconnected`,phone:``,qrCode:null,botEnabled:!1,companyName:``,pendingSchedulesCount:0}),Os(),To(),sa.set(`tab-rules`),Is.set(!0)}function Ws(e=!0){Us(),e&&$(`Sesión cerrada correctamente`,`info`)}async function Gs(e,t){try{return await Q.post(`/api/auth/change-password`,{currentPassword:e,newPassword:t}),$(`Contraseña actualizada exitosamente`,`success`),{success:!0}}catch(e){return{success:!1,error:e.message}}}var Ks=X({businessName:``,geminiEnabled:!0,simulateTyping:!0,typingDelaySeconds:2,ignoreGroups:!0,fallbackMessage:``,geminiApiKeyMasked:null,isCustomGeminiKey:!1,geminiModel:`gemini-3.5-flash-lite`}),qs=X({configured:!1,isCustom:!1,maskedKey:null,model:`gemini-3.5-flash-lite`,hasGlobalKey:!1,supportsAudio:!0});async function Js(){try{let e=await Q.get(`/api/settings`);Ks.set({businessName:e.businessName||``,geminiEnabled:e.geminiEnabled??!0,simulateTyping:e.simulateTyping??!0,typingDelaySeconds:e.typingDelaySeconds||2,ignoreGroups:e.ignoreGroups??!0,fallbackMessage:e.fallbackMessage||``,geminiApiKeyMasked:e.geminiApiKeyMasked||null,isCustomGeminiKey:e.isCustomGeminiKey??!1,geminiModel:e.geminiModel||`gemini-3.5-flash-lite`});try{let e=await Q.get(`/api/gemini/status`);qs.set(e)}catch{}return e}catch(e){return console.error(`Error cargando configuración:`,e),null}}async function Ys(e){try{let t=await Q.post(`/api/settings`,e);Ks.update(e=>({...e,...t}));try{let e=await Q.get(`/api/gemini/status`);qs.set(e)}catch{}return $(`Configuración guardada correctamente`,`success`),{success:!0}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Xs(e,t){try{let n=await Q.post(`/api/gemini/config`,{apiKey:e,model:t});return qs.set({configured:n.configured,isCustom:n.isCustom,maskedKey:n.maskedKey,model:n.model,hasGlobalKey:n.hasGlobalKey,supportsAudio:!0}),Ks.update(e=>({...e,geminiApiKeyMasked:n.maskedKey,isCustomGeminiKey:n.isCustom,geminiModel:n.model})),$(`Configuración de Gemini actualizada para esta empresa`,`success`),{success:!0,data:n}}catch(e){return $(e.message,`error`),{success:!1,error:e.message}}}async function Zs(e,t){try{return await Q.post(`/api/gemini/test-key`,{apiKey:e,model:t})}catch(e){throw e}}var Qs=U(`<option>(Sin empresas vinculadas)</option>`),$s=U(`<option> </option>`),ec=U(`<button type="button" title="Vincular WhatsApp de esta empresa o ver Código QR"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span><!></span></button>`),tc=U(`<div class="bot-toggle-wrapper svelte-4b3o1e"><label class="switch svelte-4b3o1e"><input type="checkbox" class="svelte-4b3o1e"/> <span class="slider round svelte-4b3o1e"></span></label> <span class="toggle-label svelte-4b3o1e"> </span></div>`),nc=U(`<button type="button" class="btn btn-outline-sm" title="Reiniciar conexión con WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> Reconectar</button>`),rc=U(`<button type="button" title="Abrir Panel de Superusuario Global (ROOT)"><span class="header-crown-icon svelte-4b3o1e">👑</span> <span class="header-superadmin-text">Panel Superadmin</span></button>`),ic=U(`<div class="user-header-profile"><div class="user-badge" title="Usuario activo"><span class="user-avatar"> </span> <div class="user-info-text"><span class="user-name"> </span> <span class="user-role-pill"> </span></div></div> <button type="button" class="btn btn-outline-sm btn-icon-only" title="Cambiar mi contraseña"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></button> <button type="button" class="btn btn-outline-sm btn-icon" title="Cerrar Sesión"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> <span>Salir</span></button></div>`),ac=U(`<header class="app-header"><div class="header-left"><div class="brand-logo"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg> <div class="brand-text"><h1>WhatsApp Sales Bot</h1> <span class="brand-subtitle">Panel de Control & Automatización Modular (Svelte)</span></div></div></div> <div class="header-company-section"><div class="company-badge-icon" title="Empresa Activa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 10h2M6 14h2M6 18h2M10 10h4M10 14h4M10 18h4M16 10h2M16 14h2M16 18h2M9 3h6v4H9z"></path></svg></div> <div class="company-select-container"><span class="company-label">Empresa / Bot:</span> <select class="company-select" aria-label="Seleccionar Empresa"><!></select></div> <button type="button" class="btn btn-outline-sm btn-icon" title="Crear nueva empresa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span>Nueva</span></button> <button type="button" class="btn btn-outline-sm btn-icon-only" title="Configurar empresa actual"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button></div> <div class="header-right"><div><span class="status-dot"></span> <span class="connection-text"><!></span></div> <!> <!> <!> <!> <!></div></header>`);function oc(e,t){Ue(t,!0);let n=()=>Z(fa,`$currentCompanyId`,u),r=()=>Z(da,`$companies`,u),i=()=>Z(vs,`$botStatus`,u),a=()=>Z(zs,`$hasPermission`,u),o=()=>Z(Rs,`$isSuperadmin`,u),s=()=>Z(sa,`$activeTab`,u),c=()=>Z(Ms,`$currentUser`,u),l=()=>Z(Ns,`$userMembership`,u),[u,d]=Ui();async function f(e){let n=e.target.value;await va(n,t.onCompanySwitched)}function p(){ma.set(`create`),pa.set(!0)}function m(){ma.set(`edit`),pa.set(!0)}var h=ac(),g=z(L(h),2),_=z(L(g),2),v=z(L(_),2),y=L(v),b=e=>{var t=Qs();t.value=t.__value=``,W(e,t)},x=e=>{var t=Ir();Xr(cn(t),1,r,e=>e.id,(e,t)=>{var n=$s(),r=R(n),i={};B(()=>{G(r,`${V(t).name??``}${V(t).phone?` (+${V(t).phone})`:V(t).status===`ready`?` (Conectado)`:` (Sin vincular)`}`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),W(e,t)};K(y,e=>{r().length===0?e(b):e(x,-1)}),M(v);var S;_i(v),M(_);var C=z(_,2),w=z(C,2);M(g);var T=z(g,2),E=L(T),D=z(L(E),2),O=L(D),k=e=>{var t=Fr();B(()=>G(t,`Conectado${i().phone?` (+${i().phone})`:``}`)),W(e,t)},A=e=>{W(e,Fr(`Escanear QR Requerido`))},ee=e=>{W(e,Fr(`Autenticado, sincronizando...`))},te=e=>{W(e,Fr(`Iniciando WhatsApp Web...`))},ne=e=>{W(e,Fr(`Desconectado`))};K(O,e=>{i().status===`ready`?e(k):i().status===`qr_ready`?e(A,1):i().status===`authenticated`?e(ee,2):i().status===`initializing`?e(te,3):e(ne,-1)}),M(D),M(E);var re=z(E,2),ie=e=>{var t=ec(),n=z(L(t),2),r=L(n),a=e=>{var t=Fr();B(()=>G(t,`✅ ${i().phone?`+${i().phone}`:`Conectado`}`)),W(e,t)},o=e=>{W(e,Fr(`📱 Escanear Código QR`))},s=e=>{W(e,Fr(`⏳ Generando QR...`))},c=e=>{W(e,Fr(`📱 Vincular WhatsApp`))};K(r,e=>{i().status===`ready`?e(a):i().status===`qr_ready`?e(o,1):i().status===`initializing`?e(s,2):e(c,-1)}),M(n),M(t),B(()=>q(t,1,`btn btn-qr-prominent ${i().status===`ready`?`is-connected`:`needs-scan`}`)),H(`click`,t,()=>ys.set(!0)),W(e,t)},ae=P(()=>a()(`whatsapp:connect`));K(re,e=>{V(ae)&&e(ie)});var oe=z(re,2),se=e=>{var t=tc(),n=L(t),r=L(n);J(r),N(2),M(n);var a=R(z(n,2),!0);M(t),B(()=>{wi(r,i().botEnabled),G(a,i().botEnabled?`Bot Activo`:`Bot Pausado`)}),H(`change`,r,function(...e){ks?.apply(this,e)}),W(e,t)},ce=P(()=>a()(`whatsapp:toggle`));K(oe,e=>{V(ce)&&e(se)});var le=z(oe,2),ue=e=>{var t=nc();H(`click`,t,function(...e){As?.apply(this,e)}),W(e,t)},de=P(()=>a()(`whatsapp:connect`));K(le,e=>{V(de)&&e(ue)});var fe=z(le,2),pe=e=>{var t=rc();B(()=>q(t,1,`btn btn-superadmin-header ${s()===`tab-superadmin`?`active`:``}`,`svelte-4b3o1e`)),H(`click`,t,()=>sa.set(`tab-superadmin`)),W(e,t)};K(fe,e=>{o()&&e(pe)});var me=z(fe,2),he=e=>{var t=ic(),n=L(t),r=L(n),i=R(r,!0),a=z(r,2),s=L(a),u=R(s,!0),d=R(z(s,2),!0);M(a),M(n);var f=z(n,2),p=z(f,2);M(t),B(e=>{G(i,e),G(u,c().fullName||c().username),G(d,l()?.roleName||(o()?`⭐ Superusuario`:`👑 Administrador`))},[()=>(c().fullName||c().username||`U`).charAt(0).toUpperCase()]),H(`click`,f,()=>ca.set(!0)),H(`click`,p,()=>Ws(!0)),W(e,t)};K(me,e=>{c()&&e(he)}),M(T),M(h),B(()=>{v.disabled=r().length===0,S!==(S=n())&&(v.value=(v.__value=S)??``,gi(v,S)),q(E,1,`connection-pill status-${i().status??``}`,`svelte-4b3o1e`)}),H(`change`,v,f),H(`click`,C,p),H(`click`,w,m),W(e,h),We(),d()}Tr([`change`,`click`]),Be();var sc=U(`<span class="nav-section-title superadmin-title svelte-1m85e6v">👑 Sistema Global</span>`),cc=U(`<span class="nav-label superadmin-label svelte-1m85e6v">Panel Superadmin</span> <span class="sidebar-badge superadmin-badge svelte-1m85e6v">ROOT</span>`,1),lc=U(`<span class="collapsed-dot superadmin-dot svelte-1m85e6v" title="Panel Superadmin"></span>`),uc=U(`<div class="nav-section superadmin-nav-group top svelte-1m85e6v"><!> <button type="button" title="Panel de Superusuario (Programador / Admin Global)"><div class="nav-icon-box crown-icon svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" class="svelte-1m85e6v"></polygon></svg></div> <!></button></div>`),dc=U(`<span class="nav-section-title svelte-1m85e6v">Comunicación & Ventas</span>`),fc=U(`<span class="nav-label svelte-1m85e6v">Rutas de Respuesta</span>`),pc=U(`<button type="button" title="Rutas de Respuesta (Flujos de Venta)"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" class="svelte-1m85e6v"></path></svg></div> <!></button>`),mc=U(`<span class="sidebar-badge schedules svelte-1m85e6v"> </span>`),hc=U(`<span class="nav-label svelte-1m85e6v">Programar Envíos</span> <!>`,1),gc=U(`<span class="collapsed-dot schedules svelte-1m85e6v"></span>`),_c=U(`<button type="button" title="Programar Envíos y Difusiones"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><circle cx="12" cy="12" r="10" class="svelte-1m85e6v"></circle><polyline points="12 6 12 12 16 14" class="svelte-1m85e6v"></polyline></svg></div> <!></button>`),vc=U(`<span class="nav-label svelte-1m85e6v">Prospectos & CRM</span>`),yc=U(`<button type="button" title="Prospectos, Contactos &amp; CRM"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" class="svelte-1m85e6v"></path><circle cx="9" cy="7" r="4" class="svelte-1m85e6v"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87" class="svelte-1m85e6v"></path><path d="M16 3.13a4 4 0 0 1 0 7.75" class="svelte-1m85e6v"></path></svg></div> <!></button>`),bc=U(`<span class="nav-section-title svelte-1m85e6v">Pruebas & Operación</span>`),xc=U(`<span class="nav-label svelte-1m85e6v">Simulador en Vivo</span>`),Sc=U(`<button type="button" title="Simulador Interactivo en Vivo"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" class="svelte-1m85e6v"></rect><line x1="12" y1="18" x2="12.01" y2="18" class="svelte-1m85e6v"></line></svg></div> <!></button>`),Cc=U(`<span class="nav-label svelte-1m85e6v">Envío de Prueba</span>`),wc=U(`<button type="button" title="Envío Rápido de Prueba"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><line x1="22" y1="2" x2="11" y2="13" class="svelte-1m85e6v"></line><polygon points="22 2 15 22 11 13 2 9 22 2" class="svelte-1m85e6v"></polygon></svg></div> <!></button>`),Tc=U(`<span class="nav-section-title svelte-1m85e6v">Inteligencia Artificial</span>`),Ec=U(`<span class="sidebar-badge library svelte-1m85e6v"> </span>`),Dc=U(`<span class="nav-label svelte-1m85e6v">Biblioteca IA</span> <!>`,1),Oc=U(`<span class="collapsed-dot library svelte-1m85e6v"></span>`),kc=U(`<button type="button" title="Biblioteca de Conocimiento de la IA"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" class="svelte-1m85e6v"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" class="svelte-1m85e6v"></path></svg></div> <!></button>`),Ac=U(`<span class="nav-section-title svelte-1m85e6v">Administración</span>`),jc=U(`<span class="nav-label svelte-1m85e6v">Configuración</span>`),Mc=U(`<button type="button" title="Configuración General del Bot"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><circle cx="12" cy="12" r="3" class="svelte-1m85e6v"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" class="svelte-1m85e6v"></path></svg></div> <!></button>`),Nc=U(`<span class="sidebar-badge team svelte-1m85e6v"> </span>`),Pc=U(`<span class="nav-label svelte-1m85e6v">Equipo & Roles</span> <!>`,1),Fc=U(`<span class="collapsed-dot team svelte-1m85e6v"></span>`),Ic=U(`<button type="button" title="Equipo de Trabajo y Roles"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" class="svelte-1m85e6v"></path></svg></div> <!></button>`),Lc=U(`<button type="button" class="mini-qr-link svelte-1m85e6v">Escanear QR</button>`),Rc=U(`<div class="bot-mini-status svelte-1m85e6v"><div></div> <div class="status-mini-text svelte-1m85e6v"><span class="status-title svelte-1m85e6v"> </span> <!></div></div>`),zc=U(`<span class="svelte-1m85e6v">Contraer menú</span>`),Bc=U(`<aside aria-label="Navegación principal"><div class="sidebar-scroll-area svelte-1m85e6v"><!> <div class="nav-section svelte-1m85e6v"><!> <!> <!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!> <!></div></div> <div class="sidebar-footer svelte-1m85e6v"><!> <button type="button" class="sidebar-toggle-btn svelte-1m85e6v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6" class="svelte-1m85e6v"></polyline></svg> <!></button></div></aside>`);function Vc(e,t){Ue(t,!1);let n=()=>Z(ua,`$isSidebarCollapsed`,l),r=()=>Z(Rs,`$isSuperadmin`,l),i=()=>Z(sa,`$activeTab`,l),a=()=>Z(zs,`$hasPermission`,l),o=()=>Z(vs,`$botStatus`,l),s=()=>Z(Yo,`$libraryStats`,l),c=()=>Z(os,`$teamMembers`,l),[l,u]=Ui();function d(e){sa.set(e)}function f(){ua.update(e=>!e)}Pi();var p=Bc(),m=L(p),h=L(m),g=e=>{var t=uc(),r=L(t),a=e=>{W(e,sc())};K(r,e=>{n()||e(a)});var o=z(r,2),s=z(L(o),2),c=e=>{var t=cc();N(2),W(e,t)},l=e=>{W(e,lc())};K(s,e=>{n()?e(l,-1):e(c)}),M(o),M(t),B(()=>q(o,1,`sidebar-nav-item superadmin-btn ${i()===`tab-superadmin`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,o,()=>d(`tab-superadmin`)),W(e,t)};K(h,e=>{r()&&e(g)});var _=z(h,2),v=L(_),y=e=>{W(e,dc())};K(v,e=>{n()||e(y)});var b=z(v,2),x=e=>{var t=pc(),r=z(L(t),2),a=e=>{W(e,fc())};K(r,e=>{n()||e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-rules`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-rules`)),W(e,t)},S=P(()=>a()(`rules:view`));K(b,e=>{V(S)&&e(x)});var C=z(b,2),w=e=>{var t=_c(),r=z(L(t),2),a=e=>{var t=hc(),n=z(cn(t),2),r=e=>{var t=mc(),n=R(t,!0);B(()=>G(n,o().pendingSchedulesCount)),W(e,t)};K(n,e=>{(o().pendingSchedulesCount||0)>0&&e(r)}),W(e,t)},s=e=>{var t=gc();B(()=>Ti(t,`title`,`${o().pendingSchedulesCount} envíos pendientes`)),W(e,t)};K(r,e=>{n()?(o().pendingSchedulesCount||0)>0&&e(s,1):e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-scheduler`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-scheduler`)),W(e,t)},T=P(()=>a()(`schedules:view`));K(C,e=>{V(T)&&e(w)});var E=z(C,2),D=e=>{var t=yc(),r=z(L(t),2),a=e=>{W(e,vc())};K(r,e=>{n()||e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-leads`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-leads`)),W(e,t)},O=P(()=>a()(`leads:view`));K(E,e=>{V(O)&&e(D)}),M(_);var k=z(_,2),A=L(k),ee=e=>{W(e,bc())};K(A,e=>{n()||e(ee)});var te=z(A,2),ne=e=>{var t=Sc(),r=z(L(t),2),a=e=>{W(e,xc())};K(r,e=>{n()||e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-simulator`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-simulator`)),W(e,t)},re=P(()=>a()(`simulator:use`));K(te,e=>{V(re)&&e(ne)});var ie=z(te,2),ae=e=>{var t=wc(),r=z(L(t),2),a=e=>{W(e,Cc())};K(r,e=>{n()||e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-quick-send`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-quick-send`)),W(e,t)},oe=P(()=>a()(`quick_send:use`));K(ie,e=>{V(oe)&&e(ae)}),M(k);var se=z(k,2),ce=L(se),le=e=>{W(e,Tc())};K(ce,e=>{n()||e(le)});var ue=z(ce,2),de=e=>{var t=kc(),r=z(L(t),2),a=e=>{var t=Dc(),n=z(cn(t),2),r=e=>{var t=Ec(),n=R(t,!0);B(()=>G(n,s().activeDocuments)),W(e,t)};K(n,e=>{(s().activeDocuments||0)>0&&e(r)}),W(e,t)},o=e=>{var t=Oc();B(()=>Ti(t,`title`,`${s().activeDocuments} docs activos`)),W(e,t)};K(r,e=>{n()?(s().activeDocuments||0)>0&&e(o,1):e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-library`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-library`)),W(e,t)},fe=P(()=>a()(`library:view`));K(ue,e=>{V(fe)&&e(de)}),M(se);var pe=z(se,2),me=L(pe),he=e=>{W(e,Ac())};K(me,e=>{n()||e(he)});var ge=z(me,2),_e=e=>{var t=Mc(),r=z(L(t),2),a=e=>{W(e,jc())};K(r,e=>{n()||e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-settings`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-settings`)),W(e,t)},j=P(()=>a()(`settings:view`));K(ge,e=>{V(j)&&e(_e)});var ve=z(ge,2),ye=e=>{var t=Ic(),r=z(L(t),2),a=e=>{var t=Pc(),n=z(cn(t),2),r=e=>{var t=Nc(),n=R(t,!0);B(()=>G(n,c().length)),W(e,t)};K(n,e=>{(c().length||0)>0&&e(r)}),W(e,t)},o=e=>{var t=Fc();B(()=>Ti(t,`title`,`${c().length} colaboradores`)),W(e,t)};K(r,e=>{n()?(c().length||0)>0&&e(o,1):e(a)}),M(t),B(()=>q(t,1,`sidebar-nav-item ${i()===`tab-team`?`active`:``}`,`svelte-1m85e6v`)),H(`click`,t,()=>d(`tab-team`)),W(e,t)},be=P(()=>a()(`team:view`));K(ve,e=>{V(be)&&e(ye)}),M(pe),M(m);var xe=z(m,2),Se=L(xe),Ce=e=>{var t=Rc(),n=L(t),r=z(n,2),i=L(r),a=R(i,!0),s=z(i,2),c=e=>{var t=Lc();H(`click`,t,()=>ys.set(!0)),W(e,t)};K(s,e=>{o().status===`qr_ready`&&e(c)}),M(r),M(t),B(()=>{q(n,1,`status-indicator-dot ${o().status===`ready`?`ready`:o().status===`qr_ready`?`qr`:`idle`}`,`svelte-1m85e6v`),G(a,o().status===`ready`?`WhatsApp Conectado`:o().status===`qr_ready`?`Esperando Escaneo QR`:`WhatsApp Desconectado`)}),W(e,t)};K(Se,e=>{n()||e(Ce)});var we=z(Se,2),Te=L(we),Ee=z(Te,2),De=e=>{W(e,zc())};K(Ee,e=>{n()||e(De)}),M(we),M(xe),M(p),B(()=>{q(p,1,`sidebar-wrapper ${n()?`collapsed`:``}`,`svelte-1m85e6v`),Ti(we,`title`,n()?`Expandir barra lateral`:`Contraer barra lateral`),Ti(we,`aria-label`,n()?`Expandir barra lateral`:`Contraer barra lateral`),q(Te,0,`toggle-icon ${n()?`collapsed`:``}`,`svelte-1m85e6v`)}),H(`click`,we,f),W(e,p),We(),u()}Tr([`click`]);var Hc=U(`<div><span class="toast-icon svelte-1cpgbq5"><!></span> <span class="toast-message svelte-1cpgbq5"> </span> <button type="button" class="toast-close svelte-1cpgbq5">&times;</button></div>`),Uc=U(`<div class="toast-container svelte-1cpgbq5"></div>`);function Wc(e,t){Ue(t,!1);let n=()=>Z(ia,`$toasts`,r),[r,i]=Ui();Pi();var a=Uc();Xr(a,5,n,e=>e.id,(e,t)=>{var n=Hc(),r=L(n),i=L(r),a=e=>{W(e,Fr(`✓`))},o=e=>{W(e,Fr(`✕`))},s=e=>{W(e,Fr(`⚠️`))},c=e=>{W(e,Fr(`ℹ`))};K(i,e=>{V(t).type===`success`?e(a):V(t).type===`error`?e(o,1):V(t).type===`warning`?e(s,2):e(c,-1)}),M(r);var l=z(r,2),u=R(l,!0),d=z(l,2);M(n),B(()=>{q(n,1,`toast toast-${V(t).type??``}`,`svelte-1cpgbq5`),G(u,V(t).message)}),H(`click`,n,()=>oa(V(t).id)),H(`click`,d,()=>oa(V(t).id)),W(e,n)}),M(a),W(e,a),We(),i()}Tr([`click`]);var Gc=U(`<div class="auth-alert error"> </div>`),Kc=Pr(`<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`,1),qc=Pr(`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`,1),Jc=Pr(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`),Yc=U(`<div class="form-group auth-field"><label for="login-identifier" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> USUARIO O CORREO ELECTRÓNICO</label> <div class="auth-input-wrapper"><input type="text" id="login-identifier" class="auth-input" placeholder="ej. oscar o admin@admin.com" required="" autocomplete="username"/></div></div> <div class="form-group auth-field"><label for="login-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> CONTRASEÑA</label> <div class="auth-input-wrapper password-wrapper"><input id="login-password" class="auth-input" placeholder="Ingresa tu contraseña" required="" autocomplete="current-password"/> <button type="button" class="btn-eye-toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!></svg></button></div></div> <button type="submit" class="btn btn-auth-submit"><span> </span> <!></button> <div class="auth-switch-prompt svelte-6rive1">¿No tienes una cuenta aún? <button type="button" class="auth-link-button svelte-6rive1">Regístrate aquí</button></div>`,1),Xc=U(`<div class="form-group auth-field"><label for="reg-fullname" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> NOMBRE COMPLETO</label> <div class="auth-input-wrapper"><input type="text" id="reg-fullname" class="auth-input" placeholder="Ej. Oscar Rodríguez" required="" autocomplete="name"/></div></div> <div class="form-group auth-field"><label for="reg-email" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> CORREO ELECTRÓNICO</label> <div class="auth-input-wrapper"><input type="email" id="reg-email" class="auth-input" placeholder="ejemplo@negocio.com" required="" autocomplete="email"/></div></div> <div class="form-group auth-field"><label for="reg-company" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> NOMBRE DE TU EMPRESA / NEGOCIO</label> <div class="auth-input-wrapper"><input type="text" id="reg-company" class="auth-input" placeholder="Ej. Digital Pass Express (opcional)"/></div></div> <div class="form-group auth-field"><label for="reg-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> CONTRASEÑA (MÍNIMO 6 CARACTERES)</label> <div class="auth-input-wrapper password-wrapper"><input id="reg-password" class="auth-input" placeholder="Crea una contraseña segura" required="" minlength="6" autocomplete="new-password"/> <button type="button" class="btn-eye-toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!></svg></button></div></div> <div class="form-group auth-field"><label for="reg-confirm-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> CONFIRMAR CONTRASEÑA</label> <div class="auth-input-wrapper"><input id="reg-confirm-password" class="auth-input" placeholder="Repite tu contraseña" required="" minlength="6" autocomplete="new-password"/></div></div> <button type="submit" class="btn btn-auth-submit"><span> </span> <!></button> <div class="auth-switch-prompt svelte-6rive1">¿Ya tienes una cuenta? <button type="button" class="auth-link-button svelte-6rive1">Inicia sesión aquí</button></div>`,1),Zc=U(`<div class="auth-modal-overlay"><div class="auth-card"><div class="auth-card-glow"></div> <div class="auth-header"><div class="auth-badge-icon"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg></div> <h2 class="auth-title"> </h2> <p class="auth-subtitle"> </p> <div class="auth-mode-tabs svelte-6rive1"><button type="button">🔑 Iniciar Sesión</button> <button type="button">✨ Registrarse</button></div></div> <form class="auth-form-body"><!> <!> <div class="auth-footer-note"><span>🛡️ Acceso seguro con roles y base de datos PostgreSQL</span></div></form></div></div>`);function Qc(e,t){Ue(t,!0);let n=()=>Z(Is,`$isAuthModalOpen`,r),[r,i]=Ui(),a=F(`login`),o=F(`oscar`),s=F(``),c=F(!1),l=F(``),u=F(``),d=F(``),f=F(``),p=F(``),m=F(!1),h=F(!1),g=F(``);function _(e){I(a,e,!0),I(g,``)}async function v(e){if(e.preventDefault(),I(g,``),V(a)===`login`){if(!V(o).trim()||!V(s)){I(g,`Por favor ingresa tu usuario o correo y tu contraseña.`);return}I(h,!0);let e=await Vs(V(o).trim(),V(s));I(h,!1),e.success||I(g,e.error||`Credenciales incorrectas`,!0)}else{if(!V(l).trim()||!V(u).trim()||!V(f)){I(g,`Nombre, correo electrónico y contraseña son obligatorios.`);return}if(V(f).length<6){I(g,`La contraseña debe tener al menos 6 caracteres.`);return}if(V(f)!==V(p)){I(g,`Las contraseñas no coinciden.`);return}I(h,!0);let e=await Hs(V(l).trim(),V(u).trim(),V(f),V(d).trim()||void 0);I(h,!1),e.success||I(g,e.error||`Error al crear la cuenta.`,!0)}}var y=Ir(),b=cn(y),x=e=>{var t=Zc(),n=L(t),r=z(L(n),2),i=z(L(r),2),y=R(i,!0),b=z(i,2),x=R(b,!0),S=z(b,2),C=L(S),w=z(C,2);M(S),M(r);var T=z(r,2),E=L(T),D=e=>{var t=Gc(),n=R(t,!0);B(()=>G(n,V(g))),W(e,t)};K(E,e=>{V(g)&&e(D)});var O=z(E,2),k=e=>{var t=Yc(),n=cn(t),r=z(L(n),2),i=L(r);J(i),M(r),M(n);var a=z(n,2),l=z(L(a),2),u=L(l);J(u);var d=z(u,2),f=L(d),p=L(f),m=e=>{var t=Kc();N(),W(e,t)},g=e=>{var t=qc();N(),W(e,t)};K(p,e=>{V(c)?e(m):e(g,-1)}),M(f),M(d),M(l),M(a);var v=z(a,2),y=L(v),b=R(y,!0),x=z(y,2),S=e=>{W(e,Jc())};K(x,e=>{V(h)||e(S)}),M(v);var C=z(v,2),w=z(L(C));M(C),B(()=>{Ti(u,`type`,V(c)?`text`:`password`),Ti(d,`title`,V(c)?`Ocultar contraseña`:`Ver contraseña`),Ti(d,`aria-label`,V(c)?`Ocultar contraseña`:`Ver contraseña`),v.disabled=V(h),G(b,V(h)?`Iniciando sesión...`:`Ingresar al Panel`)}),Y(i,()=>V(o),e=>I(o,e)),Y(u,()=>V(s),e=>I(s,e)),H(`click`,d,()=>I(c,!V(c))),H(`click`,w,()=>_(`register`)),W(e,t)},A=e=>{var t=Xc(),n=cn(t),r=z(L(n),2),i=L(r);J(i),M(r),M(n);var a=z(n,2),o=z(L(a),2),s=L(o);J(s),M(o),M(a);var c=z(a,2),g=z(L(c),2),v=L(g);J(v),M(g),M(c);var y=z(c,2),b=z(L(y),2),x=L(b);J(x);var S=z(x,2),C=L(S),w=L(C),T=e=>{var t=Kc();N(),W(e,t)},E=e=>{var t=qc();N(),W(e,t)};K(w,e=>{V(m)?e(T):e(E,-1)}),M(C),M(S),M(b),M(y);var D=z(y,2),O=z(L(D),2),k=L(O);J(k),M(O),M(D);var A=z(D,2),ee=L(A),te=R(ee,!0),ne=z(ee,2),re=e=>{W(e,Jc())};K(ne,e=>{V(h)||e(re)}),M(A);var ie=z(A,2),ae=z(L(ie));M(ie),B(()=>{Ti(x,`type`,V(m)?`text`:`password`),Ti(S,`title`,V(m)?`Ocultar contraseña`:`Ver contraseña`),Ti(S,`aria-label`,V(m)?`Ocultar contraseña`:`Ver contraseña`),Ti(k,`type`,V(m)?`text`:`password`),A.disabled=V(h),G(te,V(h)?`Creando cuenta...`:`Crear Cuenta y Comenzar`)}),Y(i,()=>V(l),e=>I(l,e)),Y(s,()=>V(u),e=>I(u,e)),Y(v,()=>V(d),e=>I(d,e)),Y(x,()=>V(f),e=>I(f,e)),H(`click`,S,()=>I(m,!V(m))),Y(k,()=>V(p),e=>I(p,e)),H(`click`,ae,()=>_(`login`)),W(e,t)};K(O,e=>{V(a)===`login`?e(k):e(A,-1)}),N(2),M(T),M(n),M(t),B(()=>{G(y,V(a)===`login`?`WhatsApp Sales Bot Studio`:`Crear Nueva Cuenta`),G(x,V(a)===`login`?`Ingresa tus credenciales para acceder al panel de control`:`Registra tu usuario y crea tu primer entorno empresarial`),q(C,1,`auth-mode-tab ${V(a)===`login`?`active`:``}`,`svelte-6rive1`),q(w,1,`auth-mode-tab ${V(a)===`register`?`active`:``}`,`svelte-6rive1`)}),H(`click`,C,()=>_(`login`)),H(`click`,w,()=>_(`register`)),wr(`submit`,T,v),W(e,t)};K(b,e=>{n()&&e(x)}),W(e,y),We(),i()}Tr([`click`]);var $c=U(`<h3> </h3>`),el=U(`<span class="lead-modal-subtitle"> </span>`),tl=U(`<button type="button" class="btn-close" aria-label="Cerrar">&times;</button>`),nl=U(`<div class="modal-actions"><!></div>`),rl=U(`<div class="modal-overlay"><div class="modal-card"><div class="modal-header"><div><!> <!></div> <!></div> <div class="modal-body-scrollable svelte-19jhfg1"><!></div> <!></div></div>`);function il(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`title`,3,``),i=Gi(t,`subtitle`,3,``),a=Gi(t,`maxWidth`,3,`650px`);function o(e){e.target===e.currentTarget&&t.onClose&&t.onClose()}function s(e){e.key===`Escape`&&t.onClose&&n()&&t.onClose()}var c=Ir();wr(`keydown`,$t,s);var l=cn(c),u=e=>{var n=rl(),s=L(n),c=L(s),l=L(c),u=L(l),f=e=>{var t=$c(),n=R(t,!0);B(()=>G(n,r())),W(e,t)};K(u,e=>{r()&&e(f)});var p=z(u,2),m=e=>{var t=el(),n=R(t,!0);B(()=>G(n,i())),W(e,t)};K(p,e=>{i()&&e(m)}),M(l);var h=z(l,2),g=e=>{var n=tl();H(`click`,n,function(...e){t.onClose?.apply(this,e)}),W(e,n)};K(h,e=>{t.onClose&&e(g)}),M(c);var _=z(c,2);ri(L(_),()=>t.children??d),M(_);var v=z(_,2),y=e=>{var n=nl();ri(L(n),()=>t.actions),M(n),W(e,n)};K(v,e=>{t.actions&&e(y)}),M(s),M(n),B(()=>pi(s,`max-width: ${a()??``};`)),H(`click`,n,o),H(`click`,s,e=>e.stopPropagation()),W(e,n)};K(l,e=>{n()&&e(u)}),W(e,c),We()}Tr([`click`]);var al=U(`<div class="auth-alert error" style="margin-bottom: 14px;"> </div>`),ol=U(`<form class="form-body"><!> <div class="form-group"><label for="pwd-current">Contraseña Actual</label> <input type="password" id="pwd-current" placeholder="Contraseña actual" required=""/></div> <div class="form-group"><label for="pwd-new">Nueva Contraseña</label> <input type="password" id="pwd-new" placeholder="Al menos 6 caracteres" minlength="6" required=""/></div> <div class="form-group"><label for="pwd-confirm">Confirmar Nueva Contraseña</label> <input type="password" id="pwd-confirm" placeholder="Repite la nueva contraseña" minlength="6" required=""/></div> <div class="modal-actions" style="margin-top: 20px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function sl(e,t){Ue(t,!0);let n=()=>Z(ca,`$isChangePasswordModalOpen`,r),[r,i]=Ui(),a=F(``),o=F(``),s=F(``),c=F(``),l=F(!1);function u(){I(a,``),I(o,``),I(s,``),I(c,``),I(l,!1)}function d(){ca.set(!1),u()}async function f(e){if(e.preventDefault(),V(o).length<6){I(c,`La nueva contraseña debe tener al menos 6 caracteres`);return}if(V(o)!==V(s)){I(c,`Las contraseñas no coinciden`);return}I(l,!0),I(c,``);let t=await Gs(V(a),V(o));I(l,!1),t.success?d():I(c,t.error||`Error al cambiar contraseña`,!0)}il(e,{get isOpen(){return n()},title:`🔒 Cambiar Mi Contraseña`,subtitle:`Actualiza tus credenciales de acceso`,maxWidth:`440px`,onClose:d,children:(e,t)=>{var n=ol(),r=L(n),i=e=>{var t=al(),n=R(t,!0);B(()=>G(n,V(c))),W(e,t)};K(r,e=>{V(c)&&e(i)});var u=z(r,2),p=z(L(u),2);J(p),M(u);var m=z(u,2),h=z(L(m),2);J(h),M(m);var g=z(m,2),_=z(L(g),2);J(_),M(g);var v=z(g,2),y=L(v),b=z(y,2),x=R(b,!0);M(v),M(n),B(()=>{b.disabled=V(l),G(x,V(l)?`Actualizando...`:`Actualizar Contraseña`)}),wr(`submit`,n,f),Y(p,()=>V(a),e=>I(a,e)),Y(h,()=>V(o),e=>I(o,e)),Y(_,()=>V(s),e=>I(s,e)),H(`click`,y,d),W(e,n)},$$slots:{default:!0}}),We(),i()}Tr([`click`]);var cl=U(`<button type="button" class="btn btn-primary">⚡ Generar Código QR</button>`),ll=U(`<button type="button" class="btn btn-secondary" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" title="Borra la sesión local y genera un nuevo QR de cero">🗑️ Limpiar y Forzar QR</button>`),ul=U(`<button type="button" class="btn btn-secondary">🔄 Regenerar QR</button> <!>`,1),dl=U(`<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; flex-wrap: wrap;"><div style="display: flex; gap: 8px; flex-wrap: wrap;"><!></div> <button type="button" class="btn btn-secondary">Cerrar</button></div>`),fl=U(`<div class="qr-auto-close-notice svelte-wiz4i4"> </div>`),pl=U(`<div class="qr-view-box"><div class="qr-connected-card"><div class="qr-connected-icon">✅</div> <h4>¡WhatsApp Vinculado con Éxito!</h4> <p> </p> <div class="qr-phone-box"><span>Número vinculado:</span> <strong> </strong></div> <!> <div style="margin-top: 18px;"><button type="button" class="btn btn-outline-sm btn-disconnect svelte-wiz4i4">Desvincular y cambiar de número</button></div></div></div>`),ml=U(`<div class="qr-view-box"><div class="qr-body"><div class="qr-image-wrapper"><img alt="Código QR de WhatsApp" class="qr-image-img svelte-wiz4i4"/></div> <div class="qr-steps"><div class="step-item"><span class="step-num">1</span> <span>Abre <strong>WhatsApp</strong> en el celular de esta empresa.</span></div> <div class="step-item"><span class="step-num">2</span> <span>Toca <strong>Menú (⋮)</strong> y selecciona <strong>Dispositivos vinculados</strong>.</span></div> <div class="step-item"><span class="step-num">3</span> <span>Presiona <strong>Vincular un dispositivo</strong> y apunta tu cámara aquí.</span></div></div></div></div>`),hl=U(`<div class="qr-view-box"><div class="qr-loading-box"><div class="spinner"></div> <h4>Sincronizando con WhatsApp...</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;"> </p> <div style="margin-top: 16px;"><button type="button" class="btn-clean-link svelte-wiz4i4">¿El teléfono se desvinculó o no avanza? Limpiar y forzar nuevo QR</button></div></div></div>`),gl=U(`<div class="qr-view-box"><div class="qr-loading-box"><div style="font-size: 42px; margin-bottom: 12px;">📱</div> <h4>WhatsApp no está vinculado</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5;"> </p> <div style="margin-top: 20px;"><button type="button" class="btn btn-primary">⚡ Generar Código QR</button></div></div></div>`),_l=U(`<div class="qr-view-box"><div class="qr-loading-box"><div class="spinner"></div> <h4>Generando Código QR...</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;"> </p> <div style="margin-top: 16px;"><button type="button" class="btn-clean-link svelte-wiz4i4">¿No aparece el QR o se desvinculó tu teléfono? Limpiar y forzar nuevo QR</button></div></div></div>`),vl=U(`<div class="qr-modal-body svelte-wiz4i4"><!></div>`);function yl(e,t){Ue(t,!0);let n=()=>Z(ys,`$isQrModalOpen`,o),r=()=>Z(ga,`$activeCompany`,o),i=()=>Z(vs,`$botStatus`,o),a=()=>Z(bs,`$autoCloseNotice`,o),[o,s]=Ui();bn(()=>{n()&&Es()});function c(){ys.set(!1)}async function l(){confirm(`¿Estás seguro de desvincular el WhatsApp de esta empresa? Dejará de responder mensajes hasta que vuelvas a escanear un QR.`)&&await js()}async function u(){confirm(`¿Deseas limpiar las credenciales locales anteriores y forzar la generación de un nuevo código QR limpio?`)&&await As(!0)}{let t=e=>{var t=dl(),n=L(t),r=L(n),a=e=>{var t=cl();H(`click`,t,()=>As(!1)),W(e,t)},o=e=>{var t=ul(),n=cn(t),r=z(n,2),a=e=>{var t=ll();H(`click`,t,u),W(e,t)};K(r,e=>{i().status!==`ready`&&e(a)}),H(`click`,n,()=>As(!1)),W(e,t)};K(r,e=>{i().status===`disconnected`?e(a):e(o,-1)}),M(n);var s=z(n,2);M(t),H(`click`,s,c),W(e,t)},o=P(()=>r()?.name||`esta empresa`);il(e,{get isOpen(){return n()},title:`Vincular WhatsApp`,get subtitle(){return`Conecta el número de teléfono exclusivo para ${V(o)??``}`},maxWidth:`540px`,onClose:c,actions:t,children:(e,t)=>{var n=vl(),o=L(n),s=e=>{var t=pl(),n=L(t),o=z(L(n),4),s=R(o),c=z(o,2),u=R(z(L(c),2));M(c);var d=z(c,2),f=e=>{var t=fl(),n=R(t,!0);B(()=>G(n,a())),W(e,t)};K(d,e=>{a()&&e(f)});var p=R(z(d,2));M(n),M(t),B(()=>{G(s,`El bot de "${(r()?.name||`esta empresa`)??``}" ya está conectado y listo para atender mensajes y notas de voz.`),G(u,`+${(i().phone||r()?.phone||`Conectado`)??``}`)}),H(`click`,p,l),W(e,t)},c=e=>{var t=ml(),n=L(t),r=R(L(n));N(2),M(n),M(t),B(()=>Ti(r,`src`,i().qrCode)),W(e,t)},d=e=>{var t=hl(),n=L(t),i=z(L(n),4),a=R(i),o=R(z(i,2));M(n),M(t),B(()=>G(a,`Sesión detectada. Sincronizando chats y preparando el bot para "${(r()?.name||`esta empresa`)??``}".`)),H(`click`,o,u),W(e,t)},f=e=>{var t=gl(),n=L(t),i=z(L(n),4),a=R(i),o=R(z(i,2));M(n),M(t),B(()=>G(a,`El bot de WhatsApp para "${(r()?.name||`esta empresa`)??``}" no está vinculado. Haz clic en el botón de abajo para generar un código QR y conectar tu teléfono móvil.`)),H(`click`,o,()=>As(!1)),W(e,t)},p=e=>{var t=_l(),n=L(t),i=z(L(n),4),a=R(i),o=R(z(i,2));M(n),M(t),B(()=>G(a,`Iniciando sesión aislada de WhatsApp Web para "${(r()?.name||`esta empresa`)??``}". Por favor espera unos segundos.`)),H(`click`,o,u),W(e,t)};K(o,e=>{i().status===`ready`?e(s):i().status===`qr_ready`&&i().qrCode?e(c,1):i().status===`authenticated`?e(d,2):i().status===`disconnected`?e(f,3):e(p,-1)}),M(n),W(e,n)},$$slots:{actions:!0,default:!0}})}We(),s()}Tr([`click`]);var bl=U(`<div class="danger-zone" style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(244, 63, 94, 0.2);"><button type="button" class="btn btn-outline-sm btn-delete-company svelte-w4dgz8">🗑️ Eliminar esta Empresa</button></div>`),xl=U(`<div class="company-edit-details svelte-w4dgz8"><div class="detail-row svelte-w4dgz8"><span>Estado del WhatsApp:</span> <strong> </strong></div> <div class="detail-row svelte-w4dgz8"><span>Número Vinculado:</span> <strong> </strong></div></div> <div class="company-action-buttons svelte-w4dgz8"><button type="button" class="btn btn-outline-sm">📱 Ver / Cambiar QR de WhatsApp</button> <button type="button" class="btn btn-outline-sm">🔄 Reiniciar Bot de esta Empresa</button></div> <!>`,1),Sl=U(`<form class="form-body"><div class="form-group"><label for="company-name-input">Nombre de la Empresa o Marca</label> <input type="text" id="company-name-input" placeholder="Ej: Digital Pass Express" required=""/></div> <!> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function Cl(e,t){Ue(t,!0);let n=()=>Z(pa,`$isCompanyModalOpen`,s),r=()=>Z(ma,`$companyModalMode`,s),i=()=>Z(ga,`$activeCompany`,s),a=()=>Z(fa,`$currentCompanyId`,s),o=()=>Z(da,`$companies`,s),[s,c]=Ui(),l=F(``),u=F(!1);bn(()=>{n()&&(r()===`edit`&&i()?I(l,i().name||``,!0):I(l,``))});function d(){pa.set(!1)}async function f(e){e.preventDefault(),V(l).trim()&&(I(u,!0),r()===`create`?(await ya({name:V(l).trim()})).success&&ys.set(!0):await ba(a(),{name:V(l).trim()}),I(u,!1))}async function p(){if(o().length<=1){alert(`No puedes eliminar la única empresa activa`);return}let e=i()?.name||`esta empresa`;confirm(`¿Estás SEGURO de eliminar la empresa "${e}"?\nSe borrarán todas sus rutas, biblioteca, prospectos y se cerrará su sesión de WhatsApp.`)&&await xa(a())}{let t=P(()=>r()===`create`?`➕ Nueva Empresa / Bot`:`⚙️ Gestionar: ${i()?.name||`Empresa`}`),a=P(()=>r()===`create`?`Crea un nuevo bot con número de WhatsApp y datos aislados`:`Configura los detalles de esta empresa`);il(e,{get isOpen(){return n()},get title(){return V(t)},get subtitle(){return V(a)},maxWidth:`500px`,onClose:d,children:(e,t)=>{var n=Sl(),a=L(n),s=z(L(a),2);J(s),M(a);var c=z(a,2),m=e=>{var t=xl(),n=cn(t),r=L(n),a=R(z(L(r),2),!0);M(r);var s=z(r,2),c=R(z(L(s),2),!0);M(s),M(n);var l=z(n,2),u=L(l),f=z(u,2);M(l);var m=z(l,2),h=e=>{var t=bl();H(`click`,R(t),p),W(e,t)};K(m,e=>{o().length>1&&e(h)}),B(()=>{G(a,i()?.status===`ready`?`✅ Conectado`:`⏳ Pendiente / Desconectado`),G(c,i()?.phone?`+${i().phone}`:`Sin vincular`)}),H(`click`,u,()=>{d(),ys.set(!0)}),H(`click`,f,function(...e){As?.apply(this,e)}),W(e,t)};K(c,e=>{r()===`edit`&&e(m)});var h=z(c,2),g=L(h),_=z(g,2),v=R(_,!0);M(h),M(n),B(()=>{_.disabled=V(u),G(v,V(u)?`Guardando...`:r()===`create`?`Crear Empresa`:`Guardar Cambios`)}),wr(`submit`,n,f),Y(s,()=>V(l),e=>I(l,e)),H(`click`,g,d),W(e,n)},$$slots:{default:!0}})}We(),c()}Tr([`click`]);function wl(e,t=1){if(!e||e===0)return`0 B`;let n=1024,r=t<0?0:t,i=[`B`,`KB`,`MB`,`GB`,`TB`],a=Math.floor(Math.log(e)/Math.log(n));return parseFloat((e/n**a).toFixed(r))+` `+i[a]}function Tl(e,t={}){if(!e)return`-`;let n={dateStyle:`short`,timeStyle:`short`};try{return new Date(e).toLocaleString(`es-CO`,{...n,...t})}catch{return e}}function El(e){return new Promise((t,n)=>{let r=new FileReader;r.onload=()=>{let e=r.result.split(`,`)[1];t(e)},r.onerror=e=>n(e),r.readAsDataURL(e)})}var Dl=U(`<div class="dropzone-spinner svelte-qozupf"></div> <p class="dropzone-text">Subiendo archivo al servidor...</p>`,1),Ol=U(`<div class="dropzone-icon svelte-qozupf"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div> <p class="dropzone-title svelte-qozupf"> </p> <span class="dropzone-sub svelte-qozupf"> </span>`,1),kl=U(`<div><input type="file" style="display: none;"/> <!></div>`),Al=U(`<img class="preview-thumbnail svelte-qozupf"/>`),jl=U(`<span class="file-type-icon svelte-qozupf">📄</span>`),Ml=U(`<span class="file-type-icon svelte-qozupf">🎵</span>`),Nl=U(`<span class="file-type-icon svelte-qozupf">📁</span>`),Pl=U(`<div class="file-preview-card svelte-qozupf"><div class="file-preview-left svelte-qozupf"><!> <div class="file-preview-info svelte-qozupf"><strong class="file-preview-name svelte-qozupf"> </strong> <span class="file-preview-size svelte-qozupf"> </span></div></div> <button type="button" class="btn-remove-media svelte-qozupf" title="Quitar archivo">&times;</button></div>`),Fl=U(`<div class="dropzone-container svelte-qozupf"><!></div>`);function Il(e,t){Ue(t,!0);let n=Gi(t,`category`,3,`rules`),r=Gi(t,`media`,3,null),i=Gi(t,`label`,3,`Arrastra una foto, catálogo en PDF o audio aquí`),a=Gi(t,`sublabel`,3,`o haz clic para explorar en tu dispositivo`),o=Gi(t,`accept`,3,`image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*`),s=F(!1),c=F(!1),l=F(void 0);function u(e){e.preventDefault(),I(s,!0)}function d(e){e.preventDefault(),I(s,!1)}function f(e){e.preventDefault(),I(s,!1),e.dataTransfer.files&&e.dataTransfer.files.length>0&&m(e.dataTransfer.files[0])}function p(e){e.target.files&&e.target.files.length>0&&m(e.target.files[0])}async function m(e){I(c,!0);try{let r=await Q.upload(e,n()),i=r?.file||(r?.url?r:null);i&&(t.onMediaChange?.(i),$(`Archivo "${e.name}" cargado con éxito`,`success`))}catch(e){$(`Error al subir archivo: ${e.message}`,`error`)}finally{I(c,!1),V(l)&&(V(l).value=``)}}function h(e){e.stopPropagation(),t.onMediaChange?.(null)}var g=Fl(),_=L(g),v=e=>{var t=kl(),n=L(t);Ni(n,e=>I(l,e),()=>V(l));var r=z(n,2),m=e=>{var t=Dl();N(2),W(e,t)},h=e=>{var t=Ol(),n=z(cn(t),2),r=R(n,!0),o=R(z(n,2),!0);B(()=>{G(r,i()),G(o,a())}),W(e,t)};K(r,e=>{V(c)?e(m):e(h,-1)}),M(t),B(()=>{q(t,1,`file-dropzone ${V(s)?`dragover`:``} ${V(c)?`uploading`:``}`,`svelte-qozupf`),Ti(n,`accept`,o())}),wr(`dragover`,t,u),wr(`dragleave`,t,d),wr(`drop`,t,f),H(`click`,t,()=>V(l)?.click()),H(`change`,n,p),W(e,t)},y=e=>{var t=Pl(),n=L(t),i=L(n),a=e=>{var t=Al();B(()=>{Ti(t,`src`,r().url),Ti(t,`alt`,r().filename)}),W(e,t)},o=P(()=>(r().mimetype||``).startsWith(`image/`)),s=e=>{W(e,jl())},c=P(()=>(r().mimetype||``).includes(`pdf`)),l=e=>{W(e,Ml())},u=P(()=>(r().mimetype||``).startsWith(`audio/`)),d=e=>{W(e,Nl())};K(i,e=>{V(o)?e(a):V(c)?e(s,1):V(u)?e(l,2):e(d,-1)});var f=z(i,2),p=L(f),m=R(p,!0),g=R(z(p,2),!0);M(f),M(n);var _=z(n,2);M(t),B(e=>{Ti(p,`title`,r().filename||r().originalName),G(m,r().filename||r().originalName),G(g,e)},[()=>wl(r().size||0)]),H(`click`,_,h),W(e,t)};K(_,e=>{r()?e(y,-1):e(v)}),M(g),W(e,g),We()}Tr([`click`,`change`]);var Ll=U(`<option> </option>`),Rl=U(`<div class="form-group flex-1 svelte-whi3pb"><label for="rule-media-filter-select">Tipo de Archivo Esperado</label> <select id="rule-media-filter-select"><option>Cualquier tipo de archivo</option><option>Solo Fotos / Comprobantes</option><option>Solo Documentos / PDFs</option><option>Solo Audios / Notas de Voz</option></select></div>`),zl=U(`<div class="form-group flex-1 svelte-whi3pb"><label for="rule-match-type-select">Tipo de Coincidencia</label> <select id="rule-match-type-select"><option>Contiene cualquiera de las palabras</option><option>Coincidencia Exacta</option><option>Empieza con la palabra</option></select></div>`),Bl=U(`<div class="form-group"><label for="rule-triggers-input">Palabras Clave Disparadoras <span class="label-hint svelte-whi3pb">(Separadas por comas)</span></label> <input type="text" id="rule-triggers-input" placeholder="ej: precio, costo, valor, catalogo, hola"/></div>`),Vl=U(`<form class="form-body"><div class="form-row svelte-whi3pb"><div class="form-group flex-2 svelte-whi3pb"><label for="rule-name-input">Nombre Descriptivo de la Ruta</label> <input type="text" id="rule-name-input" placeholder="Ej: Menú de Precios, Bienvenida o Catálogo PDF" required=""/></div> <div class="form-group flex-1 svelte-whi3pb"><label for="rule-parent-select">Submenú de (Opcional)</label> <select id="rule-parent-select"><option>(Ninguno - Ruta Principal)</option><!></select></div></div> <div class="form-row svelte-whi3pb"><div class="form-group flex-1 svelte-whi3pb"><label for="rule-trigger-type-select">Tipo de Disparador</label> <select id="rule-trigger-type-select"><option>💬 Por Palabras Clave (Texto)</option><option>📥 Por Archivo Recibido (Foto / Audio / PDF)</option><option>🔄 Ambos (Texto O Archivo)</option></select></div> <!> <!></div> <!> <div class="form-group"><div class="form-label-with-tools svelte-whi3pb"><label for="rule-response-input">Mensaje de Respuesta de WhatsApp</label> <div class="editor-quick-tools svelte-whi3pb"><button type="button" class="tool-btn svelte-whi3pb" title="Negrita">*B*</button> <button type="button" class="tool-btn svelte-whi3pb" title="Cursiva">_I_</button> <button type="button" class="tool-btn svelte-whi3pb" title="Tachado">~S~</button> <button type="button" class="tool-btn svelte-whi3pb" title="Insertar variable nombre">👤 &#123;nombre&#125;</button> <button type="button" class="tool-btn svelte-whi3pb" title="Salto de línea">↵ Salto</button> <button type="button" class="tool-btn svelte-whi3pb" title="Icono Precios">💰 Precios</button> <button type="button" class="tool-btn svelte-whi3pb" title="Atención Asesor">📞 Asesor</button></div></div> <textarea id="rule-response-input" rows="5" placeholder="¡Hola! Gracias por comunicarte con nosotros. ¿En qué podemos ayudarte?"></textarea></div> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Adjuntar Archivo al Responder (Opcional)</div> <!></div> <div class="form-row svelte-whi3pb"><div class="form-group flex-1 svelte-whi3pb"><label for="rule-lead-tag-input">Etiqueta para el CRM de Leads</label> <input type="text" id="rule-lead-tag-input" placeholder="ej: Interesado, Comprobante Recibido"/></div> <div class="form-group flex-1 svelte-whi3pb" style="display: flex; align-items: center; padding-top: 22px;"><label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox"/> <span style="font-size: 0.88rem; font-weight: 500;">👤 Pausar bot y transferir a asesor humano tras responder</span></label></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function Hl(e,t){Ue(t,!0);let n=()=>Z(Ka,`$isRuleModalOpen`,a),r=()=>Z(Ga,`$editingRule`,a),i=()=>Z(Wa,`$rules`,a),[a,o]=Ui(),s=F(``),c=F(``),l=F(`text`),u=F(`any`),d=F(`contains_any`),f=F(``),p=F(``),m=F(null),h=F(`Interesado`),g=F(!1),_=F(!1),v;bn(()=>{n()&&(r()?(I(s,r().name||``,!0),I(c,r().parentRuleId||``,!0),I(l,r().triggerType||`text`,!0),I(u,r().mediaTypeFilter||`any`,!0),I(d,r().matchType||`contains_any`,!0),I(f,(r().triggers||[]).join(`, `),!0),I(p,r().response||``,!0),I(m,r().media||null,!0),I(h,r().leadTag||`Interesado`,!0),I(g,!!r().pauseBot,!0)):(I(s,``),I(c,``),I(l,`text`),I(u,`any`),I(d,`contains_any`),I(f,``),I(p,``),I(m,null),I(h,`Interesado`),I(g,!1)))});function y(){Ka.set(!1),Ga.set(null)}function b(e,t=null){if(!v)return;let n=v.selectionStart,r=v.selectionEnd,i=V(p).substring(n,r);if(t){let e=`${t}${i||`texto`}${t}`;I(p,V(p).substring(0,n)+e+V(p).substring(r))}else e&&I(p,V(p).substring(0,n)+e+V(p).substring(r));v.focus()}async function x(e){if(e.preventDefault(),!V(s).trim()){$(`Ingresa un nombre para la ruta`,`warning`);return}let t=V(f).split(`,`).map(e=>e.trim().toLowerCase()).filter(Boolean);if(V(l)===`text`&&!t.length){$(`Ingresa al menos una palabra clave para rutas de texto`,`warning`);return}if(!V(p).trim()&&!V(m)){$(`Ingresa un texto de respuesta o adjunta un archivo para enviar`,`warning`);return}I(_,!0);let n=await Ja({name:V(s).trim(),parentRuleId:V(c)||null,triggerType:V(l),mediaTypeFilter:V(u),matchType:V(d),triggers:t,response:V(p).trim(),media:V(m),leadTag:V(h).trim()||`Interesado`,pauseBot:V(g),enabled:!r()||r().enabled!==!1},r()?.id||null);I(_,!1),n.success&&y()}{let t=P(()=>r()?`Editar Ruta de Venta`:`Nueva Ruta de Venta`);il(e,{get isOpen(){return n()},get title(){return V(t)},subtitle:`Configura disparadores por palabras clave, archivos recibidos y respuestas enriquecidas`,maxWidth:`720px`,onClose:y,children:(e,t)=>{var n=Vl(),a=L(n),o=L(a),S=z(L(o),2);J(S),M(o);var C=z(o,2),w=z(L(C),2),T=L(w);T.value=T.__value=``,Xr(z(T),1,()=>i().filter(e=>!r()||e.id!==r().id),Kr,(e,t)=>{var n=Ll(),r=R(n,!0),i={};B(()=>{G(r,V(t).name),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(w),_i(w),M(C),M(a);var E=z(a,2),D=L(E),O=z(L(D),2),k=L(O);k.value=k.__value=`text`;var A=z(k);A.value=A.__value=`media`;var ee=z(A);ee.value=ee.__value=`both`,M(O),_i(O),M(D);var te=z(D,2),ne=e=>{var t=Rl(),n=z(L(t),2),r=L(n);r.value=r.__value=`any`;var i=z(r);i.value=i.__value=`image`;var a=z(i);a.value=a.__value=`document`;var o=z(a);o.value=o.__value=`audio`,M(n),_i(n),M(t),vi(n,()=>V(u),e=>I(u,e)),W(e,t)};K(te,e=>{(V(l)===`media`||V(l)===`both`)&&e(ne)});var re=z(te,2),ie=e=>{var t=zl(),n=z(L(t),2),r=L(n);r.value=r.__value=`contains_any`;var i=z(r);i.value=i.__value=`exact`;var a=z(i);a.value=a.__value=`starts_with`,M(n),_i(n),M(t),vi(n,()=>V(d),e=>I(d,e)),W(e,t)};K(re,e=>{(V(l)===`text`||V(l)===`both`)&&e(ie)}),M(E);var ae=z(E,2),oe=e=>{var t=Bl(),n=z(L(t),2);J(n),M(t),Y(n,()=>V(f),e=>I(f,e)),W(e,t)};K(ae,e=>{(V(l)===`text`||V(l)===`both`)&&e(oe)});var se=z(ae,2),ce=L(se),le=z(L(ce),2),ue=L(le),de=z(ue,2),fe=z(de,2),pe=z(fe,2),me=z(pe,2),he=z(me,2),ge=z(he,2);M(le),M(ce);var _e=z(ce,2);tt(_e),Ni(_e,e=>v=e,()=>v),M(se);var j=z(se,2);Il(z(L(j),2),{category:`rules`,get media(){return V(m)},onMediaChange:e=>I(m,e,!0)}),M(j);var ve=z(j,2),ye=L(ve),be=z(L(ye),2);J(be),M(ye);var xe=z(ye,2),Se=L(xe),Ce=L(Se);J(Ce),N(2),M(Se),M(xe),M(ve);var we=z(ve,2),Te=L(we),Ee=z(Te,2),De=R(Ee,!0);M(we),M(n),B(()=>{Ee.disabled=V(_),G(De,V(_)?`Guardando...`:r()?`Actualizar Ruta`:`Crear Ruta`)}),wr(`submit`,n,x),Y(S,()=>V(s),e=>I(s,e)),vi(w,()=>V(c),e=>I(c,e)),vi(O,()=>V(l),e=>I(l,e)),H(`click`,ue,()=>b(null,`*`)),H(`click`,de,()=>b(null,`_`)),H(`click`,fe,()=>b(null,`~`)),H(`click`,pe,()=>b(`{nombre}`)),H(`click`,me,()=>b(`
+(function () {
+    let e = document.createElement(`link`).relList;
+    if (e && e.supports && e.supports(`modulepreload`)) return;
+    for (let e of document.querySelectorAll(`link[rel="modulepreload"]`)) n(e);
+    new MutationObserver((e) => {
+        for (let t of e)
+            if (t.type === `childList`)
+                for (let e of t.addedNodes)
+                    e.tagName === `LINK` && e.rel === `modulepreload` && n(e);
+    }).observe(document, { childList: !0, subtree: !0 });
+    function t(e) {
+        let t = {};
+        return (
+            e.integrity && (t.integrity = e.integrity),
+            e.referrerPolicy && (t.referrerPolicy = e.referrerPolicy),
+            (t.credentials =
+                e.crossOrigin === `use-credentials`
+                    ? `include`
+                    : e.crossOrigin === `anonymous`
+                      ? `omit`
+                      : `same-origin`),
+            t
+        );
+    }
+    function n(e) {
+        if (e.ep) return;
+        e.ep = !0;
+        let n = t(e);
+        fetch(e.href, n);
+    }
+})();
+var e = Array.isArray,
+    t = Array.prototype.indexOf,
+    n = Array.prototype.includes,
+    r = Array.from,
+    i = Object.defineProperty,
+    a = Object.getOwnPropertyDescriptor,
+    o = Object.getOwnPropertyDescriptors,
+    s = Object.prototype,
+    c = Array.prototype,
+    l = Object.getPrototypeOf,
+    u = Object.isExtensible,
+    d = () => {};
+function f(e) {
+    return e();
+}
+function p(e) {
+    for (var t = 0; t < e.length; t++) e[t]();
+}
+function m() {
+    var e, t;
+    return {
+        promise: new Promise((n, r) => {
+            ((e = n), (t = r));
+        }),
+        resolve: e,
+        reject: t,
+    };
+}
+var h = 1024,
+    g = 2048,
+    _ = 4096,
+    v = 8192,
+    y = 16384,
+    b = 32768,
+    x = 1 << 25,
+    S = 65536,
+    C = 1 << 19,
+    w = 1 << 20,
+    T = 1 << 25,
+    E = 1 << 21,
+    D = 1 << 22,
+    O = 1 << 23,
+    k = Symbol(`$state`),
+    A = Symbol(`component`),
+    ee = Symbol(`legacy props`),
+    te = Symbol(``),
+    ne = Symbol(`attributes`),
+    re = Symbol(`class`),
+    ie = Symbol(`style`),
+    ae = Symbol(`text`),
+    oe = Symbol(`form reset`),
+    se = new (class extends Error {
+        name = `StaleReactionError`;
+        message =
+            'The reaction that called `getAbortSignal()` was re-run or destroyed';
+    })(),
+    ce =
+        !!globalThis.document?.contentType &&
+        globalThis.document.contentType.includes(`xml`),
+    le = {},
+    ue = Symbol(`uninitialized`),
+    de = `http://www.w3.org/1999/xhtml`,
+    fe = `http://www.w3.org/2000/svg`,
+    pe = `http://www.w3.org/1998/Math/MathML`;
+function me() {
+    console.warn(`https://svelte.dev/e/derived_inert`);
+}
+function he(e) {
+    console.warn(`https://svelte.dev/e/hydration_mismatch`);
+}
+function ge() {
+    console.warn(`https://svelte.dev/e/select_multiple_invalid_value`);
+}
+function _e() {
+    console.warn(`https://svelte.dev/e/svelte_boundary_reset_noop`);
+}
+var j = !1;
+function ve(e) {
+    j = e;
+}
+var ye;
+function be(e) {
+    if (e === null) throw (he(), le);
+    return (ye = e);
+}
+function xe() {
+    return be(sn(ye));
+}
+function M(e) {
+    if (j) {
+        if (sn(ye) !== null) throw (he(), le);
+        ye = e;
+    }
+}
+function N(e = 1) {
+    if (j) {
+        for (var t = e, n = ye; t--; ) n = sn(n);
+        ye = n;
+    }
+}
+function Se(e = !0) {
+    for (var t = 0, n = ye; ; ) {
+        if (n.nodeType === 8) {
+            var r = n.data;
+            if (r === `]`) {
+                if (t === 0) return n;
+                --t;
+            } else
+                (r === `[` ||
+                    r === `[!` ||
+                    (r[0] === `[` && !isNaN(Number(r.slice(1))))) &&
+                    (t += 1);
+        }
+        var i = sn(n);
+        (e && n.remove(), (n = i));
+    }
+}
+function Ce(e) {
+    if (!e || e.nodeType !== 8) throw (he(), le);
+    return e.data;
+}
+function we(e) {
+    return e === this.v;
+}
+function Te(e, t) {
+    return e == e
+        ? e !== t || (typeof e == `object` && !!e) || typeof e == `function`
+        : t == t;
+}
+function Ee(e) {
+    return !Te(e, this.v);
+}
+function De(e) {
+    throw Error(`https://svelte.dev/e/lifecycle_outside_component`);
+}
+function Oe() {
+    throw Error(`https://svelte.dev/e/async_derived_orphan`);
+}
+function ke(e, t, n) {
+    throw Error(`https://svelte.dev/e/each_key_duplicate`);
+}
+function Ae(e) {
+    throw Error(`https://svelte.dev/e/effect_in_teardown`);
+}
+function je() {
+    throw Error(`https://svelte.dev/e/effect_in_unowned_derived`);
+}
+function Me(e) {
+    throw Error(`https://svelte.dev/e/effect_orphan`);
+}
+function Ne() {
+    throw Error(`https://svelte.dev/e/effect_update_depth_exceeded`);
+}
+function Pe(e) {
+    throw Error(`https://svelte.dev/e/props_invalid_value`);
+}
+function Fe() {
+    throw Error(`https://svelte.dev/e/state_descriptors_fixed`);
+}
+function Ie() {
+    throw Error(`https://svelte.dev/e/state_prototype_fixed`);
+}
+function Le() {
+    throw Error(`https://svelte.dev/e/state_unsafe_mutation`);
+}
+function Re() {
+    throw Error(`https://svelte.dev/e/svelte_boundary_reset_onerror`);
+}
+var ze = !1;
+function Be() {
+    ze = !0;
+}
+var Ve = null;
+function He(e) {
+    Ve = e;
+}
+function Ue(e, t = !1, n) {
+    Ve = {
+        p: Ve,
+        i: !1,
+        c: null,
+        e: null,
+        s: e,
+        x: null,
+        r: Kn,
+        l: ze && !t ? { s: null, u: null, $: [] } : null,
+    };
+}
+function We(e) {
+    var t = Ve,
+        n = t.e;
+    if (n !== null) {
+        t.e = null;
+        for (var r of n) xn(r);
+    }
+    return (e !== void 0 && (t.x = e), (t.i = !0), (Ve = t.p), Ge(e));
+}
+function Ge(e = {}) {
+    return (i(e, A, { value: !0 }), e);
+}
+function Ke() {
+    return !ze || (Ve !== null && Ve.l === null);
+}
+var qe = [];
+function Je() {
+    var e = qe;
+    ((qe = []), p(e));
+}
+function Ye(e) {
+    if (qe.length === 0 && !wt) {
+        var t = qe;
+        queueMicrotask(() => {
+            t === qe && Je();
+        });
+    }
+    qe.push(e);
+}
+function Xe() {
+    for (; qe.length > 0; ) Je();
+}
+var Ze = ~(g | _ | h);
+function Qe(e, t) {
+    e.f = (e.f & Ze) | t;
+}
+function $e(e) {
+    e.f & 512 || e.deps === null ? Qe(e, h) : Qe(e, _);
+}
+function et(e, t, n) {
+    (e.f & 2048 ? t.add(e) : e.f & 4096 && n.add(e), Qe(e, h));
+}
+function tt(e) {
+    j && on(e) !== null && ln(e);
+}
+var nt = !1;
+function rt() {
+    nt ||
+        ((nt = !0),
+        document.addEventListener(
+            `reset`,
+            (e) => {
+                Promise.resolve().then(() => {
+                    if (!e.defaultPrevented)
+                        for (let t of e.target.elements) t[oe]?.();
+                });
+            },
+            { capture: !0 },
+        ));
+}
+function it(e) {
+    var t = Un,
+        n = Kn;
+    (Gn(null), qn(null));
+    try {
+        return e();
+    } finally {
+        (Gn(t), qn(n));
+    }
+}
+function at(e, t, n, r = n) {
+    e.addEventListener(t, () => it(n));
+    let i = e[oe];
+    ((e[oe] = i
+        ? () => {
+              (i(), r(!0));
+          }
+        : () => r(!0)),
+        rt());
+}
+function ot(e, t, n, r) {
+    let i = Ke() ? ut : pt;
+    var a = e.filter((e) => !e.settled),
+        o = t.map(i);
+    if (n.length === 0 && a.length === 0) {
+        r(o);
+        return;
+    }
+    var s = Kn,
+        c = st(),
+        l =
+            a.length === 1
+                ? a[0].promise
+                : a.length > 1
+                  ? Promise.all(a.map((e) => e.promise))
+                  : null;
+    function u(e) {
+        if (!(s.f & 16384)) {
+            c();
+            try {
+                r([...o, ...e]);
+            } catch (e) {
+                mn(e, s);
+            }
+            ct();
+        }
+    }
+    var d = lt();
+    if (n.length === 0) {
+        l.then(() => u([])).finally(d);
+        return;
+    }
+    function f() {
+        Promise.all(n.map((e) => ft(e)))
+            .then(u)
+            .catch((e) => mn(e, s))
+            .finally(d);
+    }
+    l
+        ? l.then(() => {
+              s.f & 16384 ? d() : (c(), f(), ct());
+          })
+        : f();
+}
+function st() {
+    var e = Kn,
+        t = Un,
+        n = Ve,
+        r = bt;
+    return function (i = !0) {
+        (qn(e),
+            Gn(t),
+            He(n),
+            i && !(e.f & 16384) && (r?.activate(), r?.apply()));
+    };
+}
+function ct(e = !0) {
+    (qn(null), Gn(null), He(null), e && bt?.deactivate());
+}
+function lt() {
+    var e = Kn,
+        t = e.b,
+        n = bt,
+        r = !!t?.is_rendered();
+    return (
+        t?.update_pending_count(1, n),
+        n.increment(r, e),
+        () => {
+            (t?.update_pending_count(-1, n), n.decrement(r, e));
+        }
+    );
+}
+function ut(e) {
+    var t = 2 | g;
+    return (
+        Kn !== null && (Kn.f |= C),
+        {
+            ctx: Ve,
+            deps: null,
+            effects: null,
+            equals: we,
+            f: t,
+            fn: e,
+            reactions: null,
+            rv: 0,
+            v: ue,
+            wv: 0,
+            parent: Kn,
+            ac: null,
+        }
+    );
+}
+var dt = Symbol(`obsolete`);
+function ft(e, t, n) {
+    let r = Kn;
+    r === null && Oe();
+    var i = void 0,
+        a = Vt(ue),
+        o = !Un,
+        s = new Set();
+    return (
+        Tn(() => {
+            var t = Kn,
+                n = m();
+            i = n.promise;
+            try {
+                Promise.resolve(e())
+                    .then(n.resolve, (e) => {
+                        e !== se && n.reject(e);
+                    })
+                    .finally(ct);
+            } catch (e) {
+                (n.reject(e), ct());
+            }
+            var c = bt;
+            if (o) {
+                if (t.f & 32768) var l = lt();
+                if (r.b?.is_rendered()) c.async_deriveds.get(t)?.reject(dt);
+                else for (let e of s.values()) e.reject(dt);
+                (s.add(n), c.async_deriveds.set(t, n));
+            }
+            let u = (e, t = void 0) => {
+                (l?.(),
+                    s.delete(n),
+                    t !== dt &&
+                        (c.activate(),
+                        t
+                            ? ((a.f |= O), Gt(a, t))
+                            : (a.f & 8388608 && (a.f ^= O), Gt(a, e)),
+                        c.deactivate()));
+            };
+            n.promise.then(u, (e) => u(null, e || `unknown`));
+        }),
+        yn(() => {
+            for (let e of s) e.reject(dt);
+        }),
+        new Promise((e) => {
+            function t(n) {
+                function r() {
+                    n === i ? e(a) : t(i);
+                }
+                n.then(r, r);
+            }
+            t(i);
+        })
+    );
+}
+function P(e) {
+    let t = ut(e);
+    return (Yn(t), t);
+}
+function pt(e) {
+    let t = ut(e);
+    return ((t.equals = Ee), t);
+}
+function mt(e) {
+    var t = e.effects;
+    if (t !== null) {
+        e.effects = null;
+        for (var n = 0; n < t.length; n += 1) Mn(t[n]);
+    }
+}
+function ht(e) {
+    var t,
+        n = Kn,
+        r = e.parent;
+    if (!Vn && r !== null && e.v !== ue && r.f & 24576) return (me(), e.v);
+    qn(r);
+    try {
+        (mt(e), (t = sr(e)));
+    } finally {
+        qn(n);
+    }
+    return t;
+}
+function gt(e) {
+    var t = ht(e);
+    !e.equals(t) &&
+    ((e.wv = ir()),
+    (!bt?.is_fork || e.deps === null) &&
+        (bt === null
+            ? (e.v = t)
+            : (bt.capture(e, t, !0), xt?.capture(e, t, !0)),
+        e.deps === null))
+        ? Qe(e, h)
+        : Vn || (St === null ? $e(e) : (vn() || bt?.is_fork) && St.set(e, t));
+}
+function _t(e) {
+    if (e.effects !== null)
+        for (let t of e.effects)
+            (t.teardown || t.ac) &&
+                (t.teardown?.(),
+                t.ac !== null &&
+                    it(() => {
+                        (t.ac.abort(se), (t.ac = null));
+                    }),
+                t.fn !== null && (t.teardown = d),
+                ur(t, 0),
+                An(t));
+}
+function vt(e) {
+    if (e.effects !== null)
+        for (let t of e.effects) t.teardown && t.fn !== null && dr(t);
+}
+var yt = null,
+    bt = null,
+    xt = null,
+    St = null,
+    Ct = null,
+    wt = !1,
+    Tt = !1,
+    Et = null,
+    Dt = null,
+    Ot = 0,
+    kt = 1,
+    At = class e {
+        id = kt++;
+        #e = !1;
+        linked = !0;
+        #t = null;
+        #n = null;
+        async_deriveds = new Map();
+        current = new Map();
+        previous = new Map();
+        #r = new Set();
+        #i = new Set();
+        #a = 0;
+        #o = new Map();
+        #s = null;
+        #c = [];
+        #l = [];
+        #u = new Set();
+        #d = new Set();
+        #f = new Map();
+        #p = new Set();
+        is_fork = !1;
+        #m = !1;
+        constructor() {
+            (yt === null ? (yt = this) : ((yt.#n = this), (this.#t = yt)),
+                (yt = this));
+        }
+        #h() {
+            if (this.is_fork) return !0;
+            for (let n of this.#o.keys()) {
+                for (var e = n, t = !1; e.parent !== null; ) {
+                    if (this.#f.has(e)) {
+                        t = !0;
+                        break;
+                    }
+                    e = e.parent;
+                }
+                if (!t) return !0;
+            }
+            return !1;
+        }
+        skip_effect(e) {
+            (this.#f.has(e) || this.#f.set(e, { d: [], m: [] }),
+                this.#p.delete(e));
+        }
+        unskip_effect(e, t = (e) => this.schedule(e)) {
+            var n = this.#f.get(e);
+            if (n) {
+                this.#f.delete(e);
+                for (var r of n.d) (Qe(r, g), t(r));
+                for (r of n.m) (Qe(r, _), t(r));
+            }
+            this.#p.add(e);
+        }
+        #g() {
+            var e = [];
+            for (let i of this.#c)
+                if (!(i.f & 16384 || !(i.f & 6144))) {
+                    for (var t = i, n = !1; t.parent !== null; ) {
+                        t = t.parent;
+                        var r = t.f;
+                        if (r & 96) {
+                            if (!(r & 1024)) {
+                                n = !0;
+                                break;
+                            }
+                            t.f ^= h;
+                        }
+                    }
+                    n || e.push(t);
+                }
+            return ((this.#c = []), e);
+        }
+        #_() {
+            this.#e = !0;
+            for (let e of this.#u)
+                (this.#d.delete(e), Qe(e, g), this.schedule(e));
+            for (let e of this.#d) (Qe(e, _), this.schedule(e));
+            this.apply();
+            for (
+                var t = (Et = []), n = [], r = (Dt = []);
+                this.#c.length > 0;
+            ) {
+                Ot++ > 1e3 && (this.#S(), Mt());
+                for (let e of this.#g())
+                    try {
+                        this.#v(e, t, n);
+                    } catch (t) {
+                        throw (Lt(e), this.#h() || this.discard(), t);
+                    }
+            }
+            if (((bt = null), r.length > 0)) {
+                var i = e.ensure();
+                for (let e of r) i.schedule(e);
+            }
+            if (((Et = null), (Dt = null), this.#h())) {
+                (this.#x(n), this.#x(t));
+                for (let [e, t] of this.#f) It(e, t);
+                r.length > 0 && bt.#_();
+                return;
+            }
+            let a = this.#y();
+            if (a) (this.#x(n), this.#x(t), a.#b(this));
+            else {
+                (this.#u.clear(), this.#d.clear());
+                for (let e of this.#r) e(this);
+                (this.#r.clear(),
+                    (xt = this),
+                    Pt(n),
+                    Pt(t),
+                    (xt = null),
+                    this.#s?.resolve());
+                var o = bt;
+                if (
+                    (this.#a === 0 &&
+                        (this.#c.length === 0 || o !== null) &&
+                        this.#S(),
+                    this.#c.length > 0)
+                ) {
+                    if (o !== null) {
+                        for (let e of this.#c) o.#c.push(e);
+                        this.#c = [];
+                    } else o = this;
+                }
+                o !== null && (zt.clear(), o.#_());
+            }
+        }
+        #v(e, t, n) {
+            e.f ^= h;
+            for (var r = e.first; r !== null; ) {
+                var i = r.f,
+                    a = !!(i & 96);
+                if (
+                    !((a && i & 1024) || i & 8192 || this.#f.has(r)) &&
+                    r.fn !== null
+                ) {
+                    a
+                        ? (r.f ^= h)
+                        : i & 4
+                          ? t.push(r)
+                          : ar(r) && (i & 16 && this.#d.add(r), dr(r));
+                    var o = r.first;
+                    if (o !== null) {
+                        r = o;
+                        continue;
+                    }
+                }
+                for (; r !== null; ) {
+                    var s = r.next;
+                    if (s !== null) {
+                        r = s;
+                        break;
+                    }
+                    r = r.parent;
+                }
+            }
+        }
+        #y() {
+            for (var e = this.#t; e !== null; ) {
+                if (!e.is_fork) {
+                    for (let [t, [, n]] of this.current)
+                        if (e.current.has(t) && !n) return e;
+                }
+                e = e.#t;
+            }
+            return null;
+        }
+        #b(e) {
+            for (let [t, n] of e.current)
+                (!this.previous.has(t) &&
+                    e.previous.has(t) &&
+                    this.previous.set(t, e.previous.get(t)),
+                    this.current.set(t, n));
+            for (let [t, n] of e.async_deriveds) {
+                let e = this.async_deriveds.get(t);
+                e && n.promise.then(e.resolve).catch(e.reject);
+            }
+            (e.async_deriveds.clear(), this.transfer_effects(e.#u, e.#d));
+            let t = (e) => {
+                var n = e.reactions;
+                if (n !== null && !(e.f & 2 && !(e.f & 6144)))
+                    for (let e of n) {
+                        var r = e.f;
+                        if (r & 2) t(e);
+                        else {
+                            var i = e;
+                            r & 4194320 &&
+                                !this.async_deriveds.has(i) &&
+                                (this.#d.delete(i), Qe(i, g), this.schedule(i));
+                        }
+                    }
+            };
+            for (let e of this.current.keys()) t(e);
+            (this.oncommit(() => e.discard()), e.#S(), (bt = this), this.#_());
+        }
+        #x(e) {
+            for (var t = 0; t < e.length; t += 1) et(e[t], this.#u, this.#d);
+        }
+        capture(e, t, n = !1) {
+            (e.v !== ue && !this.previous.has(e) && this.previous.set(e, e.v),
+                e.f & 8388608 || (this.current.set(e, [t, n]), St?.set(e, t)),
+                this.is_fork || (e.v = t));
+        }
+        activate() {
+            bt = this;
+        }
+        deactivate() {
+            ((bt = null), (St = null));
+        }
+        flush() {
+            try {
+                ((Tt = !0), (bt = this), this.#_());
+            } finally {
+                ((Ot = 0),
+                    (Ct = null),
+                    (Et = null),
+                    (Dt = null),
+                    (Tt = !1),
+                    (bt = null),
+                    (St = null),
+                    zt.clear());
+            }
+        }
+        discard() {
+            for (let e of this.#i) e(this);
+            this.#i.clear();
+            for (let e of this.async_deriveds.values()) e.reject(dt);
+            (this.#S(), this.#s?.resolve());
+        }
+        register_created_effect(e) {
+            this.#l.push(e);
+        }
+        increment(e, t) {
+            if (((this.#a += 1), e)) {
+                let e = this.#o.get(t) ?? 0;
+                this.#o.set(t, e + 1);
+            }
+        }
+        decrement(e, t) {
+            if ((--this.#a, e)) {
+                let e = this.#o.get(t) ?? 0;
+                e === 1 ? this.#o.delete(t) : this.#o.set(t, e - 1);
+            }
+            this.#m ||
+                ((this.#m = !0),
+                Ye(() => {
+                    ((this.#m = !1), this.linked && this.flush());
+                }));
+        }
+        transfer_effects(e, t) {
+            for (let t of e) this.#u.add(t);
+            for (let e of t) this.#d.add(e);
+            (e.clear(), t.clear());
+        }
+        oncommit(e) {
+            this.#r.add(e);
+        }
+        ondiscard(e) {
+            this.#i.add(e);
+        }
+        settled() {
+            return (this.#s ??= m()).promise;
+        }
+        static ensure() {
+            if (bt === null) {
+                let t = (bt = new e());
+                !Tt &&
+                    !wt &&
+                    Ye(() => {
+                        t.#e || t.flush();
+                    });
+            }
+            return bt;
+        }
+        apply() {
+            St = null;
+        }
+        schedule(e) {
+            ((Ct = e),
+                e.b?.is_pending && e.f & 16777228 && !(e.f & 32768)
+                    ? e.b.defer_effect(e)
+                    : this.#c.push(e));
+        }
+        #S() {
+            if (this.linked) {
+                var e = this.#t,
+                    t = this.#n;
+                (e === null || (e.#n = t),
+                    t === null ? (yt = e) : (t.#t = e),
+                    (this.linked = !1));
+            }
+        }
+    };
+function jt(e) {
+    var t = wt,
+        n = xt;
+    ((xt = null), (wt = !0));
+    try {
+        var r;
+        for (e && (jt(), (r = e())); ; ) {
+            if ((Xe(), bt === null)) return r;
+            bt.flush();
+        }
+    } finally {
+        ((wt = t), (xt = n));
+    }
+}
+function Mt() {
+    try {
+        Ne();
+    } catch (e) {
+        mn(e, Ct);
+    }
+}
+var Nt = null;
+function Pt(e) {
+    var t = e.length;
+    if (t !== 0) {
+        for (var n = 0; n < t; ) {
+            var r = e[n++];
+            if (
+                !(r.f & 24576) &&
+                ar(r) &&
+                ((Nt = new Set()),
+                dr(r),
+                r.deps === null &&
+                    r.first === null &&
+                    r.nodes === null &&
+                    r.teardown === null &&
+                    r.ac === null &&
+                    Pn(r),
+                Nt?.size > 0)
+            ) {
+                zt.clear();
+                for (let e of Nt) {
+                    if (e.f & 24576) continue;
+                    let t = [e],
+                        n = e.parent;
+                    for (; n !== null; )
+                        (Nt.has(n) && (Nt.delete(n), t.push(n)),
+                            (n = n.parent));
+                    for (let e = t.length - 1; e >= 0; e--) {
+                        let n = t[e];
+                        n.f & 24576 || dr(n);
+                    }
+                }
+                Nt.clear();
+            }
+        }
+        Nt = null;
+    }
+}
+function Ft(e) {
+    bt.schedule(e);
+}
+function It(e, t) {
+    if (!(e.f & 32 && e.f & 1024)) {
+        (e.f & 2048 ? t.d.push(e) : e.f & 4096 && t.m.push(e), Qe(e, h));
+        for (var n = e.first; n !== null; ) (It(n, t), (n = n.next));
+    }
+}
+function Lt(e) {
+    Qe(e, h);
+    for (var t = e.first; t !== null; ) (Lt(t), (t = t.next));
+}
+var Rt = new Set(),
+    zt = new Map(),
+    Bt = !1;
+function Vt(e, t) {
+    return { f: 0, v: e, reactions: null, equals: we, rv: 0, wv: 0 };
+}
+function F(e, t) {
+    let n = Vt(e, t);
+    return (Yn(n), n);
+}
+function Ht(e, t = !1, n = !0) {
+    let r = Vt(e);
+    return (
+        t || (r.equals = Ee),
+        ze && n && Ve !== null && Ve.l !== null && (Ve.l.s ??= []).push(r),
+        r
+    );
+}
+function I(e, t, n = !1) {
+    return (
+        Un !== null &&
+            (!Wn || Un.f & 131072) &&
+            Ke() &&
+            Un.f & 4325394 &&
+            (Jn === null || !Jn.has(e)) &&
+            Le(),
+        Gt(e, n ? Xt(t) : t, Dt)
+    );
+}
+var Ut = null,
+    Wt = 0;
+function Gt(e, t, n = null) {
+    if (!e.equals(t)) {
+        Vn ? zt.set(e, t) : zt.has(e) || zt.set(e, e.v);
+        var r = At.ensure();
+        if ((r.capture(e, t), e.f & 2)) {
+            let t = e;
+            (e.f & 2048 && ht(t), St === null && $e(t));
+        }
+        ((e.wv = ir()),
+            (Ut = null),
+            (Wt = 0),
+            Yt(e, g, n),
+            (Ut = null),
+            Ke() &&
+                Kn !== null &&
+                Kn.f & 1024 &&
+                !(Kn.f & 96) &&
+                (Qn === null ? $n([e]) : Qn.push(e)),
+            !r.is_fork && Rt.size > 0 && !Bt && Kt());
+    }
+    return t;
+}
+function Kt() {
+    Bt = !1;
+    for (let e of Rt) {
+        e.f & 1024 && Qe(e, _);
+        let t;
+        try {
+            t = ar(e);
+        } catch {
+            t = !0;
+        }
+        t && dr(e);
+    }
+    Rt.clear();
+}
+function qt(e, t = 1) {
+    var n = V(e),
+        r = t === 1 ? n++ : n--;
+    return (I(e, n), r);
+}
+function Jt(e) {
+    I(e, e.v + 1);
+}
+function Yt(e, t, n) {
+    var r = e.reactions;
+    if (r !== null) {
+        var i = Ke(),
+            a = r.length;
+        if (
+            ((Wt += a),
+            Wt > 1e5 && Ut === null && (Ut = new Set()),
+            Ut !== null)
+        ) {
+            if (Ut.has(e)) return;
+            Ut.add(e);
+        }
+        for (var o = 0; o < a; o++) {
+            var s = r[o],
+                c = s.f;
+            if (i || s !== Kn) {
+                var l = (c & g) === 0;
+                if ((l && Qe(s, t), c & 131072)) Rt.add(s);
+                else if (c & 2) {
+                    var u = s;
+                    (St?.delete(u), Yt(u, _, n));
+                } else if (l) {
+                    var d = s;
+                    (c & 16 && Nt !== null && Nt.add(d),
+                        n === null ? Ft(d) : n.push(d));
+                }
+            }
+        }
+    }
+}
+function Xt(t) {
+    if (typeof t != `object` || !t || k in t || A in t) return t;
+    let n = l(t);
+    if (n !== s && n !== c) return t;
+    var r = new Map(),
+        i = e(t),
+        o = F(0),
+        u = null,
+        d = nr,
+        f = (e) => {
+            if (nr === d) return e();
+            var t = Un,
+                n = nr;
+            (Gn(null), rr(d));
+            var r = e();
+            return (Gn(t), rr(n), r);
+        };
+    return (
+        i && r.set(`length`, F(t.length, u)),
+        new Proxy(t, {
+            defineProperty(e, t, n) {
+                (`value` in n &&
+                    n.configurable !== !1 &&
+                    n.enumerable !== !1 &&
+                    n.writable !== !1) ||
+                    Fe();
+                var i = r.get(t);
+                return (
+                    i === void 0
+                        ? f(() => {
+                              var e = F(n.value, u);
+                              return (r.set(t, e), e);
+                          })
+                        : I(i, n.value, !0),
+                    !0
+                );
+            },
+            deleteProperty(e, t) {
+                var n = r.get(t);
+                if (n === void 0) {
+                    if (t in e) {
+                        let e = f(() => F(ue, u));
+                        (r.set(t, e), Jt(o));
+                    }
+                } else (I(n, ue), Jt(o));
+                return !0;
+            },
+            get(e, n, i) {
+                if (n === k) return t;
+                var o = r.get(n),
+                    s = n in e;
+                if (
+                    (o === void 0 &&
+                        (!s || a(e, n)?.writable) &&
+                        ((o = f(() => F(Xt(s ? e[n] : ue), u))), r.set(n, o)),
+                    o !== void 0)
+                ) {
+                    var c = V(o);
+                    return c === ue ? void 0 : c;
+                }
+                return Reflect.get(e, n, i);
+            },
+            getOwnPropertyDescriptor(e, t) {
+                this.has?.(e, t);
+                var n = Reflect.getOwnPropertyDescriptor(e, t),
+                    i = r.get(t);
+                if (i !== void 0) {
+                    var a = V(i);
+                    if (a === ue) return;
+                    if (n && `value` in n) n.value = a;
+                    else
+                        return {
+                            enumerable: !0,
+                            configurable: !0,
+                            value: a,
+                            writable: !0,
+                        };
+                }
+                return n;
+            },
+            has(e, t) {
+                if (t === k) return !0;
+                var n = r.get(t),
+                    i = (n !== void 0 && n.v !== ue) || Reflect.has(e, t);
+                return (n !== void 0 ||
+                    (Kn !== null && (!i || a(e, t)?.writable))) &&
+                    (n === void 0 &&
+                        ((n = f(() => F(i ? Xt(e[t]) : ue, u))), r.set(t, n)),
+                    V(n) === ue)
+                    ? !1
+                    : i;
+            },
+            set(e, t, n, s) {
+                var c = r.get(t),
+                    l = t in e;
+                if (i && t === `length`)
+                    for (var d = n; d < c.v; d += 1) {
+                        var p = r.get(d + ``);
+                        p === void 0
+                            ? d in e &&
+                              ((p = f(() => F(ue, u))), r.set(d + ``, p))
+                            : I(p, ue);
+                    }
+                if (c === void 0)
+                    (!l || a(e, t)?.writable) &&
+                        ((c = f(() => F(void 0, u))), I(c, Xt(n)), r.set(t, c));
+                else {
+                    l = c.v !== ue;
+                    var m = f(() => Xt(n));
+                    I(c, m);
+                }
+                var h = Reflect.getOwnPropertyDescriptor(e, t);
+                if ((h?.set && h.set.call(s, n), !l)) {
+                    if (i && typeof t == `string`) {
+                        var g = r.get(`length`),
+                            _ = Number(t);
+                        Number.isInteger(_) && _ >= g.v && I(g, _ + 1);
+                    }
+                    Jt(o);
+                }
+                return !0;
+            },
+            ownKeys(e) {
+                V(o);
+                var t = Reflect.ownKeys(e).filter((e) => {
+                    var t = r.get(e);
+                    return t === void 0 || t.v !== ue;
+                });
+                for (var [n, i] of r) i.v !== ue && !(n in e) && t.push(n);
+                return t;
+            },
+            setPrototypeOf() {
+                Ie();
+            },
+        })
+    );
+}
+function Zt(e) {
+    try {
+        if (typeof e == `object` && e && k in e) return e[k];
+    } catch {}
+    return e;
+}
+function Qt(e, t) {
+    return Object.is(Zt(e), Zt(t));
+}
+var $t, en, tn, nn;
+function rn() {
+    if ($t === void 0) {
+        (($t = window), (en = /Firefox/.test(navigator.userAgent)));
+        var e = Element.prototype,
+            t = Node.prototype,
+            n = Text.prototype;
+        ((tn = a(t, `firstChild`).get),
+            (nn = a(t, `nextSibling`).get),
+            u(e) &&
+                ((e[re] = void 0),
+                (e[ne] = null),
+                (e[ie] = void 0),
+                (e.__e = void 0)),
+            u(n) && (n[ae] = void 0));
+    }
+}
+function an(e = ``) {
+    return document.createTextNode(e);
+}
+function on(e) {
+    return tn.call(e);
+}
+function sn(e) {
+    return nn.call(e);
+}
+function L(e, t) {
+    if (!j) return on(e);
+    var n = on(ye);
+    if (n === null) n = ye.appendChild(an());
+    else if (t && n.nodeType !== 3) {
+        var r = an();
+        return (n?.before(r), be(r), r);
+    }
+    return (t && fn(n), be(n), n);
+}
+function cn(e, t = !1) {
+    if (!j) {
+        var n = on(e);
+        return n instanceof Comment && n.data === `` ? sn(n) : n;
+    }
+    if (t) {
+        if (ye?.nodeType !== 3) {
+            var r = an();
+            return (ye?.before(r), be(r), r);
+        }
+        fn(ye);
+    }
+    return ye;
+}
+function R(e, t = !1) {
+    if (!j) return on(e);
+    var n = L(e, t);
+    return (M(e), n);
+}
+function z(e, t = 1, n = !1) {
+    let r = j ? ye : e;
+    for (var i; t--; ) ((i = r), (r = sn(r)));
+    if (!j) return r;
+    if (n) {
+        if (r?.nodeType !== 3) {
+            var a = an();
+            return (r === null ? i?.after(a) : r.before(a), be(a), a);
+        }
+        fn(r);
+    }
+    return (be(r), r);
+}
+function ln(e) {
+    e.textContent = ``;
+}
+function un() {
+    return !1;
+}
+function dn(e, t, n) {
+    return t == null || t === `http://www.w3.org/1999/xhtml`
+        ? n
+            ? document.createElement(e, { is: n })
+            : document.createElement(e)
+        : n
+          ? document.createElementNS(t, e, { is: n })
+          : document.createElementNS(t, e);
+}
+function fn(e) {
+    if (e.nodeValue.length < 65536) return;
+    let t = e.nextSibling;
+    for (; t !== null && t.nodeType === 3; )
+        (t.remove(), (e.nodeValue += t.nodeValue), (t = e.nextSibling));
+}
+function pn(e) {
+    var t = Kn;
+    if (t === null) return ((Un.f |= O), e);
+    if (!(t.f & 32768) && !(t.f & 4)) throw e;
+    mn(e, t);
+}
+function mn(e, t) {
+    if (e === le) throw e;
+    if (!(t !== null && t.f & 16384)) {
+        for (; t !== null; ) {
+            if (t.f & 128 && !(t.f & 33570816)) {
+                if (!(t.f & 32768)) throw e;
+                try {
+                    t.b.error(e);
+                    return;
+                } catch (t) {
+                    e = t;
+                }
+            }
+            t = t.parent;
+        }
+        throw e;
+    }
+}
+function hn(e) {
+    (Kn === null && (Un === null && Me(e), je()), Vn && Ae(e));
+}
+function gn(e, t) {
+    var n = t.last;
+    n === null
+        ? (t.last = t.first = e)
+        : ((n.next = e), (e.prev = n), (t.last = e));
+}
+function _n(e, t) {
+    var n = Kn;
+    n !== null && n.f & 8192 && (e |= v);
+    var r = {
+        ctx: Ve,
+        deps: null,
+        nodes: null,
+        f: e | g | 512,
+        first: null,
+        fn: t,
+        last: null,
+        next: null,
+        parent: n,
+        b: n && n.b,
+        prev: null,
+        teardown: null,
+        wv: 0,
+        ac: null,
+    };
+    bt?.register_created_effect(r);
+    var i = r;
+    if (e & 4) Et === null ? At.ensure().schedule(r) : Et.push(r);
+    else if (t !== null) {
+        try {
+            dr(r);
+        } catch (e) {
+            throw (Mn(r), e);
+        }
+        i.deps === null &&
+            i.teardown === null &&
+            i.nodes === null &&
+            i.first === i.last &&
+            !(i.f & 524288) &&
+            ((i = i.first), e & 16 && e & 65536 && i !== null && (i.f |= S));
+    }
+    if (
+        i !== null &&
+        ((i.parent = n),
+        n !== null && gn(i, n),
+        Un !== null && Un.f & 2 && !(e & 64))
+    ) {
+        var a = Un;
+        (a.effects ??= []).push(i);
+    }
+    return r;
+}
+function vn() {
+    return Un !== null && !Wn;
+}
+function yn(e) {
+    let t = _n(8, null);
+    return (Qe(t, h), (t.teardown = e), t);
+}
+function bn(e) {
+    hn(`$effect`);
+    var t = Kn.f;
+    if (!Un && t & 32 && Ve !== null && !Ve.i) {
+        var n = Ve;
+        (n.e ??= []).push(e);
+    } else return xn(e);
+}
+function xn(e) {
+    return _n(4 | w, e);
+}
+function Sn(e) {
+    return (hn(`$effect.pre`), _n(8 | w, e));
+}
+function Cn(e) {
+    At.ensure();
+    let t = _n(64 | C, e);
+    return (e = {}) =>
+        new Promise((n) => {
+            e.outro
+                ? Fn(t, () => {
+                      (Mn(t), n(void 0));
+                  })
+                : (Mn(t), n(void 0));
+        });
+}
+function wn(e) {
+    return _n(4, e);
+}
+function Tn(e) {
+    return _n(D | C, e);
+}
+function En(e, t = 0) {
+    return _n(8 | t, e);
+}
+function B(e, t = [], n = [], r = []) {
+    ot(r, t, n, (t) => {
+        _n(8, () => {
+            e(...t.map(V));
+        });
+    });
+}
+function Dn(e, t = 0) {
+    return _n(16 | t, e);
+}
+function On(e) {
+    return _n(32 | C, e);
+}
+function kn(e) {
+    var t = e.teardown;
+    if (t !== null) {
+        let n = Vn,
+            r = Un;
+        (Hn(!0), Gn(null));
+        try {
+            t.call(null);
+        } catch (t) {
+            mn(t, e.parent);
+        } finally {
+            (Hn(n), Gn(r));
+        }
+    }
+}
+function An(e, t = !1) {
+    var n = e.first;
+    for (e.first = e.last = null; n !== null; ) {
+        let e = n.ac;
+        e !== null &&
+            it(() => {
+                e.abort(se);
+            });
+        var r = n.next;
+        (n.f & 64 ? (n.parent = null) : Mn(n, t), (n = r));
+    }
+}
+function jn(e) {
+    for (var t = e.first; t !== null; ) {
+        var n = t.next;
+        (t.f & 32 || Mn(t), (t = n));
+    }
+}
+function Mn(e, t = !0) {
+    var n = !1;
+    ((t || e.f & 262144) &&
+        e.nodes !== null &&
+        e.nodes.end !== null &&
+        (Nn(e.nodes.start, e.nodes.end), (n = !0)),
+        (e.f |= x),
+        An(e, t && !n),
+        ur(e, 0));
+    var r = e.nodes && e.nodes.t;
+    if (r !== null) for (let e of r) e.stop();
+    (kn(e), (e.f ^= x), (e.f |= y));
+    var i = e.parent;
+    (i !== null && i.first !== null && Pn(e),
+        (e.next =
+            e.prev =
+            e.teardown =
+            e.ctx =
+            e.deps =
+            e.fn =
+            e.nodes =
+            e.ac =
+            e.b =
+                null));
+}
+function Nn(e, t) {
+    for (; e !== null; ) {
+        var n = e === t ? null : sn(e);
+        (e.remove(), (e = n));
+    }
+}
+function Pn(e) {
+    var t = e.parent,
+        n = e.prev,
+        r = e.next;
+    (n !== null && (n.next = r),
+        r !== null && (r.prev = n),
+        t !== null &&
+            (t.first === e && (t.first = r), t.last === e && (t.last = n)));
+}
+function Fn(e, t, n = !0) {
+    var r = [];
+    ((e.f |= 256), In(e, r, !0));
+    var i = () => {
+            (n && Mn(e), t && t());
+        },
+        a = r.length;
+    if (a > 0) {
+        var o = () => --a || i();
+        for (var s of r) s.out(o);
+    } else i();
+}
+function In(e, t, n) {
+    if (!(e.f & 8192)) {
+        e.f ^= v;
+        var r = e.nodes && e.nodes.t;
+        if (r !== null) for (let e of r) (e.is_global || n) && t.push(e);
+        for (var i = e.first; i !== null; ) {
+            var a = i.next;
+            if (!(i.f & 64)) {
+                var o = !!(i.f & 65536) || (!!(i.f & 32) && !!(e.f & 16));
+                In(i, t, o ? n : !1);
+            }
+            i = a;
+        }
+    }
+}
+function Ln(e) {
+    ((e.f &= -257), Rn(e, !0));
+}
+function Rn(e, t) {
+    if (!(e.f & 256) && e.f & 8192) {
+        ((e.f ^= v), e.f & 1024 || (Qe(e, g), At.ensure().schedule(e)));
+        for (var n = e.first; n !== null; ) {
+            var r = n.next,
+                i = !!(n.f & 65536) || !!(n.f & 32);
+            (Rn(n, i ? t : !1), (n = r));
+        }
+        var a = e.nodes && e.nodes.t;
+        if (a !== null) for (let e of a) (e.is_global || t) && e.in();
+    }
+}
+function zn(e, t) {
+    if (e.nodes)
+        for (var n = e.nodes.start, r = e.nodes.end; n !== null; ) {
+            var i = n === r ? null : sn(n);
+            (t.append(n), (n = i));
+        }
+}
+var Bn = null,
+    Vn = !1;
+function Hn(e) {
+    Vn = e;
+}
+var Un = null,
+    Wn = !1;
+function Gn(e) {
+    Un = e;
+}
+var Kn = null;
+function qn(e) {
+    Kn = e;
+}
+var Jn = null;
+function Yn(e) {
+    Un !== null && (Un.f & 2097152 || Un.f & 2) && (Jn ??= new Set()).add(e);
+}
+var Xn = null,
+    Zn = 0,
+    Qn = null;
+function $n(e) {
+    Qn = e;
+}
+var er = 1,
+    tr = 0,
+    nr = tr;
+function rr(e) {
+    nr = e;
+}
+function ir() {
+    return ++er;
+}
+function ar(e) {
+    var t = e.f;
+    if (t & 2048) return !0;
+    if (t & 4096) {
+        for (var n = e.deps, r = n.length, i = 0; i < r; i++) {
+            var a = n[i];
+            if ((ar(a) && gt(a), a.wv > e.wv)) return !0;
+        }
+        t & 512 && St === null && Qe(e, h);
+    }
+    return !1;
+}
+function or(e, t, n = !0) {
+    var r = e.reactions;
+    if (r !== null && !(Jn !== null && Jn.has(e)))
+        for (var i = 0; i < r.length; i++) {
+            var a = r[i];
+            a.f & 2
+                ? or(a, t, !1)
+                : t === a && (n ? Qe(a, g) : a.f & 1024 && Qe(a, _), Ft(a));
+        }
+}
+function sr(e) {
+    var t = Xn,
+        n = Zn,
+        r = Qn,
+        i = Un,
+        a = Jn,
+        o = Ve,
+        s = Wn,
+        c = nr,
+        l = e.f;
+    ((Xn = null),
+        (Zn = 0),
+        (Qn = null),
+        (Un = l & 96 ? null : e),
+        (Jn = null),
+        He(e.ctx),
+        (Wn = !1),
+        (nr = ++tr),
+        e.ac !== null &&
+            (it(() => {
+                e.ac.abort(se);
+            }),
+            (e.ac = null)));
+    try {
+        e.f |= E;
+        var u = e.fn,
+            d = u();
+        e.f |= b;
+        var f = cr(e);
+        if (Ke() && Qn !== null && !Wn && f !== null && !(e.f & 6146))
+            for (var p = 0; p < Qn.length; p++) or(Qn[p], e);
+        if (i !== null && i !== e) {
+            if ((tr++, i.deps !== null))
+                for (let e = 0; e < n; e += 1) i.deps[e].rv = tr;
+            if (t !== null) for (let e of t) e.rv = tr;
+            Qn !== null && (r === null ? (r = Qn) : r.push(...Qn));
+        }
+        return (e.f & 8388608 && (e.f ^= O), d);
+    } catch (t) {
+        return (cr(e), pn(t));
+    } finally {
+        ((e.f ^= E),
+            (Xn = t),
+            (Zn = n),
+            (Qn = r),
+            (Un = i),
+            (Jn = a),
+            He(o),
+            (Wn = s),
+            (nr = c));
+    }
+}
+function cr(e) {
+    var t = e.deps,
+        n = bt?.is_fork;
+    if (Xn !== null) {
+        var r;
+        if ((n || ur(e, Zn), t !== null && Zn > 0))
+            for (t.length = Zn + Xn.length, r = 0; r < Xn.length; r++)
+                t[Zn + r] = Xn[r];
+        else e.deps = t = Xn;
+        if (vn() && e.f & 512)
+            for (r = Zn; r < t.length; r++) (t[r].reactions ??= []).push(e);
+    } else !n && t !== null && Zn < t.length && (ur(e, Zn), (t.length = Zn));
+    return t;
+}
+function lr(e, r) {
+    let i = r.reactions;
+    if (i !== null) {
+        var a = t.call(i, e);
+        if (a !== -1) {
+            var o = i.length - 1;
+            o === 0 ? (i = r.reactions = null) : ((i[a] = i[o]), i.pop());
+        }
+    }
+    if (i === null && r.f & 2 && (Xn === null || !n.call(Xn, r))) {
+        var s = r;
+        (s.f & 512 && (s.f ^= 512),
+            s.v !== ue && $e(s),
+            s.ac !== null &&
+                it(() => {
+                    (s.ac.abort(se), (s.ac = null), Qe(s, g));
+                }),
+            _t(s),
+            ur(s, 0));
+    }
+}
+function ur(e, t) {
+    var n = e.deps;
+    if (n !== null) for (var r = t; r < n.length; r++) lr(e, n[r]);
+}
+function dr(e) {
+    var t = e.f;
+    if (!(t & 16384)) {
+        Qe(e, h);
+        var n = Kn;
+        Kn = e;
+        try {
+            (t & 16777232 ? jn(e) : An(e), kn(e));
+            var r = sr(e);
+            ((e.teardown = typeof r == `function` ? r : null), (e.wv = er));
+        } finally {
+            Kn = n;
+        }
+    }
+}
+async function fr() {
+    (await Promise.resolve(), jt());
+}
+function V(e) {
+    var t = !!(e.f & 2);
+    if (
+        (Bn?.add(e),
+        Un !== null &&
+            !Wn &&
+            !(Kn !== null && Kn.f & 16384) &&
+            (Jn === null || !Jn.has(e)))
+    ) {
+        var r = Un.deps;
+        if (Un.f & 2097152)
+            e.rv < tr &&
+                ((e.rv = tr),
+                Xn === null && r !== null && r[Zn] === e
+                    ? Zn++
+                    : Xn === null
+                      ? (Xn = [e])
+                      : Xn.push(e));
+        else {
+            ((Un.deps ??= []), n.call(Un.deps, e) || Un.deps.push(e));
+            var i = e.reactions;
+            i === null ? (e.reactions = [Un]) : n.call(i, Un) || i.push(Un);
+        }
+    }
+    if (Vn && zt.has(e)) return zt.get(e);
+    if (t) {
+        var a = e;
+        if (Vn) {
+            var o = a.v;
+            return (
+                ((!(a.f & 1024) && a.reactions !== null) || mr(a)) &&
+                    (o = ht(a)),
+                zt.set(a, o),
+                o
+            );
+        }
+        var s = !(a.f & 512) && !Wn && Un !== null && !!(Un.f & 512),
+            c = (a.f & b) === 0;
+        (ar(a) && (s && (a.f |= 512), gt(a)), s && !c && (vt(a), pr(a)));
+    }
+    if (St?.has(e)) return St.get(e);
+    if (e.f & 8388608) throw e.v;
+    return e.v;
+}
+function pr(e) {
+    if (((e.f |= 512), e.deps !== null))
+        for (let r of e.deps) {
+            var t = r.reactions;
+            (t === null ? (r.reactions = [e]) : n.call(t, e) || t.push(e),
+                r.f & 2 && !(r.f & 512) && (vt(r), pr(r)));
+        }
+}
+function mr(e) {
+    if (e.v === ue) return !0;
+    if (e.deps === null) return !1;
+    for (let t of e.deps) if (zt.has(t) || (t.f & 2 && mr(t))) return !0;
+    return !1;
+}
+function hr(e) {
+    var t = Wn;
+    try {
+        return ((Wn = !0), e());
+    } finally {
+        Wn = t;
+    }
+}
+function gr(e) {
+    if (!(typeof e != `object` || !e || e instanceof EventTarget)) {
+        if (k in e) _r(e);
+        else if (!Array.isArray(e))
+            for (let t in e) {
+                let n = e[t];
+                typeof n == `object` && n && k in n && _r(n);
+            }
+    }
+}
+function _r(e, t = new Set()) {
+    if (typeof e == `object` && e && !(e instanceof EventTarget) && !t.has(e)) {
+        (t.add(e), e instanceof Date && e.getTime());
+        for (let n in e)
+            try {
+                _r(e[n], t);
+            } catch {}
+        let n = l(e);
+        if (
+            n !== Object.prototype &&
+            n !== Array.prototype &&
+            n !== Map.prototype &&
+            n !== Set.prototype &&
+            n !== Date.prototype
+        ) {
+            let t = o(n);
+            for (let n in t) {
+                let r = t[n].get;
+                if (r)
+                    try {
+                        r.call(e);
+                    } catch {}
+            }
+        }
+    }
+}
+[
+    ...`allowfullscreen.async.autofocus.autoplay.checked.controls.default.disabled.formnovalidate.indeterminate.inert.ismap.loop.multiple.muted.nomodule.novalidate.open.playsinline.readonly.required.reversed.seamless.selected.webkitdirectory.defer.disablepictureinpicture.disableremoteplayback`.split(
+        `.`,
+    ),
+];
+var vr = [`touchstart`, `touchmove`];
+function yr(e) {
+    return vr.includes(e);
+}
+var br = Symbol(`events`),
+    xr = new Set(),
+    Sr = new Set();
+function Cr(e, t, n, r = {}) {
+    function i(e) {
+        if ((r.capture || Or.call(t, e), !e.cancelBubble))
+            return it(() => n?.call(this, e));
+    }
+    return (
+        e.startsWith(`pointer`) || e.startsWith(`touch`) || e === `wheel`
+            ? ((i.__removed = !1),
+              Ye(() => {
+                  i.__removed || t.addEventListener(e, i, r);
+              }))
+            : t.addEventListener(e, i, r),
+        i
+    );
+}
+function wr(e, t, n, r, i) {
+    var a = { capture: r, passive: i },
+        o = Cr(e, t, n, a);
+    (t === document.body ||
+        t === window ||
+        t === document ||
+        t instanceof HTMLMediaElement) &&
+        yn(() => {
+            ((o.__removed = !0), t.removeEventListener(e, o, a));
+        });
+}
+function H(e, t, n) {
+    (t[br] ??= {})[e] = n;
+}
+function Tr(e) {
+    for (var t = 0; t < e.length; t++) xr.add(e[t]);
+    for (var n of Sr) n(e);
+}
+var Er = null,
+    Dr = !1;
+function Or(e) {
+    var t = this,
+        n = t.ownerDocument,
+        r = e.type,
+        a = e.composedPath?.() || [],
+        o = a[0] || e.target;
+    ((Er = e),
+        Dr ||
+            ((Dr = !0),
+            setTimeout(() => {
+                ((Dr = !1), (Er = null));
+            })));
+    var s = 0,
+        c = Er === e && e[br];
+    if (c) {
+        var l = a.indexOf(c);
+        if (l !== -1 && (t === document || t === window)) {
+            e[br] = t;
+            return;
+        }
+        var u = a.indexOf(t);
+        if (u === -1) return;
+        l <= u && (s = l);
+    }
+    if (((o = a[s] || e.target), o !== t)) {
+        i(e, `currentTarget`, {
+            configurable: !0,
+            get() {
+                return o || n;
+            },
+        });
+        var d = Un,
+            f = Kn;
+        (Gn(null), qn(null));
+        try {
+            for (var p, m = []; o !== null && o !== t; ) {
+                try {
+                    var h = o[br]?.[r];
+                    h == null || (o.disabled && e.target !== o) || h.call(o, e);
+                } catch (e) {
+                    p ? m.push(e) : (p = e);
+                }
+                if (e.cancelBubble) break;
+                (s++, (o = s < a.length ? a[s] : null));
+            }
+            if (p) {
+                for (let e of m)
+                    queueMicrotask(() => {
+                        throw e;
+                    });
+                throw p;
+            }
+        } finally {
+            ((e[br] = t), delete e.currentTarget, Gn(d), qn(f));
+        }
+    }
+}
+var kr =
+    globalThis?.window?.trustedTypes &&
+    globalThis.window.trustedTypes.createPolicy(`svelte-trusted-html`, {
+        createHTML: (e) => e,
+    });
+function Ar(e) {
+    return kr?.createHTML(e) ?? e;
+}
+function jr(e) {
+    var t = dn(`template`);
+    return ((t.innerHTML = Ar(e.replaceAll(`<!>`, `<!---->`))), t.content);
+}
+function Mr(e, t) {
+    var n = Kn;
+    n.nodes === null && (n.nodes = { start: e, end: t, a: null, t: null });
+}
+function U(e, t) {
+    var n = !!(t & 1),
+        r = !!(t & 2),
+        i,
+        a = !e.startsWith(`<!>`);
+    return () => {
+        if (j) return (Mr(ye, null), ye);
+        i === void 0 && ((i = jr(a ? e : `<!>` + e)), n || (i = on(i)));
+        var t = r || en ? document.importNode(i, !0) : i.cloneNode(!0);
+        if (n) {
+            var o = on(t),
+                s = t.lastChild;
+            Mr(o, s);
+        } else Mr(t, t);
+        return t;
+    };
+}
+function Nr(e, t, n = `svg`) {
+    var r = !e.startsWith(`<!>`),
+        i = !!(t & 1),
+        a = `<${n}>${r ? e : `<!>` + e}</${n}>`,
+        o;
+    return () => {
+        if (j) return (Mr(ye, null), ye);
+        if (!o) {
+            var e = on(jr(a));
+            if (i)
+                for (o = document.createDocumentFragment(); on(e); )
+                    o.appendChild(on(e));
+            else o = on(e);
+        }
+        var t = o.cloneNode(!0);
+        if (i) {
+            var n = on(t),
+                r = t.lastChild;
+            Mr(n, r);
+        } else Mr(t, t);
+        return t;
+    };
+}
+function Pr(e, t) {
+    return Nr(e, t, `svg`);
+}
+function Fr(e = ``) {
+    if (!j) {
+        var t = an(e + ``);
+        return (Mr(t, t), t);
+    }
+    var n = ye;
+    return (
+        n.nodeType === 3 ? fn(n) : (n.before((n = an())), be(n)),
+        Mr(n, n),
+        n
+    );
+}
+function Ir() {
+    if (j) return (Mr(ye, null), ye);
+    var e = document.createDocumentFragment(),
+        t = document.createComment(``),
+        n = an();
+    return (e.append(t, n), Mr(t, n), e);
+}
+function W(e, t) {
+    if (j) {
+        var n = Kn;
+        ((n.f & 32768 && n.nodes.end !== null) || (n.nodes.end = ye), xe());
+    } else e !== null && e.before(t);
+}
+function Lr(e) {
+    let t = 0,
+        n = Vt(0),
+        r;
+    return () => {
+        vn() &&
+            (V(n),
+            En(
+                () => (
+                    t === 0 && (r = hr(() => e(() => Jt(n)))),
+                    (t += 1),
+                    () => {
+                        Ye(() => {
+                            (--t, t === 0 && (r?.(), (r = void 0), Jt(n)));
+                        });
+                    }
+                ),
+            ));
+    };
+}
+var Rr = S | C;
+function zr(e, t, n, r) {
+    new Br(e, t, n, r);
+}
+var Br = class {
+    parent;
+    is_pending = !1;
+    transform_error;
+    #e;
+    #t = j ? ye : null;
+    #n;
+    #r;
+    #i;
+    #a = null;
+    #o = null;
+    #s = null;
+    #c = null;
+    #l = 0;
+    #u = 0;
+    #d = !1;
+    #f = new Set();
+    #p = new Set();
+    #m = null;
+    #h = Lr(
+        () => (
+            (this.#m = Vt(this.#l)),
+            () => {
+                this.#m = null;
+            }
+        ),
+    );
+    constructor(e, t, n, r) {
+        ((this.#e = e),
+            (this.#n = t),
+            (this.#r = (e) => {
+                var t = Kn;
+                ((t.b = this), (t.f |= 128), n(e));
+            }),
+            (this.parent = Kn.b),
+            (this.transform_error =
+                r ?? this.parent?.transform_error ?? ((e) => e)),
+            (this.#i = Dn(() => {
+                if (j) {
+                    let e = Ce(this.#t);
+                    xe();
+                    let t = e === `[!`;
+                    if (e.startsWith(`[?`)) {
+                        let t = JSON.parse(e.slice(2));
+                        this.#_(t);
+                    } else t ? this.#b() : this.#g();
+                } else this.#x();
+            }, Rr)),
+            j && (this.#e = ye));
+    }
+    #g() {
+        try {
+            this.#a = On(() => this.#r(this.#e));
+        } catch (e) {
+            this.error(e);
+        }
+    }
+    #_(e) {
+        let t = this.#n.failed,
+            { reset: n, invoke_onerror: r } = this.#v(e);
+        (Ye(r),
+            t &&
+                (this.#s = On(() => {
+                    t(
+                        this.#e,
+                        () => e,
+                        () => n,
+                    );
+                })));
+    }
+    #v(e) {
+        var t = !1,
+            n = !1;
+        let r = () => {
+            this.#y() ||
+                (t
+                    ? _e()
+                    : ((t = !0),
+                      n && Re(),
+                      this.#s !== null &&
+                          Fn(this.#s, () => {
+                              this.#s = null;
+                          }),
+                      this.#C(() => {
+                          this.#x();
+                      })));
+        };
+        return {
+            reset: r,
+            invoke_onerror: () => {
+                if (!this.#y())
+                    try {
+                        ((n = !0), this.#n.onerror?.(e, r), (n = !1));
+                    } catch (e) {
+                        mn(e, this.#i && this.#i.parent);
+                    }
+            },
+        };
+    }
+    #y() {
+        return (this.#i.f & (y | x)) !== 0;
+    }
+    #b() {
+        let e = this.#n.pending;
+        e &&
+            ((this.is_pending = !0),
+            (this.#o = On(() => e(this.#e))),
+            Ye(() => {
+                if (!this.#y()) {
+                    var e = (this.#c = document.createDocumentFragment()),
+                        t = an(),
+                        n = !1;
+                    (e.append(t),
+                        (this.#a = this.#C(() => {
+                            try {
+                                return On(() => this.#r(t));
+                            } catch (e) {
+                                try {
+                                    (this.error(e), (n = !0));
+                                } catch (e) {
+                                    mn(e, this.#i.parent);
+                                }
+                                return null;
+                            }
+                        })),
+                        this.#a === null
+                            ? ((this.#c = null), n && this.#S(bt))
+                            : this.#u === 0 &&
+                              (this.#e.before(e),
+                              (this.#c = null),
+                              Fn(this.#o, () => {
+                                  this.#o = null;
+                              }),
+                              this.#S(bt)));
+                }
+            }));
+    }
+    #x() {
+        try {
+            if (
+                ((this.is_pending = this.has_pending_snippet()),
+                (this.#u = 0),
+                (this.#l = 0),
+                (this.#a = On(() => {
+                    this.#r(this.#e);
+                })),
+                this.#u > 0)
+            ) {
+                var e = (this.#c = document.createDocumentFragment());
+                zn(this.#a, e);
+                let t = this.#n.pending;
+                this.#o = On(() => t(this.#e));
+            } else this.#S(bt);
+        } catch (e) {
+            this.error(e);
+        }
+    }
+    #S(e) {
+        ((this.is_pending = !1), e.transfer_effects(this.#f, this.#p));
+    }
+    defer_effect(e) {
+        et(e, this.#f, this.#p);
+    }
+    is_rendered() {
+        return !this.is_pending && (!this.parent || this.parent.is_rendered());
+    }
+    has_pending_snippet() {
+        return !!this.#n.pending;
+    }
+    #C(e) {
+        var t = Kn,
+            n = Un,
+            r = Ve;
+        (qn(this.#i), Gn(this.#i), He(this.#i.ctx));
+        try {
+            return (At.ensure(), e());
+        } finally {
+            (qn(t), Gn(n), He(r));
+        }
+    }
+    #w(e, t) {
+        this.has_pending_snippet()
+            ? ((this.#u += e),
+              this.#u === 0 &&
+                  (this.#S(t),
+                  this.#o &&
+                      Fn(this.#o, () => {
+                          this.#o = null;
+                      }),
+                  (this.#c &&= (this.#e.before(this.#c), null))))
+            : this.parent && this.parent.#w(e, t);
+    }
+    update_pending_count(e, t) {
+        (this.#w(e, t),
+            (this.#l += e),
+            !(!this.#m || this.#d) &&
+                ((this.#d = !0),
+                Ye(() => {
+                    ((this.#d = !1), this.#m && Gt(this.#m, this.#l));
+                })));
+    }
+    get_effect_pending() {
+        return (this.#h(), V(this.#m));
+    }
+    error(e) {
+        if (e === le || (!this.#n.onerror && !this.#n.failed)) throw e;
+        bt?.is_fork
+            ? (this.#a && bt.skip_effect(this.#a),
+              this.#o && bt.skip_effect(this.#o),
+              this.#s && bt.skip_effect(this.#s),
+              bt.oncommit(() => {
+                  this.#y() || this.#T(e);
+              }))
+            : this.#T(e);
+    }
+    #T(e) {
+        ((this.#a &&= (Mn(this.#a), null)),
+            (this.#o &&= (Mn(this.#o), null)),
+            (this.#s &&= (Mn(this.#s), null)),
+            j && (be(this.#t), N(), be(Se())));
+        let t = this.#n.failed,
+            n = (e) => {
+                if (this.#y()) return;
+                let { reset: n, invoke_onerror: r } = this.#v(e);
+                (r(),
+                    t &&
+                        !this.#y() &&
+                        (this.#s = this.#C(() => {
+                            try {
+                                return On(() => {
+                                    var r = Kn;
+                                    ((r.b = this),
+                                        (r.f |= 128),
+                                        t(
+                                            this.#e,
+                                            () => e,
+                                            () => n,
+                                        ));
+                                });
+                            } catch (e) {
+                                return (mn(e, this.#i.parent), null);
+                            }
+                        })));
+            };
+        Ye(() => {
+            if (!this.#y()) {
+                var t;
+                try {
+                    t = this.transform_error(e);
+                } catch (e) {
+                    mn(e, this.#i && this.#i.parent);
+                    return;
+                }
+                typeof t == `object` && t && typeof t.then == `function`
+                    ? t.then(n, (e) => mn(e, this.#i && this.#i.parent))
+                    : n(t);
+            }
+        });
+    }
+};
+function G(e, t) {
+    var n = t == null ? `` : typeof t == `object` ? `${t}` : t;
+    n !== (e[ae] ??= e.nodeValue) && ((e[ae] = n), (e.nodeValue = `${n}`));
+}
+function Vr(e, t) {
+    return Ur(e, t);
+}
+var Hr = new Map();
+function Ur(
+    e,
+    {
+        target: t,
+        anchor: n,
+        props: i = {},
+        events: a,
+        context: o,
+        intro: s = !0,
+        transformError: c,
+    },
+) {
+    rn();
+    var l = void 0,
+        u = Cn(() => {
+            var s = n ?? t.appendChild(an());
+            zr(
+                s,
+                { pending: () => {} },
+                (t) => {
+                    Ue({});
+                    var n = Ve;
+                    if (
+                        (o && (n.c = o),
+                        a && (i.$$events = a),
+                        j && Mr(t, null),
+                        (l = e(t, i) || Ge()),
+                        j &&
+                            ((Kn.nodes.end = ye),
+                            ye === null ||
+                                ye.nodeType !== 8 ||
+                                ye.data !== `]`))
+                    )
+                        throw (he(), le);
+                    We();
+                },
+                c,
+            );
+            var u = new Set(),
+                d = (e) => {
+                    for (var n = 0; n < e.length; n++) {
+                        var r = e[n];
+                        if (!u.has(r)) {
+                            u.add(r);
+                            var i = yr(r);
+                            for (let e of [t, document]) {
+                                var a = Hr.get(e);
+                                a === void 0 && ((a = new Map()), Hr.set(e, a));
+                                var o = a.get(r);
+                                o === void 0
+                                    ? (e.addEventListener(r, Or, {
+                                          passive: i,
+                                      }),
+                                      a.set(r, 1))
+                                    : a.set(r, o + 1);
+                            }
+                        }
+                    }
+                };
+            return (
+                d(r(xr)),
+                Sr.add(d),
+                () => {
+                    for (var e of u)
+                        for (let n of [t, document]) {
+                            var r = Hr.get(n),
+                                i = r.get(e);
+                            --i == 0
+                                ? (n.removeEventListener(e, Or),
+                                  r.delete(e),
+                                  r.size === 0 && Hr.delete(n))
+                                : r.set(e, i);
+                        }
+                    (Sr.delete(d), s !== n && s.parentNode?.removeChild(s));
+                }
+            );
+        });
+    return (Wr.set(l, u), l);
+}
+var Wr = new WeakMap(),
+    Gr = class {
+        anchor;
+        #e = new Map();
+        #t = new Map();
+        #n = new Map();
+        #r = new Set();
+        #i = !0;
+        constructor(e, t = !0) {
+            ((this.anchor = e), (this.#i = t));
+        }
+        #a = (e) => {
+            if (this.#e.has(e)) {
+                var t = this.#e.get(e),
+                    n = this.#t.get(t);
+                if (n) (Ln(n), this.#r.delete(t));
+                else {
+                    var r = this.#n.get(t);
+                    r &&
+                        (Ln(r.effect),
+                        this.#t.set(t, r.effect),
+                        this.#n.delete(t),
+                        r.fragment.lastChild.remove(),
+                        this.anchor.before(r.fragment),
+                        (n = r.effect));
+                }
+                for (let [t, n] of this.#e) {
+                    if ((this.#e.delete(t), t === e)) break;
+                    let r = this.#n.get(n);
+                    r && (Mn(r.effect), this.#n.delete(n));
+                }
+                for (let [e, r] of this.#t) {
+                    if (e === t || this.#r.has(e)) continue;
+                    let i = () => {
+                        if (Array.from(this.#e.values()).includes(e)) {
+                            var t = document.createDocumentFragment();
+                            (zn(r, t),
+                                t.append(an()),
+                                this.#n.set(e, { effect: r, fragment: t }));
+                        } else Mn(r);
+                        (this.#r.delete(e), this.#t.delete(e));
+                    };
+                    this.#i || !n ? (this.#r.add(e), Fn(r, i, !1)) : i();
+                }
+            }
+        };
+        #o = (e) => {
+            this.#e.delete(e);
+            let t = Array.from(this.#e.values());
+            for (let [e, n] of this.#n)
+                t.includes(e) || (Mn(n.effect), this.#n.delete(e));
+        };
+        ensure(e, t) {
+            var n = bt,
+                r = un();
+            if (t && !this.#t.has(e) && !this.#n.has(e)) {
+                if (r) {
+                    var i = document.createDocumentFragment(),
+                        a = an();
+                    (i.append(a),
+                        this.#n.set(e, {
+                            effect: On(() => t(a)),
+                            fragment: i,
+                        }));
+                } else
+                    this.#t.set(
+                        e,
+                        On(() => t(this.anchor)),
+                    );
+            }
+            if ((this.#e.set(n, e), r)) {
+                for (let [t, r] of this.#t)
+                    t === e ? n.unskip_effect(r) : n.skip_effect(r);
+                for (let [t, r] of this.#n)
+                    t === e
+                        ? n.unskip_effect(r.effect)
+                        : n.skip_effect(r.effect);
+                (n.oncommit(this.#a), n.ondiscard(this.#o));
+            } else (j && (this.anchor = ye), this.#a(n));
+        }
+    };
+function K(e, t, n = !1) {
+    var r;
+    j && ((r = ye), xe());
+    var i = new Gr(e),
+        a = n ? S : 0;
+    function o(e, t) {
+        if (j) {
+            var n = Ce(r);
+            if (e !== parseInt(n.substring(1))) {
+                var a = Se();
+                (be(a), (i.anchor = a), ve(!1), i.ensure(e, t), ve(!0));
+                return;
+            }
+        }
+        i.ensure(e, t);
+    }
+    Dn(() => {
+        var e = !1;
+        (t((t, n = 0) => {
+            ((e = !0), o(n, t));
+        }),
+            e || o(-1, null));
+    }, a);
+}
+function Kr(e, t) {
+    return t;
+}
+function qr(e, t, n) {
+    for (var i = [], a = t.length, o, s = t.length, c = 0; c < a; c++) {
+        let n = t[c];
+        Fn(
+            n,
+            () => {
+                if (o) {
+                    if (
+                        (o.pending.delete(n),
+                        o.done.add(n),
+                        o.pending.size === 0)
+                    ) {
+                        var t = e.outrogroups;
+                        (Jr(e, r(o.done)),
+                            t.delete(o),
+                            t.size === 0 && (e.outrogroups = null));
+                    }
+                } else --s;
+            },
+            !1,
+        );
+    }
+    if (s === 0) {
+        var l = i.length === 0 && n !== null && e.pending.size === 0;
+        if (l) {
+            var u = n,
+                d = u.parentNode;
+            (ln(d), d.append(u), e.items.clear());
+        }
+        Jr(e, t, !l);
+    } else
+        ((o = { pending: new Set(t), done: new Set() }),
+            (e.outrogroups ??= new Set()).add(o));
+}
+function Jr(e, t, n = !0) {
+    var r;
+    if (e.pending.size > 0) {
+        r = new Set();
+        for (let t of e.pending.values())
+            for (let n of t) r.add(e.items.get(n).e);
+    }
+    for (var i = 0; i < t.length; i++) {
+        var a = t[i];
+        r?.has(a)
+            ? ((a.f |= T), zn(a, document.createDocumentFragment()))
+            : Mn(t[i], n);
+    }
+}
+var Yr;
+function Xr(t, n, i, a, o, s = null) {
+    var c = t,
+        l = new Map();
+    if (n & 4) {
+        var u = t;
+        c = j ? be(on(u)) : u.appendChild(an());
+    }
+    j && xe();
+    var d = null,
+        f = pt(() => {
+            var t = i();
+            return e(t) ? t : t == null ? [] : r(t);
+        }),
+        p = new Map(),
+        m = !0;
+    function h(e) {
+        if (!(_.effect.f & 16384)) {
+            _.pending.delete(e);
+            var t = V(f);
+            ((_.fallback = d),
+                Qr(_, t, c, n, a),
+                d !== null &&
+                    (t.length === 0
+                        ? d.f & 33554432
+                            ? ((d.f ^= T), ei(d, null, c))
+                            : Ln(d)
+                        : Fn(d, () => {
+                              d = null;
+                          })));
+        }
+    }
+    function g(e) {
+        _.pending.delete(e);
+    }
+    var _ = {
+        effect: Dn(() => {
+            var e = V(f),
+                t = e.length;
+            let r = !1;
+            j &&
+                (Ce(c) === `[!`) != (t === 0) &&
+                ((c = Se()), be(c), ve(!1), (r = !0));
+            for (var u = new Set(), _ = bt, v = un(), y = 0; y < t; y += 1) {
+                j &&
+                    ye.nodeType === 8 &&
+                    ye.data === `]` &&
+                    ((c = ye), (r = !0), ve(!1));
+                var b = e[y],
+                    x = a(b, y),
+                    S = m ? null : l.get(x);
+                (S
+                    ? (S.v && Gt(S.v, b),
+                      S.i && Gt(S.i, y),
+                      v && _.unskip_effect(S.e))
+                    : ((S = $r(l, m ? c : (Yr ??= an()), b, x, y, o, n, i)),
+                      m || (S.e.f |= T),
+                      l.set(x, S)),
+                    u.add(x));
+            }
+            if (
+                (t === 0 &&
+                    s &&
+                    !d &&
+                    (m
+                        ? (d = On(() => s(c)))
+                        : ((d = On(() => s((Yr ??= an())))), (d.f |= T))),
+                t > u.size && ke(``, ``, ``),
+                j && t > 0 && be(Se()),
+                !m)
+            ) {
+                if ((p.set(_, u), v)) {
+                    for (let [e, t] of l) u.has(e) || _.skip_effect(t.e);
+                    (_.oncommit(h), _.ondiscard(g));
+                } else h(_);
+            }
+            (r && ve(!0), V(f));
+        }),
+        flags: n,
+        items: l,
+        pending: p,
+        outrogroups: null,
+        fallback: d,
+    };
+    ((m = !1), j && (c = ye));
+}
+function Zr(e) {
+    for (; e !== null && !(e.f & 32); ) e = e.next;
+    return e;
+}
+function Qr(e, t, n, i, a) {
+    var o = !!(i & 8),
+        s = t.length,
+        c = e.items,
+        l = Zr(e.effect.first),
+        u,
+        d = null,
+        f,
+        p = [],
+        m = [],
+        h,
+        g,
+        _,
+        v;
+    if (o)
+        for (v = 0; v < s; v += 1)
+            ((h = t[v]),
+                (g = a(h, v)),
+                (_ = c.get(g).e),
+                _.f & 33554432 ||
+                    (_.nodes?.a?.measure(), (f ??= new Set()).add(_)));
+    for (v = 0; v < s; v += 1) {
+        if (
+            ((h = t[v]),
+            (g = a(h, v)),
+            (_ = c.get(g).e),
+            e.outrogroups !== null)
+        )
+            for (let t of e.outrogroups)
+                (t.pending.delete(_), t.done.delete(_));
+        if (
+            (_.f & 8192 &&
+                (Ln(_),
+                o && (_.nodes?.a?.unfix(), (f ??= new Set()).delete(_))),
+            _.f & 33554432)
+        ) {
+            if (((_.f ^= T), _ === l)) ei(_, null, n);
+            else {
+                var y = d ? d.next : l;
+                (_ === e.effect.last && (e.effect.last = _.prev),
+                    _.prev && (_.prev.next = _.next),
+                    _.next && (_.next.prev = _.prev),
+                    ti(e, d, _),
+                    ti(e, _, y),
+                    ei(_, y, n),
+                    (d = _),
+                    (p = []),
+                    (m = []),
+                    (l = Zr(d.next)));
+                continue;
+            }
+        }
+        if (_ !== l) {
+            if (u !== void 0 && u.has(_)) {
+                if (p.length < m.length) {
+                    var b = m[0],
+                        x;
+                    d = b.prev;
+                    var S = p[0],
+                        C = p[p.length - 1];
+                    for (x = 0; x < p.length; x += 1) ei(p[x], b, n);
+                    for (x = 0; x < m.length; x += 1) u.delete(m[x]);
+                    (ti(e, S.prev, C.next),
+                        ti(e, d, S),
+                        ti(e, C, b),
+                        (l = b),
+                        (d = C),
+                        --v,
+                        (p = []),
+                        (m = []));
+                } else
+                    (u.delete(_),
+                        ei(_, l, n),
+                        ti(e, _.prev, _.next),
+                        ti(e, _, d === null ? e.effect.first : d.next),
+                        ti(e, d, _),
+                        (d = _));
+                continue;
+            }
+            for (p = [], m = []; l !== null && l !== _; )
+                ((u ??= new Set()).add(l), m.push(l), (l = Zr(l.next)));
+            if (l === null) continue;
+        }
+        (_.f & 33554432 || p.push(_), (d = _), (l = Zr(_.next)));
+    }
+    if (e.outrogroups !== null) {
+        for (let t of e.outrogroups)
+            t.pending.size === 0 &&
+                (Jr(e, r(t.done)), e.outrogroups?.delete(t));
+        e.outrogroups.size === 0 && (e.outrogroups = null);
+    }
+    if (l !== null || u !== void 0) {
+        var w = [];
+        if (u !== void 0) for (_ of u) _.f & 8192 || w.push(_);
+        for (; l !== null; )
+            (!(l.f & 8192) && l !== e.fallback && w.push(l), (l = Zr(l.next)));
+        var E = w.length;
+        if (E > 0) {
+            var D = i & 4 && s === 0 ? n : null;
+            if (o) {
+                for (v = 0; v < E; v += 1) w[v].nodes?.a?.measure();
+                for (v = 0; v < E; v += 1) w[v].nodes?.a?.fix();
+            }
+            qr(e, w, D);
+        }
+    }
+    o &&
+        Ye(() => {
+            if (f !== void 0) for (_ of f) _.nodes?.a?.apply();
+        });
+}
+function $r(e, t, n, r, i, a, o, s) {
+    var c = o & 1 ? (o & 16 ? Vt(n) : Ht(n, !1, !1)) : null,
+        l = o & 2 ? Vt(i) : null;
+    return {
+        v: c,
+        i: l,
+        e: On(
+            () => (
+                a(t, c ?? n, l ?? i, s),
+                () => {
+                    e.delete(r);
+                }
+            ),
+        ),
+    };
+}
+function ei(e, t, n) {
+    if (e.nodes)
+        for (
+            var r = e.nodes.start,
+                i = e.nodes.end,
+                a = t && !(t.f & 33554432) ? t.nodes.start : n;
+            r !== null;
+        ) {
+            var o = sn(r);
+            if ((a.before(r), r === i)) return;
+            r = o;
+        }
+}
+function ti(e, t, n) {
+    (t === null ? (e.effect.first = n) : (t.next = n),
+        n === null ? (e.effect.last = t) : (n.prev = t));
+}
+function ni(e, t, n = !1, r = !1, i = !1, a = !1) {
+    var o = e,
+        s = ``;
+    if (n) {
+        var c = e;
+        j && (o = be(on(c)));
+    }
+    B(() => {
+        var e = Kn;
+        if (s === (s = t() ?? ``)) j && xe();
+        else if (n && !j)
+            ((e.nodes = null),
+                (c.innerHTML = s),
+                s !== `` && Mr(on(c), c.lastChild));
+        else if (
+            (e.nodes !== null &&
+                (Nn(e.nodes.start, e.nodes.end), (e.nodes = null)),
+            s !== ``)
+        ) {
+            if (j) {
+                for (
+                    var a = ye.data, l = xe(), u = l;
+                    l !== null && (l.nodeType !== 8 || l.data !== ``);
+                )
+                    ((u = l), (l = sn(l)));
+                if (l === null) throw (he(), le);
+                (Mr(ye, u), (o = be(l)));
+            } else {
+                var d = dn(
+                    r ? `svg` : i ? `math` : `template`,
+                    r ? fe : i ? pe : void 0,
+                );
+                d.innerHTML = s;
+                var f = r || i ? d : d.content;
+                if ((Mr(on(f), f.lastChild), r || i))
+                    for (; on(f); ) o.before(on(f));
+                else o.before(f);
+            }
+        }
+    });
+}
+function ri(e, t, ...n) {
+    var r = new Gr(e);
+    Dn(() => {
+        let e = t() ?? null;
+        r.ensure(e, e && ((t) => e(t, ...n)));
+    }, S);
+}
+function ii(e) {
+    var t,
+        n,
+        r = ``;
+    if (typeof e == `string` || typeof e == `number`) r += e;
+    else if (typeof e == `object`) {
+        if (Array.isArray(e)) {
+            var i = e.length;
+            for (t = 0; t < i; t++)
+                e[t] && (n = ii(e[t])) && (r && (r += ` `), (r += n));
+        } else for (n in e) e[n] && (r && (r += ` `), (r += n));
+    }
+    return r;
+}
+function ai() {
+    for (var e, t, n = 0, r = ``, i = arguments.length; n < i; n++)
+        (e = arguments[n]) && (t = ii(e)) && (r && (r += ` `), (r += t));
+    return r;
+}
+function oi(e) {
+    return typeof e == `object` ? ai(e) : (e ?? ``);
+}
+var si = [
+    ...` 	
+\r\f\xA0\v﻿`,
+];
+function ci(e, t, n) {
+    var r = e == null ? `` : `` + e;
+    if ((t && (r = r ? r + ` ` + t : t), n)) {
+        for (var i of Object.keys(n))
+            if (n[i]) r = r ? r + ` ` + i : i;
+            else if (r.length)
+                for (var a = i.length, o = 0; (o = r.indexOf(i, o)) >= 0; ) {
+                    var s = o + a;
+                    (o === 0 || si.includes(r[o - 1])) &&
+                    (s === r.length || si.includes(r[s]))
+                        ? (r =
+                              (o === 0 ? `` : r.substring(0, o)) +
+                              r.substring(s + 1))
+                        : (o = s);
+                }
+    }
+    return r === `` ? null : r;
+}
+function li(e, t = !1) {
+    var n = t ? ` !important;` : `;`,
+        r = ``;
+    for (var i of Object.keys(e)) {
+        var a = e[i];
+        a != null && a !== `` && (r += ` ` + i + `: ` + a + n);
+    }
+    return r;
+}
+function ui(e) {
+    return e[0] !== `-` || e[1] !== `-` ? e.toLowerCase() : e;
+}
+function di(e, t) {
+    if (t) {
+        var n = ``,
+            r,
+            i;
+        if ((Array.isArray(t) ? ((r = t[0]), (i = t[1])) : (r = t), e)) {
+            e = String(e)
+                .replaceAll(/\/\*.*?\*\//g, ``)
+                .trim();
+            var a = !1,
+                o = 0,
+                s = !1,
+                c = [];
+            (r && c.push(...Object.keys(r).map(ui)),
+                i && c.push(...Object.keys(i).map(ui)));
+            var l = 0,
+                u = -1;
+            let t = e.length;
+            for (var d = 0; d < t; d++) {
+                var f = e[d];
+                if (
+                    (s
+                        ? f === `/` && e[d - 1] === `*` && (s = !1)
+                        : a
+                          ? a === f && (a = !1)
+                          : f === `/` && e[d + 1] === `*`
+                            ? (s = !0)
+                            : f === `"` || f === `'`
+                              ? (a = f)
+                              : f === `(`
+                                ? o++
+                                : f === `)` && o--,
+                    !s && a === !1 && o === 0)
+                ) {
+                    if (f === `:` && u === -1) u = d;
+                    else if (f === `;` || d === t - 1) {
+                        if (u !== -1) {
+                            var p = ui(e.substring(l, u).trim());
+                            if (!c.includes(p)) {
+                                f !== `;` && d++;
+                                var m = e.substring(l, d).trim();
+                                n += ` ` + m + `;`;
+                            }
+                        }
+                        ((l = d + 1), (u = -1));
+                    }
+                }
+            }
+        }
+        return (
+            r && (n += li(r)),
+            i && (n += li(i, !0)),
+            (n = n.trim()),
+            n === `` ? null : n
+        );
+    }
+    return e == null ? null : String(e);
+}
+function q(e, t, n, r, i, a) {
+    var o = e[re];
+    if (j || o !== n || o === void 0) {
+        var s = ci(n, r, a);
+        ((j && s === e.getAttribute(`class`)) ||
+            (s == null
+                ? e.removeAttribute(`class`)
+                : t
+                  ? (e.className = s)
+                  : e.setAttribute(`class`, s)),
+            (e[re] = n));
+    } else if (a && i !== a)
+        for (var c in a) {
+            var l = !!a[c];
+            (i == null || l !== !!i[c]) && e.classList.toggle(c, l);
+        }
+    return a;
+}
+function fi(e, t = {}, n, r) {
+    for (var i in n) {
+        var a = n[i];
+        t[i] !== a &&
+            (n[i] == null
+                ? e.style.removeProperty(i)
+                : e.style.setProperty(i, a, r));
+    }
+}
+function pi(e, t, n, r) {
+    var i = e[ie];
+    if (j || i !== t) {
+        var a = di(t, r);
+        ((j && a === e.getAttribute(`style`)) ||
+            (a == null ? e.removeAttribute(`style`) : (e.style.cssText = a)),
+            (e[ie] = t));
+    } else
+        r &&
+            (Array.isArray(r)
+                ? (fi(e, n?.[0], r[0]), fi(e, n?.[1], r[1], `important`))
+                : fi(e, n, r));
+    return r;
+}
+function mi(e, t) {
+    t
+        ? e.hasAttribute(`selected`) || e.setAttribute(`selected`, ``)
+        : e.removeAttribute(`selected`);
+}
+function hi(t, n) {
+    var r = t.__defaultValue,
+        i = t.multiple,
+        a = i ? (r ?? []) : null;
+    if (!i || e(a)) {
+        var o = t.selectedIndex,
+            s = n && i ? new Set(t.selectedOptions) : null;
+        for (var c of t.options) {
+            var l = yi(c);
+            mi(c, i ? a.includes(l) : Qt(l, r));
+        }
+        if (n) {
+            if (s !== null)
+                for (c of t.options) {
+                    var u = s.has(c);
+                    c.selected !== u && (c.selected = u);
+                }
+            else t.selectedIndex !== o && (t.selectedIndex = o);
+        }
+    }
+}
+function gi(t, n, r = !1) {
+    if (t.multiple) {
+        if (n == null) return;
+        if (!e(n)) return ge();
+        for (var i of t.options) i.selected = n.includes(yi(i));
+    } else {
+        for (i of t.options)
+            if (Qt(yi(i), n)) {
+                i.selected = !0;
+                return;
+            }
+        (r && n === void 0) || (t.selectedIndex = -1);
+    }
+}
+function _i(e) {
+    var t = new MutationObserver((t) => {
+        t.every(bi) ||
+            (`__defaultValue` in e && hi(e, !1),
+            `__value` in e && gi(e, e.__value));
+    });
+    (t.observe(e, {
+        childList: !0,
+        subtree: !0,
+        attributes: !0,
+        attributeFilter: [`value`],
+    }),
+        yn(() => {
+            t.disconnect();
+        }));
+}
+function vi(e, t, n = t) {
+    var r = new WeakSet(),
+        i = !0;
+    (at(e, `change`, (t) => {
+        var i = t ? `[selected]` : `:checked`,
+            a;
+        if (e.multiple) a = [].map.call(e.querySelectorAll(i), yi);
+        else {
+            var o =
+                e.querySelector(i) ?? e.querySelector(`option:not([disabled])`);
+            a = o && yi(o);
+        }
+        (n(a), (e.__value = a), bt !== null && r.add(bt));
+    }),
+        wn(() => {
+            var a = t();
+            if (e === document.activeElement) {
+                var o = bt;
+                if (r.has(o)) return;
+            }
+            if ((gi(e, a, i), i && a === void 0)) {
+                var s = e.querySelector(`:checked`);
+                s !== null && ((a = yi(s)), n(a));
+            }
+            ((e.__value = a), (i = !1));
+        }));
+}
+function yi(e) {
+    return `__value` in e ? e.__value : e.value;
+}
+function bi(e) {
+    if (e.target.closest(`selectedcontent`) !== null) return !0;
+    if (e.type === `childList`) {
+        var t = [...e.addedNodes, ...e.removedNodes];
+        return t.length > 0 && t.every((e) => e.nodeName === `SELECTEDCONTENT`);
+    }
+    return !1;
+}
+var xi = Symbol(`is custom element`),
+    Si = Symbol(`is html`),
+    Ci = ce ? `link` : `LINK`;
+function J(e) {
+    if (j) {
+        var t = !1,
+            n = () => {
+                if (!t) {
+                    if (((t = !0), e.hasAttribute(`value`))) {
+                        var n = e.value;
+                        (Ti(e, `value`, null), (e.value = n));
+                    }
+                    if (e.hasAttribute(`checked`)) {
+                        var r = e.checked;
+                        (Ti(e, `checked`, null), (e.checked = r));
+                    }
+                }
+            };
+        ((e[oe] = n), Ye(n), rt());
+    }
+}
+function wi(e, t) {
+    var n = Ei(e);
+    n.checked !== (n.checked = t ?? void 0) && (e.checked = t);
+}
+function Ti(e, t, n, r) {
+    var i = Ei(e);
+    (j &&
+        ((i[t] = e.getAttribute(t)),
+        t === `src` ||
+            t === `srcset` ||
+            (t === `href` && e.nodeName === Ci))) ||
+        (i[t] !== (i[t] = n) &&
+            (t === `loading` && (e[te] = n),
+            n == null
+                ? e.removeAttribute(t)
+                : typeof n != `string` && Oi(e).has(t)
+                  ? (e[t] = n)
+                  : e.setAttribute(t, n)));
+}
+function Ei(e) {
+    return (e[ne] ??= {
+        [xi]: e.nodeName.includes(`-`),
+        [Si]: e.namespaceURI === de,
+    });
+}
+var Di = new Map();
+function Oi(e) {
+    var t = e.getAttribute(`is`) || e.nodeName,
+        n = Di.get(t);
+    if (n) return n;
+    Di.set(t, (n = new Set()));
+    for (var r, i = e, a = Element.prototype; a !== i; ) {
+        for (var s in ((r = o(i)), r))
+            r[s].set &&
+                s !== `innerHTML` &&
+                s !== `textContent` &&
+                s !== `innerText` &&
+                n.add(s);
+        i = l(i);
+    }
+    return n;
+}
+function Y(e, t, n = t) {
+    var r = new WeakSet();
+    (at(e, `input`, async (i) => {
+        var a = i ? e.defaultValue : e.value;
+        if (
+            ((a = Ai(e) ? ji(a) : a),
+            n(a),
+            bt !== null && r.add(bt),
+            await fr(),
+            a !== (a = t()))
+        ) {
+            var o = e.selectionStart,
+                s = e.selectionEnd,
+                c = e.value.length;
+            if (((e.value = a ?? ``), s !== null)) {
+                var l = e.value.length;
+                o === s && s === c && l > c
+                    ? ((e.selectionStart = l), (e.selectionEnd = l))
+                    : ((e.selectionStart = o),
+                      (e.selectionEnd = Math.min(s, l)));
+            }
+        }
+    }),
+        ((j && e.defaultValue !== e.value) || (hr(t) == null && e.value)) &&
+            (n(Ai(e) ? ji(e.value) : e.value), bt !== null && r.add(bt)),
+        En(() => {
+            var n = t();
+            if (e === document.activeElement) {
+                var i = bt;
+                if (r.has(i)) return;
+            }
+            (Ai(e) && n === ji(e.value)) ||
+                ((e.type !== `date` || n || e.value) &&
+                    n !== e.value &&
+                    (e.value = n ?? ``));
+        }));
+}
+function ki(e, t, n = t) {
+    (at(e, `change`, (t) => {
+        n(t ? e.defaultChecked : e.checked);
+    }),
+        ((j && e.defaultChecked !== e.checked) || hr(t) == null) &&
+            n(e.checked),
+        En(() => {
+            e.checked = !!t();
+        }));
+}
+function Ai(e) {
+    var t = e.type;
+    return t === `number` || t === `range`;
+}
+function ji(e) {
+    return e === `` ? null : +e;
+}
+function Mi(e, t) {
+    return e === t || e?.[k] === t;
+}
+function Ni(e = Ge(), t, n, r) {
+    var i = Ve.r,
+        a = Kn;
+    return (
+        wn(() => {
+            var o, s;
+            return (
+                En(() => {
+                    ((o = s),
+                        (s = r?.() || []),
+                        hr(() => {
+                            Mi(n(...s), e) ||
+                                (t(e, ...s),
+                                o && Mi(n(...o), e) && t(null, ...o));
+                        }));
+                }),
+                () => {
+                    let r = a;
+                    for (
+                        ;
+                        r !== i && r.parent !== null && r.parent.f & 33554432;
+                    )
+                        r = r.parent;
+                    let o = () => {
+                            s && Mi(n(...s), e) && t(null, ...s);
+                        },
+                        c = r.teardown;
+                    r.teardown = () => {
+                        (o(), c?.());
+                    };
+                }
+            );
+        }),
+        e
+    );
+}
+function Pi(e = !1) {
+    let t = Ve,
+        n = t.l.u;
+    if (!n) return;
+    let r = () => gr(t.s);
+    if (e) {
+        let e = 0,
+            n = {},
+            i = ut(() => {
+                let r = !1,
+                    i = t.s;
+                for (let e in i) i[e] !== n[e] && ((n[e] = i[e]), (r = !0));
+                return (r && e++, e);
+            });
+        r = () => V(i);
+    }
+    (n.b.length &&
+        Sn(() => {
+            (Fi(t, r), p(n.b));
+        }),
+        bn(() => {
+            let e = hr(() => n.m.map(f));
+            return () => {
+                for (let t of e) typeof t == `function` && t();
+            };
+        }),
+        n.a.length &&
+            bn(() => {
+                (Fi(t, r), p(n.a));
+            }));
+}
+function Fi(e, t) {
+    if (e.l.s) for (let t of e.l.s) V(t);
+    t();
+}
+function Ii(e, t, n) {
+    if (e == null) return (t(void 0), n && n(void 0), d);
+    let r = hr(() => e.subscribe(t, n));
+    return r.unsubscribe ? () => r.unsubscribe() : r;
+}
+var Li = [];
+function Ri(e, t) {
+    return { subscribe: X(e, t).subscribe };
+}
+function X(e, t = d) {
+    let n = null,
+        r = new Set();
+    function i(t) {
+        if (Te(e, t) && ((e = t), n)) {
+            let t = !Li.length;
+            for (let t of r) (t[1](), Li.push(t, e));
+            if (t) {
+                for (let e = 0; e < Li.length; e += 2) Li[e][0](Li[e + 1]);
+                Li.length = 0;
+            }
+        }
+    }
+    function a(t) {
+        i(t(e));
+    }
+    function o(o, s = d) {
+        let c = [o, s];
+        return (
+            r.add(c),
+            r.size === 1 && (n = t(i, a) || d),
+            o(e),
+            () => {
+                (r.delete(c), r.size === 0 && n && (n(), (n = null)));
+            }
+        );
+    }
+    return { set: i, update: a, subscribe: o };
+}
+function zi(e, t, n) {
+    let r = !Array.isArray(e),
+        i = r ? [e] : e;
+    if (!i.every(Boolean))
+        throw Error(`derived() expects stores as input, got a falsy value`);
+    let a = t.length < 2;
+    return Ri(n, (e, n) => {
+        let o = !1,
+            s = [],
+            c = 0,
+            l = d,
+            u = () => {
+                if (c) return;
+                l();
+                let i = t(r ? s[0] : s, e, n);
+                a ? e(i) : (l = typeof i == `function` ? i : d);
+            },
+            f = i.map((e, t) =>
+                Ii(
+                    e,
+                    (e) => {
+                        ((s[t] = e), (c &= ~(1 << t)), o && u());
+                    },
+                    () => {
+                        c |= 1 << t;
+                    },
+                ),
+            );
+        return (
+            (o = !0),
+            u(),
+            function () {
+                (p(f), l(), (o = !1));
+            }
+        );
+    });
+}
+function Bi(e) {
+    let t;
+    return (Ii(e, (e) => (t = e))(), t);
+}
+var Vi = !1,
+    Hi = Symbol(`unmounted`);
+function Z(e, t, n) {
+    let r = (n[t] ??= { store: null, source: Ht(void 0), unsubscribe: d });
+    if (r.store !== e && !(Hi in n)) {
+        if ((r.unsubscribe(), (r.store = e ?? null), e == null))
+            ((r.source.v = void 0), (r.unsubscribe = d));
+        else {
+            var i = !0;
+            ((r.unsubscribe = Ii(e, (e) => {
+                i ? (r.source.v = e) : I(r.source, e);
+            })),
+                (i = !1));
+        }
+    }
+    return e && Hi in n ? Bi(e) : V(r.source);
+}
+function Ui() {
+    let e = {};
+    function t() {
+        yn(() => {
+            for (var t in e) e[t].unsubscribe();
+            i(e, Hi, { enumerable: !1, value: !0 });
+        });
+    }
+    return [e, t];
+}
+function Wi(e) {
+    var t = Vi;
+    try {
+        return ((Vi = !1), [e(), Vi]);
+    } finally {
+        Vi = t;
+    }
+}
+function Gi(e, t, n, r) {
+    var i = !ze || !!(n & 2),
+        o = !!(n & 8),
+        s = !!(n & 16),
+        c = r,
+        l = !0,
+        u = void 0,
+        d = () =>
+            s && i
+                ? ((u ??= ut(r)), V(u))
+                : (l && ((l = !1), (c = s ? hr(r) : r)), c);
+    let f;
+    if (o) {
+        var p = k in e || ee in e;
+        f = a(e, t)?.set ?? (p && t in e ? (n) => (e[t] = n) : void 0);
+    }
+    var m,
+        h = !1;
+    (o ? ([m, h] = Wi(() => e[t])) : (m = e[t]),
+        m === void 0 && r !== void 0 && ((m = d()), f && (i && Pe(t), f(m))));
+    var g = i
+        ? () => {
+              var n = e[t];
+              return n === void 0 ? d() : ((l = !0), n);
+          }
+        : () => {
+              var n = e[t];
+              return (n !== void 0 && (c = void 0), n === void 0 ? c : n);
+          };
+    if (i && !(n & 4)) return g;
+    if (f) {
+        var _ = e.$$legacy;
+        return function (e, t) {
+            return arguments.length > 0
+                ? ((!i || !t || _ || h) && f(t ? g() : e), e)
+                : g();
+        };
+    }
+    var v = !1,
+        y = (n & 1 ? ut : pt)(() => ((v = !1), g()));
+    o && V(y);
+    var b = Kn;
+    return function (e, t) {
+        if (arguments.length > 0) {
+            let n = t ? V(y) : i && o ? Xt(e) : e;
+            return (I(y, n), (v = !0), c !== void 0 && (c = n), e);
+        }
+        return (Vn && v) || b.f & 16384 ? y.v : V(y);
+    };
+}
+function Ki(e) {
+    (Ve === null && De(`onMount`),
+        ze && Ve.l !== null
+            ? Ji(Ve).m.push(e)
+            : bn(() => {
+                  let t = hr(e);
+                  if (typeof t == `function`) return t;
+              }));
+}
+function qi(e) {
+    (Ve === null && De(`onDestroy`), Ki(() => () => hr(e)));
+}
+function Ji(e) {
+    var t = e.l;
+    return (t.u ??= { a: [], b: [], m: [] });
+}
+typeof window < `u` && ((window.__svelte ??= {}).v ??= new Set()).add(`5`);
+var Yi = `whatsapp_bot_token`,
+    Xi = `whatsapp_bot_company_id`;
+function Zi() {
+    return localStorage.getItem(Yi) || null;
+}
+function Qi(e) {
+    e ? localStorage.setItem(Yi, e) : localStorage.removeItem(Yi);
+}
+function $i() {
+    return localStorage.getItem(Xi) || `default`;
+}
+function ea(e) {
+    e ? localStorage.setItem(Xi, e) : localStorage.removeItem(Xi);
+}
+var ta = null;
+function na(e) {
+    ta = e;
+}
+async function ra(e, t = {}) {
+    let n = Zi(),
+        r = $i();
+    ((t.headers = t.headers || {}),
+        !(t.body instanceof FormData) &&
+            !t.headers[`Content-Type`] &&
+            t.method &&
+            t.method !== `GET` &&
+            (t.headers[`Content-Type`] = `application/json`),
+        n &&
+            !t.headers.Authorization &&
+            !t.headers.authorization &&
+            (t.headers.Authorization = `Bearer ${n}`),
+        t.headers[`x-company-id`] || (t.headers[`x-company-id`] = r));
+    let i = e;
+    if (i.startsWith(`/api/`) && !i.includes(`companyId=`)) {
+        let e = i.includes(`?`) ? `&` : `?`;
+        i = `${i}${e}companyId=${encodeURIComponent(r)}`;
+    }
+    let a = await fetch(i, t);
+    a.status === 401 &&
+        !i.includes(`/api/auth/login`) &&
+        !i.includes(`/api/auth/register`) &&
+        ta &&
+        ta();
+    let o = a.headers.get(`content-type`) || ``,
+        s;
+    if (
+        ((s = o.includes(`application/json`) ? await a.json() : await a.text()),
+        !a.ok)
+    ) {
+        let e =
+                s && s.error
+                    ? s.error
+                    : typeof s == `string` && s
+                      ? s
+                      : `Error HTTP ${a.status}`,
+            t = Error(e);
+        throw ((t.status = a.status), (t.data = s), t);
+    }
+    return s;
+}
+var Q = {
+        get: (e, t) => ra(e, { ...t, method: `GET` }),
+        post: (e, t, n) =>
+            ra(e, {
+                ...n,
+                method: `POST`,
+                body: t instanceof FormData ? t : JSON.stringify(t),
+            }),
+        put: (e, t, n) =>
+            ra(e, {
+                ...n,
+                method: `PUT`,
+                body: t instanceof FormData ? t : JSON.stringify(t),
+            }),
+        delete: (e, t) => ra(e, { ...t, method: `DELETE` }),
+        upload: async (e, t = `rules`) => {
+            if (e.size > 52428800)
+                throw Error(
+                    `El archivo supera los 50 MB. Por favor elige un archivo más liviano.`,
+                );
+            let n = await new Promise((t, n) => {
+                    let r = new FileReader();
+                    ((r.onload = () => t(r.result)),
+                        (r.onerror = n),
+                        r.readAsDataURL(e));
+                }),
+                r = await Q.post(`/api/upload`, {
+                    filename: e.name,
+                    mimetype: e.type || `application/octet-stream`,
+                    data: n,
+                    folder: t,
+                }),
+                i = r.file || {
+                    url: r.url,
+                    filename: r.filename || e.name,
+                    mimetype: r.mimetype || e.type,
+                    size: r.size || e.size,
+                };
+            return { success: !0, file: i, ...i };
+        },
+    },
+    ia = X([]),
+    aa = 0;
+function $(e, t = `info`, n = 4e3) {
+    let r = ++aa,
+        i = { id: r, message: e, type: t };
+    return (
+        ia.update((e) => [...e, i]),
+        n > 0 &&
+            setTimeout(() => {
+                oa(r);
+            }, n),
+        r
+    );
+}
+function oa(e) {
+    ia.update((t) => t.filter((t) => t.id !== e));
+}
+var sa = X(`tab-rules`),
+    ca = X(!1),
+    la = X(``),
+    ua = X(
+        typeof localStorage < `u` &&
+            localStorage.getItem(`ws_bot_sidebar_collapsed`) === `true`,
+    );
+typeof localStorage < `u` &&
+    ua.subscribe((e) => {
+        localStorage.setItem(`ws_bot_sidebar_collapsed`, String(e));
+    });
+var da = X([]),
+    fa = X($i()),
+    pa = X(!1),
+    ma = X(`create`);
+function ha() {
+    (da.set([]), fa.set(null), ea(null));
+}
+var ga = zi([da, fa], ([e, t]) => e.find((e) => e.id === t) || e[0] || null);
+async function _a() {
+    try {
+        let e = await Q.get(`/api/companies`),
+            t = Array.isArray(e) ? e : e.companies || [];
+        da.set(t);
+        let n = $i();
+        if (!t.some((e) => e.id === n) && t.length > 0) {
+            let e = t[0].id;
+            (fa.set(e), ea(e));
+        }
+        return t;
+    } catch (e) {
+        return (console.error(`Error cargando empresas:`, e), []);
+    }
+}
+async function va(e, t) {
+    try {
+        return (
+            fa.set(e),
+            ea(e),
+            await Q.post(`/api/companies/${e}/select`, {}),
+            $(`Empresa cambiada a ${e}`, `info`),
+            t && (await t(e)),
+            !0
+        );
+    } catch (e) {
+        return ($(e.message, `error`), !1);
+    }
+}
+async function ya(e) {
+    try {
+        let t = await Q.post(`/api/companies`, e);
+        return (
+            $(`Empresa creada exitosamente`, `success`),
+            await _a(),
+            t.company?.id && (await va(t.company.id)),
+            pa.set(!1),
+            { success: !0, company: t.company }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function ba(e, t) {
+    try {
+        let n = await Q.put(`/api/companies/${e}`, t);
+        return (
+            $(`Datos de empresa actualizados`, `success`),
+            await _a(),
+            pa.set(!1),
+            { success: !0, company: n.company }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function xa(e) {
+    try {
+        (await Q.delete(`/api/companies/${e}`), $(`Empresa eliminada`, `info`));
+        let t = await _a();
+        return (
+            t.length > 0 && (await va(t[0].id)),
+            pa.set(!1),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var Sa = X({
+        companiesCount: 0,
+        usersCount: 0,
+        superadminsCount: 0,
+        leadsCount: 0,
+        messagesCount: 0,
+        activeBotsCount: 0,
+    }),
+    Ca = X([]),
+    wa = X([]),
+    Ta = X(!1);
+function Ea() {
+    (Sa.set({
+        companiesCount: 0,
+        usersCount: 0,
+        superadminsCount: 0,
+        leadsCount: 0,
+        messagesCount: 0,
+        activeBotsCount: 0,
+    }),
+        Ca.set([]),
+        wa.set([]),
+        Ta.set(!1));
+}
+async function Da() {
+    let e = !1;
+    if ((Rs.subscribe((t) => (e = t))(), !e)) return null;
+    try {
+        let e = await Q.get(`/api/superadmin/stats`);
+        return (e.stats && Sa.set(e.stats), e.stats);
+    } catch (e) {
+        return (
+            console.error(`Error cargando métricas de superadmin:`, e),
+            null
+        );
+    }
+}
+async function Oa() {
+    let e = !1;
+    if ((Rs.subscribe((t) => (e = t))(), !e)) return [];
+    try {
+        let e = (await Q.get(`/api/superadmin/companies`)).companies || [];
+        return (Ca.set(e), e);
+    } catch (e) {
+        return (
+            console.error(`Error cargando empresas:`, e),
+            $(e.message, `error`),
+            []
+        );
+    }
+}
+async function ka() {
+    let e = !1;
+    if ((Rs.subscribe((t) => (e = t))(), !e)) return [];
+    try {
+        let e = (await Q.get(`/api/superadmin/users`)).users || [];
+        return (wa.set(e), e);
+    } catch (e) {
+        return (
+            console.error(`Error cargando usuarios:`, e),
+            $(e.message, `error`),
+            []
+        );
+    }
+}
+async function Aa() {
+    let e = !1;
+    if ((Rs.subscribe((t) => (e = t))(), !e)) Ea();
+    else {
+        Ta.set(!0);
+        try {
+            await Promise.all([Da(), Oa(), ka()]);
+        } finally {
+            Ta.set(!1);
+        }
+    }
+}
+async function ja(e) {
+    try {
+        let t = await Q.post(`/api/superadmin/companies`, { name: e });
+        return (
+            $(t.message || `Empresa creada con éxito`, `success`),
+            await Oa(),
+            await Da(),
+            await _a(),
+            { success: !0, companyId: t.companyId }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ma(e, t) {
+    try {
+        return (
+            $(
+                (await Q.put(`/api/superadmin/companies/${e}`, t)).message ||
+                    `Empresa actualizada`,
+                `success`,
+            ),
+            await Oa(),
+            await _a(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Na(e) {
+    try {
+        return (
+            $(
+                (await Q.delete(`/api/superadmin/companies/${e}`)).message ||
+                    `Empresa eliminada`,
+                `success`,
+            ),
+            await Oa(),
+            await Da(),
+            await _a(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Pa(e) {
+    try {
+        return (
+            $(
+                (
+                    await Q.post(
+                        `/api/superadmin/companies/${e}/disconnect-whatsapp`,
+                        {},
+                    )
+                ).message || `WhatsApp desvinculado exitosamente`,
+                `info`,
+            ),
+            await Oa(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Fa(e) {
+    try {
+        return (
+            $(
+                (await Q.post(`/api/superadmin/companies/${e}/clean-data`, {}))
+                    .message || `Data de la empresa limpiada`,
+                `success`,
+            ),
+            await Oa(),
+            await Da(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ia(e, t, n) {
+    try {
+        let r = await Q.post(`/api/superadmin/companies/${e}/gemini-config`, {
+            apiKey: t,
+            model: n,
+        });
+        return (
+            $(`Configuración de Gemini actualizada para la empresa`, `success`),
+            await Oa(),
+            { success: !0, data: r }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function La(e) {
+    try {
+        let t = await Q.post(`/api/superadmin/users`, e);
+        return (
+            $(t.message || `Usuario creado exitosamente`, `success`),
+            await ka(),
+            await Da(),
+            { success: !0, userId: t.userId }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ra(e, t) {
+    try {
+        return (
+            $(
+                (await Q.put(`/api/superadmin/users/${e}`, t)).message ||
+                    `Usuario actualizado`,
+                `success`,
+            ),
+            await ka(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function za(e) {
+    try {
+        return (
+            $(
+                (await Q.delete(`/api/superadmin/users/${e}`)).message ||
+                    `Usuario eliminado`,
+                `success`,
+            ),
+            await ka(),
+            await Da(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ba(e, t, n = !1) {
+    try {
+        let r = await Q.post(`/api/superadmin/users/${e}/reset-password`, {
+            newPassword: t,
+            requireChangeOnLogin: n,
+        });
+        return (
+            $(`Contraseña restablecida correctamente`, `success`),
+            { success: !0, temporaryPassword: r.temporaryPassword }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Va(e, t) {
+    try {
+        return (
+            $(
+                (
+                    await Q.post(
+                        `/api/superadmin/users/${e}/toggle-superadmin`,
+                        { isSuperadmin: t },
+                    )
+                ).message || `Permiso de superusuario actualizado`,
+                `info`,
+            ),
+            await ka(),
+            await Da(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ha(e, t, n, r = !1) {
+    try {
+        return (
+            $(
+                (
+                    await Q.post(`/api/superadmin/users/${e}/companies`, {
+                        companyId: t,
+                        roleId: n,
+                        isOwner: r,
+                    })
+                ).message || `Usuario vinculado a la empresa`,
+                `success`,
+            ),
+            await ka(),
+            await Oa(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ua(e, t) {
+    try {
+        return (
+            $(
+                (await Q.delete(`/api/superadmin/users/${e}/companies/${t}`))
+                    .message || `Usuario desvinculado de la empresa`,
+                `info`,
+            ),
+            await ka(),
+            await Oa(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var Wa = X([]),
+    Ga = X(null),
+    Ka = X(!1);
+async function qa() {
+    try {
+        let e = await Q.get(`/api/rules`),
+            t = Array.isArray(e) ? e : [];
+        return (Wa.set(t), t);
+    } catch (e) {
+        return (console.error(`Error cargando reglas:`, e), []);
+    }
+}
+async function Ja(e, t = null) {
+    try {
+        return (
+            t
+                ? (await Q.put(`/api/rules/${t}`, e),
+                  $(`Ruta "${e.name}" actualizada con éxito`, `success`))
+                : (await Q.post(`/api/rules`, e),
+                  $(`Ruta "${e.name}" creada con éxito`, `success`)),
+            Ka.set(!1),
+            Ga.set(null),
+            await qa(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ya(e, t) {
+    try {
+        (await Q.put(`/api/rules/${e}`, { enabled: t }),
+            Wa.update((n) =>
+                n.map((n) => (n.id === e ? { ...n, enabled: t } : n)),
+            ),
+            $(t ? `Ruta activada` : `Ruta desactivada`, `info`));
+    } catch (e) {
+        $(e.message, `error`);
+    }
+}
+async function Xa(e, t) {
+    try {
+        (await Q.delete(`/api/rules/${e}`),
+            Wa.update((t) => t.filter((t) => t.id !== e)),
+            $(`Ruta "${t}" eliminada`, `info`));
+    } catch (e) {
+        $(e.message, `error`);
+    }
+}
+var Za = X([]),
+    Qa = X(!1);
+async function $a() {
+    try {
+        let e = await Q.get(`/api/groups`),
+            t = Array.isArray(e) ? e : [];
+        return (Za.set(t), t);
+    } catch (e) {
+        return (console.error(`Error cargando grupos:`, e), []);
+    }
+}
+async function eo(e) {
+    try {
+        let t = await Q.post(`/api/groups`, e);
+        return (
+            Za.update((e) => [...e, t]),
+            $(`Grupo "${t.name}" creado con éxito`, `success`),
+            { success: !0, group: t }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function to(e) {
+    try {
+        return (
+            await Q.delete(`/api/groups/${e}`),
+            Za.update((t) => t.filter((t) => t.id !== e)),
+            $(`Grupo eliminado`, `info`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function no(e) {
+    try {
+        return (await Q.get(`/api/groups/${e}/members`)).members || [];
+    } catch (e) {
+        return (console.error(`Error obteniendo miembros del grupo:`, e), []);
+    }
+}
+async function ro(e, t) {
+    try {
+        return (
+            await Q.post(`/api/groups/${e}/members`, { phones: t }),
+            $(`${t.length} contacto(s) añadidos al grupo`, `success`),
+            await $a(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function io(e, t) {
+    try {
+        return (
+            await Q.delete(`/api/groups/${e}/members/${encodeURIComponent(t)}`),
+            $(`Contacto removido del grupo`, `info`),
+            await $a(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var ao = X([]),
+    oo = X(!1);
+async function so() {
+    oo.set(!0);
+    try {
+        let e = await Q.get(`/api/contacts`),
+            t = Array.isArray(e) ? e : [];
+        return (ao.set(t), t);
+    } catch (e) {
+        return (console.error(`Error cargando contactos:`, e), []);
+    } finally {
+        oo.set(!1);
+    }
+}
+async function co(e) {
+    try {
+        return (
+            await Q.delete(`/api/contacts/${encodeURIComponent(e)}`),
+            ao.update((t) => t.filter((t) => t.phone !== e)),
+            $(`Contacto eliminado de la agenda`, `info`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function lo(e, t = `Importado Google`, n = `57`, r = null) {
+    try {
+        let i = await Q.post(`/api/contacts/import-csv`, {
+            csv: e,
+            defaultTag: t,
+            defaultPrefix: n,
+            groupId: r,
+        });
+        return (
+            $(
+                `Se importaron ${i.importedCount} contactos a la agenda`,
+                `success`,
+            ),
+            await so(),
+            r && (await $a()),
+            { success: !0, count: i.importedCount }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function uo(e = `Agenda WhatsApp`, t = null) {
+    try {
+        let n = await Q.post(`/api/contacts/sync-whatsapp`, {
+            defaultTag: e,
+            groupId: t,
+        });
+        return (
+            $(
+                `Se sincronizaron ${n.syncedCount} contactos de WhatsApp a tu agenda`,
+                `success`,
+            ),
+            await so(),
+            t && (await $a()),
+            { success: !0, count: n.syncedCount }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var fo = X([]),
+    po = X(null),
+    mo = X(!1),
+    ho = X(!1),
+    go = X(null),
+    _o = X(!1),
+    vo = X([]),
+    yo = X(!1),
+    bo = X(!1),
+    xo = null,
+    So = null,
+    Co = null;
+function wo(e) {
+    if ((To(), e))
+        try {
+            let t = `/api/events?companyId=${encodeURIComponent(e)}`,
+                n = new EventSource(t);
+            ((Co = n),
+                (n.onmessage = (e) => {
+                    try {
+                        let t = JSON.parse(e.data);
+                        if (t.event === `connected`) return;
+                        if (t.event === `lead_updated` && t.payload) {
+                            let e = t.payload;
+                            (fo.update((t) => {
+                                let n = (e.phone || ``).replace(/\D/g, ``),
+                                    r = t.findIndex(
+                                        (t) =>
+                                            t.phone === e.phone ||
+                                            (n &&
+                                                t.phone &&
+                                                t.phone.replace(/\D/g, ``) ===
+                                                    n),
+                                    );
+                                return r >= 0
+                                    ? [
+                                          { ...t[r], ...e },
+                                          ...t.filter((e, t) => t !== r),
+                                      ]
+                                    : [e, ...t];
+                            }),
+                                po.update((t) =>
+                                    t && t.phone === e.phone
+                                        ? { ...t, ...e }
+                                        : t,
+                                ),
+                                go.update((t) =>
+                                    t && t.phone === e.phone
+                                        ? { ...t, ...e }
+                                        : t,
+                                ));
+                        }
+                        if (t.event === `lead_deleted` && t.payload?.phone) {
+                            let e = t.payload.phone;
+                            fo.update((t) => t.filter((t) => t.phone !== e));
+                        }
+                        t.event === `leads_reloaded` && Eo();
+                    } catch (e) {
+                        console.warn(
+                            `Error procesando evento SSE de empresa:`,
+                            e,
+                        );
+                    }
+                }),
+                (n.onerror = () => {}));
+        } catch (e) {
+            console.error(`Error iniciando stream de eventos de empresa:`, e);
+        }
+}
+function To() {
+    if (Co) {
+        try {
+            Co.close();
+        } catch {}
+        Co = null;
+    }
+}
+async function Eo() {
+    try {
+        let e = await Q.get(`/api/leads`),
+            t = Array.isArray(e) ? e : [];
+        return (fo.set(t), t);
+    } catch (e) {
+        return (console.error(`Error cargando prospectos:`, e), []);
+    }
+}
+async function Do(e) {
+    try {
+        let t = await Q.post(
+            `/api/leads/${encodeURIComponent(e)}/toggle-pause`,
+            {},
+        );
+        return (
+            fo.update((n) =>
+                n.map((n) =>
+                    n.phone === e ? { ...n, humanPaused: t.humanPaused } : n,
+                ),
+            ),
+            go.update((n) =>
+                n && n.phone === e ? { ...n, humanPaused: t.humanPaused } : n,
+            ),
+            $(
+                t.humanPaused
+                    ? `Bot pausado para este cliente`
+                    : `Bot reactivado para este cliente`,
+                `info`,
+            ),
+            { success: !0, humanPaused: t.humanPaused }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+function Oo(e) {
+    (po.set(e), mo.set(!0));
+}
+async function ko(e) {
+    (go.set(e), vo.set([]), _o.set(!0), await No(e.phone, !0), jo(e.phone));
+}
+function Ao() {
+    (Mo(), _o.set(!1), go.set(null));
+}
+function jo(e) {
+    Mo();
+    let t = Bi(fa) || `default`,
+        n = `/api/leads/${encodeURIComponent(e)}/stream?companyId=${encodeURIComponent(t)}`;
+    try {
+        let t = new EventSource(n);
+        ((xo = t),
+            (t.onmessage = (t) => {
+                try {
+                    let n = JSON.parse(t.data);
+                    if (n.type === `connected`) {
+                        bo.set(!0);
+                        return;
+                    }
+                    (vo.update((e) =>
+                        e.some(
+                            (e) =>
+                                e.id === n.id ||
+                                (e.timestamp === n.timestamp &&
+                                    e.body === n.body),
+                        )
+                            ? e
+                            : [...e, n],
+                    ),
+                        fo.update((t) =>
+                            t.map((t) =>
+                                t.phone === e
+                                    ? {
+                                          ...t,
+                                          lastMessage:
+                                              n.body ||
+                                              (n.hasMedia
+                                                  ? `📎 Archivo adjunto`
+                                                  : t.lastMessage),
+                                          lastInteraction:
+                                              new Date().toISOString(),
+                                      }
+                                    : t,
+                            ),
+                        ));
+                } catch (e) {
+                    console.warn(`Error procesando evento SSE:`, e);
+                }
+            }),
+            (t.onerror = () => {}));
+    } catch (e) {
+        console.warn(`Error inicializando EventSource:`, e);
+    }
+    So = setInterval(() => {
+        Bi(_o) && Bi(go)?.phone === e ? No(e, !1) : Mo();
+    }, 3e3);
+}
+function Mo() {
+    if (xo) {
+        try {
+            xo.close();
+        } catch {}
+        xo = null;
+    }
+    So &&= (clearInterval(So), null);
+}
+async function No(e, t = !0) {
+    t && yo.set(!0);
+    try {
+        let t = await Q.get(`/api/leads/${encodeURIComponent(e)}/messages`),
+            n = t.messages || [];
+        return (
+            vo.update((e) =>
+                e.length === 0 ||
+                e.length !== n.length ||
+                e[e.length - 1]?.id !== n[n.length - 1]?.id
+                    ? n
+                    : e,
+            ),
+            bo.set(!!t.liveFetched),
+            t.leadName &&
+                go.update(
+                    (e) =>
+                        e && {
+                            ...e,
+                            name: t.leadName,
+                            tag: t.leadTag,
+                            humanPaused: t.humanPaused,
+                        },
+                ),
+            n
+        );
+    } catch (e) {
+        return (
+            t &&
+                (console.error(`Error cargando historial de chat:`, e),
+                $(`Error cargando chat: ` + e.message, `error`),
+                vo.set([])),
+            []
+        );
+    } finally {
+        t && yo.set(!1);
+    }
+}
+async function Po(e, t) {
+    if (!t || !t.trim()) return { success: !1 };
+    try {
+        let n = await Q.post(`/api/leads/${encodeURIComponent(e)}/messages`, {
+            message: t.trim(),
+        });
+        return (
+            n.message &&
+                vo.update((e) =>
+                    e.some((e) => e.id === n.message.id)
+                        ? e
+                        : [...e, n.message],
+                ),
+            fo.update((n) =>
+                n.map((n) =>
+                    n.phone === e
+                        ? {
+                              ...n,
+                              lastMessage: t.trim(),
+                              lastInteraction: new Date().toISOString(),
+                          }
+                        : n,
+                ),
+            ),
+            $(`Mensaje entregado al cliente`, `success`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return (
+            $(e.message || `Error al enviar mensaje`, `error`),
+            { success: !1, error: e.message }
+        );
+    }
+}
+var Fo = X([]),
+    Io = X(!1),
+    Lo = X(null),
+    Ro = X(`create`);
+function zo() {
+    (Lo.set(null), Ro.set(`create`), Io.set(!0));
+}
+function Bo(e) {
+    (Lo.set(e), Ro.set(`edit`), Io.set(!0));
+}
+function Vo(e) {
+    (Lo.set(e), Ro.set(`duplicate`), Io.set(!0));
+}
+async function Ho() {
+    try {
+        let e = await Q.get(`/api/schedules`),
+            t = Array.isArray(e) ? e : [];
+        return (Fo.set(t), t);
+    } catch (e) {
+        return (console.error(`Error cargando envíos programados:`, e), []);
+    }
+}
+async function Uo(e) {
+    try {
+        return (
+            await Q.post(`/api/schedules`, e),
+            $(`Envío programado exitosamente`, `success`),
+            Io.set(!1),
+            Lo.set(null),
+            await Ho(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Wo(e, t) {
+    try {
+        return (
+            await Q.put(`/api/schedules/${e}`, t),
+            $(`Campaña actualizada y reprogramada con éxito`, `success`),
+            Io.set(!1),
+            Lo.set(null),
+            await Ho(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Go(e) {
+    try {
+        let t = await Q.post(`/api/schedules/${e}/send-now`, {});
+        if (t.error) throw Error(t.error);
+        return (
+            $(`Campaña iniciada de inmediato`, `success`),
+            await Ho(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Ko(e) {
+    try {
+        return (
+            await Q.post(`/api/schedules/${e}/cancel`, {}),
+            $(`Campaña cancelada`, `info`),
+            await Ho(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function qo(e) {
+    try {
+        return (
+            await Q.delete(`/api/schedules/${e}`),
+            Fo.update((t) => t.filter((t) => t.id !== e)),
+            $(`Envío programado eliminado`, `info`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var Jo = X([]),
+    Yo = X({ activeDocuments: 0, totalWords: 0 }),
+    Xo = X(null),
+    Zo = X(!1),
+    Qo = X(!1),
+    $o = X(null);
+async function es() {
+    try {
+        let e = await Q.get(`/api/library`),
+            t = e.documents || [],
+            n = e.stats || { activeDocuments: 0, totalWords: 0 };
+        return (Jo.set(t), Yo.set(n), { docs: t, stats: n });
+    } catch (e) {
+        return (
+            console.error(`Error cargando biblioteca:`, e),
+            { docs: [], stats: { activeDocuments: 0, totalWords: 0 } }
+        );
+    }
+}
+async function ts(e, t, n) {
+    try {
+        return (
+            $(
+                `Documento agregado a la memoria: ${(await Q.post(`/api/library/upload`, { filename: e, data: t, name: n })).document.wordCount} palabras`,
+                `success`,
+            ),
+            Qo.set(!1),
+            await es(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function ns(e) {
+    try {
+        let t = await Q.post(`/api/library/${e}/toggle`, {});
+        return (
+            Jo.update((n) =>
+                n.map((n) => (n.id === e ? { ...n, active: t.active } : n)),
+            ),
+            $(
+                t.active
+                    ? `Documento activado para Gemini`
+                    : `Documento pausado`,
+                `info`,
+            ),
+            await es(),
+            { success: !0, active: t.active }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function rs(e) {
+    try {
+        return (
+            await Q.delete(`/api/library/${e}`),
+            Jo.update((t) => t.filter((t) => t.id !== e)),
+            $(`Documento eliminado de la memoria`, `info`),
+            await es(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function is(e) {
+    try {
+        let t = await Q.get(`/api/library/${e}`);
+        return (
+            Xo.set({
+                id: t.document.id,
+                name: t.document.name || t.document.originalFilename,
+                originalFilename: t.document.originalFilename,
+                wordCount: t.document.wordCount,
+                content: t.content || ``,
+            }),
+            Zo.set(!0),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function as(e, t) {
+    try {
+        return (
+            await Q.put(`/api/library/${e}`, { content: t }),
+            $(`Contenido del documento actualizado`, `success`),
+            Zo.set(!1),
+            Xo.set(null),
+            await es(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var os = X([]),
+    ss = X([]),
+    cs = X(!1),
+    ls = X(!1),
+    us = X(!1),
+    ds = X(null);
+async function fs() {
+    let e = Bi(fa);
+    if (e)
+        try {
+            let t = await Q.get(`/api/companies/${e}/team`);
+            return (os.set(t.members || []), ss.set(t.roles || []), t);
+        } catch (e) {
+            return (
+                console.error(`Error cargando equipo:`, e),
+                { members: [], roles: [] }
+            );
+        }
+}
+async function ps(e) {
+    let t = Bi(fa);
+    try {
+        return (
+            await Q.post(`/api/companies/${t}/team/members`, e),
+            $(`Colaborador ${e.fullName} agregado con éxito`, `success`),
+            cs.set(!1),
+            await fs(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function ms(e, t) {
+    let n = Bi(fa);
+    try {
+        return (
+            await Q.put(`/api/companies/${n}/team/members/${e}`, { roleId: t }),
+            $(`Rol de colaborador actualizado`, `success`),
+            ls.set(!1),
+            ds.set(null),
+            await fs(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function hs(e, t) {
+    let n = Bi(fa);
+    try {
+        return (
+            await Q.delete(`/api/companies/${n}/team/members/${e}`),
+            $(`${t} ha sido eliminado de la empresa`, `info`),
+            await fs(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function gs(e) {
+    let t = Bi(fa);
+    try {
+        return (
+            await Q.post(`/api/companies/${t}/roles`, e),
+            $(`Rol "${e.name}" creado exitosamente`, `success`),
+            us.set(!1),
+            await fs(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function _s(e, t) {
+    let n = Bi(fa);
+    try {
+        return (
+            await Q.delete(`/api/companies/${n}/roles/${e}`),
+            $(`Rol "${t}" eliminado correctamente`, `info`),
+            await fs(),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+var vs = X({
+        status: `initializing`,
+        phone: ``,
+        qrCode: null,
+        botEnabled: !0,
+        companyName: ``,
+        pendingSchedulesCount: 0,
+    }),
+    ys = X(!1),
+    bs = X(null),
+    xs = null,
+    Ss = !1,
+    Cs = null,
+    ws = new Map(),
+    Ts = new Map();
+async function Es() {
+    let e = Bi(fa);
+    if (e)
+        try {
+            let t = await Q.get(
+                `/api/status?companyId=${encodeURIComponent(e)}&_t=${Date.now()}`,
+            );
+            if (t.companyId && t.companyId !== Bi(fa)) return;
+            let n =
+                t.clientInfo?.wid && t.clientInfo.wid !== `Conectado`
+                    ? t.clientInfo.wid
+                    : ``;
+            if (
+                (vs.set({
+                    status: t.status || `disconnected`,
+                    phone: n,
+                    qrCode: t.qrCode || null,
+                    botEnabled: !!t.botEnabled,
+                    companyName: t.companyName || ``,
+                    pendingSchedulesCount: t.pendingSchedulesCount || 0,
+                }),
+                n &&
+                    da.update((r) =>
+                        r.map((r) =>
+                            r.id === e
+                                ? { ...r, phone: n, status: t.status }
+                                : r,
+                        ),
+                    ),
+                t.leadsCount !== void 0)
+            ) {
+                let n = ws.get(e),
+                    r = Ts.get(e);
+                (n !== void 0 &&
+                    (t.leadsCount !== n ||
+                        (t.lastLeadUpdate && t.lastLeadUpdate !== r)) &&
+                    Eo(),
+                    ws.set(e, t.leadsCount),
+                    Ts.set(e, t.lastLeadUpdate || 0));
+            }
+            t.status === `ready`
+                ? Ss &&
+                  Bi(ys) &&
+                  ((Ss = !1),
+                  bs.set(
+                      `¡Vinculado con éxito! Cerrando ventana en un momento...`,
+                  ),
+                  Cs && clearTimeout(Cs),
+                  (Cs = setTimeout(() => {
+                      (ys.set(!1),
+                          bs.set(null),
+                          $(`WhatsApp conectado correctamente`, `success`));
+                  }, 1800)))
+                : t.status === `qr_ready` &&
+                  ((Ss = !0), (Cs &&= (clearTimeout(Cs), null)), bs.set(null));
+        } catch {
+            vs.update((e) => ({ ...e, status: `disconnected` }));
+        }
+}
+function Ds(e = 3500) {
+    (Os(), Es(), (xs = setInterval(Es, e)));
+}
+function Os() {
+    xs &&= (clearInterval(xs), null);
+}
+async function ks() {
+    try {
+        let e = await Q.post(`/api/bot/toggle`, {});
+        (vs.update((t) => ({ ...t, botEnabled: e.botEnabled })),
+            $(e.botEnabled ? `Bot activado` : `Bot pausado`, `info`));
+    } catch (e) {
+        $(e.message, `error`);
+    }
+}
+async function As(e = !1) {
+    let t = Bi(fa);
+    try {
+        let n = `/api/bot/restart?companyId=${encodeURIComponent(t)}${e ? `&clean=true` : ``}`;
+        (await Q.post(n, {}),
+            $(
+                e
+                    ? `Sesión limpiada. Generando nuevo código QR...`
+                    : `Reinicio de conexión solicitado. Espera unos segundos.`,
+                `info`,
+            ),
+            Es());
+    } catch (e) {
+        $(e.message, `error`);
+    }
+}
+async function js() {
+    let e = Bi(fa);
+    try {
+        (await Q.post(
+            `/api/bot/disconnect?companyId=${encodeURIComponent(e)}`,
+            {},
+        ),
+            $(`Desvinculando WhatsApp de esta empresa...`, `info`),
+            Es());
+    } catch (e) {
+        $(e.message, `error`);
+    }
+}
+var Ms = X(null),
+    Ns = X(null),
+    Ps = X(Zi()),
+    Fs = X(new Set()),
+    Is = X(!1),
+    Ls = zi([Ms, Ps], ([e, t]) => !!(e && t)),
+    Rs = zi(Ms, (e) => !!e?.isSuperadmin),
+    zs = zi(Fs, (e) => {
+        let t = e.has(`*`) || e.has(`all`) || e.has(`admin`);
+        return (n) => (t ? !0 : e.has(n));
+    });
+na(() => {
+    (Ws(!1), Is.set(!0));
+});
+async function Bs() {
+    if (!Zi()) return (Us(), !1);
+    try {
+        let e = await Q.get(`/api/auth/me`);
+        (Ms.set(e.user), Ns.set(e.membership || null));
+        let t = e.membership?.permissions || [];
+        return (
+            Fs.set(new Set(t)),
+            e.user?.isSuperadmin ||
+                (Ea(), Bi(sa) === `tab-superadmin` && sa.set(`tab-rules`)),
+            Is.set(!1),
+            !0
+        );
+    } catch {
+        return (Us(), !1);
+    }
+}
+async function Vs(e, t) {
+    try {
+        let n = await Q.post(`/api/auth/login`, { identifier: e, password: t });
+        if (!n.token) throw Error(`Respuesta inválida del servidor`);
+        (Qi(n.token),
+            Ps.set(n.token),
+            Ms.set(n.user),
+            Ns.set(n.membership || null),
+            n.activeCompany?.id && ea(n.activeCompany.id));
+        let r = n.membership?.permissions || [];
+        return (
+            Fs.set(new Set(r)),
+            n.user?.isSuperadmin ||
+                (Ea(), Bi(sa) === `tab-superadmin` && sa.set(`tab-rules`)),
+            Is.set(!1),
+            $(
+                `¡Bienvenido de vuelta, ${n.user.fullName || n.user.username}!`,
+                `success`,
+            ),
+            { success: !0 }
+        );
+    } catch (e) {
+        return { success: !1, error: e.message };
+    }
+}
+async function Hs(e, t, n, r) {
+    try {
+        let i = await Q.post(`/api/auth/register`, {
+            fullName: (e || ``).trim(),
+            email: (t || ``).trim(),
+            password: n,
+            companyName: r ? r.trim() : void 0,
+        });
+        if (!i.token) throw Error(`Respuesta inválida del servidor`);
+        (Qi(i.token),
+            Ps.set(i.token),
+            Ms.set(i.user),
+            Ns.set(i.membership || null));
+        let a = i.activeCompanyId || i.company?.id;
+        a && ea(a);
+        let o = i.membership?.permissions || [`*`];
+        return (
+            Fs.set(new Set(o)),
+            Ea(),
+            Bi(sa) === `tab-superadmin` && sa.set(`tab-rules`),
+            Is.set(!1),
+            $(
+                `¡Cuenta creada con éxito! Bienvenido, ${i.user.fullName}!`,
+                `success`,
+            ),
+            { success: !0, activeCompanyId: a }
+        );
+    } catch (e) {
+        return { success: !1, error: e.message };
+    }
+}
+function Us() {
+    (Qi(null),
+        Ps.set(null),
+        Ms.set(null),
+        Ns.set(null),
+        Fs.set(new Set()),
+        Ea(),
+        ha(),
+        Wa.set([]),
+        fo.set([]),
+        po.set(null),
+        go.set(null),
+        vo.set([]),
+        ao.set([]),
+        Za.set([]),
+        Fo.set([]),
+        Jo.set([]),
+        Yo.set({ activeDocuments: 0, totalWords: 0 }),
+        os.set([]),
+        ss.set([]),
+        vs.set({
+            status: `disconnected`,
+            phone: ``,
+            qrCode: null,
+            botEnabled: !1,
+            companyName: ``,
+            pendingSchedulesCount: 0,
+        }),
+        Os(),
+        To(),
+        sa.set(`tab-rules`),
+        Is.set(!0));
+}
+function Ws(e = !0) {
+    (Us(), e && $(`Sesión cerrada correctamente`, `info`));
+}
+async function Gs(e, t) {
+    try {
+        return (
+            await Q.post(`/api/auth/change-password`, {
+                currentPassword: e,
+                newPassword: t,
+            }),
+            $(`Contraseña actualizada exitosamente`, `success`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return { success: !1, error: e.message };
+    }
+}
+var Ks = X({
+        businessName: ``,
+        geminiEnabled: !0,
+        simulateTyping: !0,
+        typingDelaySeconds: 2,
+        ignoreGroups: !0,
+        fallbackMessage: ``,
+        geminiApiKeyMasked: null,
+        isCustomGeminiKey: !1,
+        geminiModel: `gemini-3.5-flash-lite`,
+    }),
+    qs = X({
+        configured: !1,
+        isCustom: !1,
+        maskedKey: null,
+        model: `gemini-3.5-flash-lite`,
+        hasGlobalKey: !1,
+        supportsAudio: !0,
+    });
+async function Js() {
+    try {
+        let e = await Q.get(`/api/settings`);
+        Ks.set({
+            businessName: e.businessName || ``,
+            geminiEnabled: e.geminiEnabled ?? !0,
+            simulateTyping: e.simulateTyping ?? !0,
+            typingDelaySeconds: e.typingDelaySeconds || 2,
+            ignoreGroups: e.ignoreGroups ?? !0,
+            fallbackMessage: e.fallbackMessage || ``,
+            geminiApiKeyMasked: e.geminiApiKeyMasked || null,
+            isCustomGeminiKey: e.isCustomGeminiKey ?? !1,
+            geminiModel: e.geminiModel || `gemini-3.5-flash-lite`,
+        });
+        try {
+            let e = await Q.get(`/api/gemini/status`);
+            qs.set(e);
+        } catch {}
+        return e;
+    } catch (e) {
+        return (console.error(`Error cargando configuración:`, e), null);
+    }
+}
+async function Ys(e) {
+    try {
+        let t = await Q.post(`/api/settings`, e);
+        Ks.update((e) => ({ ...e, ...t }));
+        try {
+            let e = await Q.get(`/api/gemini/status`);
+            qs.set(e);
+        } catch {}
+        return (
+            $(`Configuración guardada correctamente`, `success`),
+            { success: !0 }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Xs(e, t) {
+    try {
+        let n = await Q.post(`/api/gemini/config`, { apiKey: e, model: t });
+        return (
+            qs.set({
+                configured: n.configured,
+                isCustom: n.isCustom,
+                maskedKey: n.maskedKey,
+                model: n.model,
+                hasGlobalKey: n.hasGlobalKey,
+                supportsAudio: !0,
+            }),
+            Ks.update((e) => ({
+                ...e,
+                geminiApiKeyMasked: n.maskedKey,
+                isCustomGeminiKey: n.isCustom,
+                geminiModel: n.model,
+            })),
+            $(
+                `Configuración de Gemini actualizada para esta empresa`,
+                `success`,
+            ),
+            { success: !0, data: n }
+        );
+    } catch (e) {
+        return ($(e.message, `error`), { success: !1, error: e.message });
+    }
+}
+async function Zs(e, t) {
+    try {
+        return await Q.post(`/api/gemini/test-key`, { apiKey: e, model: t });
+    } catch (e) {
+        throw e;
+    }
+}
+var Qs = U(`<option>(Sin empresas vinculadas)</option>`),
+    $s = U(`<option> </option>`),
+    ec = U(
+        `<button type="button" title="Vincular WhatsApp de esta empresa o ver Código QR"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span><!></span></button>`,
+    ),
+    tc = U(
+        `<div class="bot-toggle-wrapper svelte-4b3o1e"><label class="switch svelte-4b3o1e"><input type="checkbox" class="svelte-4b3o1e"/> <span class="slider round svelte-4b3o1e"></span></label> <span class="toggle-label svelte-4b3o1e"> </span></div>`,
+    ),
+    nc = U(
+        `<button type="button" class="btn btn-outline-sm" title="Reiniciar conexión con WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> Reconectar</button>`,
+    ),
+    rc = U(
+        `<button type="button" title="Abrir Panel de Superusuario Global (ROOT)"><span class="header-crown-icon svelte-4b3o1e">👑</span> <span class="header-superadmin-text">Panel Superadmin</span></button>`,
+    ),
+    ic = U(
+        `<div class="user-header-profile"><div class="user-badge" title="Usuario activo"><span class="user-avatar"> </span> <div class="user-info-text"><span class="user-name"> </span> <span class="user-role-pill"> </span></div></div> <button type="button" class="btn btn-outline-sm btn-icon-only" title="Cambiar mi contraseña"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></button> <button type="button" class="btn btn-outline-sm btn-icon" title="Cerrar Sesión"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> <span>Salir</span></button></div>`,
+    ),
+    ac = U(
+        `<header class="app-header"><div class="header-left"><div class="brand-logo"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg> <div class="brand-text"><h1>WhatsApp Sales Bot</h1> <span class="brand-subtitle">Panel de Control & Automatización Modular (Svelte)</span></div></div></div> <div class="header-company-section"><div class="company-badge-icon" title="Empresa Activa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v14M21 7v14M6 10h2M6 14h2M6 18h2M10 10h4M10 14h4M10 18h4M16 10h2M16 14h2M16 18h2M9 3h6v4H9z"></path></svg></div> <div class="company-select-container"><span class="company-label">Empresa / Bot:</span> <select class="company-select" aria-label="Seleccionar Empresa"><!></select></div> <button type="button" class="btn btn-outline-sm btn-icon" title="Crear nueva empresa"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> <span>Nueva</span></button> <button type="button" class="btn btn-outline-sm btn-icon-only" title="Configurar empresa actual"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button></div> <div class="header-right"><div><span class="status-dot"></span> <span class="connection-text"><!></span></div> <!> <!> <!> <!> <!></div></header>`,
+    );
+function oc(e, t) {
+    Ue(t, !0);
+    let n = () => Z(fa, `$currentCompanyId`, u),
+        r = () => Z(da, `$companies`, u),
+        i = () => Z(vs, `$botStatus`, u),
+        a = () => Z(zs, `$hasPermission`, u),
+        o = () => Z(Rs, `$isSuperadmin`, u),
+        s = () => Z(sa, `$activeTab`, u),
+        c = () => Z(Ms, `$currentUser`, u),
+        l = () => Z(Ns, `$userMembership`, u),
+        [u, d] = Ui();
+    async function f(e) {
+        let n = e.target.value;
+        await va(n, t.onCompanySwitched);
+    }
+    function p() {
+        (ma.set(`create`), pa.set(!0));
+    }
+    function m() {
+        (ma.set(`edit`), pa.set(!0));
+    }
+    var h = ac(),
+        g = z(L(h), 2),
+        _ = z(L(g), 2),
+        v = z(L(_), 2),
+        y = L(v),
+        b = (e) => {
+            var t = Qs();
+            ((t.value = t.__value = ``), W(e, t));
+        },
+        x = (e) => {
+            var t = Ir();
+            (Xr(
+                cn(t),
+                1,
+                r,
+                (e) => e.id,
+                (e, t) => {
+                    var n = $s(),
+                        r = R(n),
+                        i = {};
+                    (B(() => {
+                        (G(
+                            r,
+                            `${V(t).name ?? ``}${V(t).phone ? ` (+${V(t).phone})` : V(t).status === `ready` ? ` (Conectado)` : ` (Sin vincular)`}`,
+                        ),
+                            i !== (i = V(t).id) &&
+                                (n.value = (n.__value = i) ?? ``));
+                    }),
+                        W(e, n));
+                },
+            ),
+                W(e, t));
+        };
+    (K(y, (e) => {
+        r().length === 0 ? e(b) : e(x, -1);
+    }),
+        M(v));
+    var S;
+    (_i(v), M(_));
+    var C = z(_, 2),
+        w = z(C, 2);
+    M(g);
+    var T = z(g, 2),
+        E = L(T),
+        D = z(L(E), 2),
+        O = L(D),
+        k = (e) => {
+            var t = Fr();
+            (B(() => G(t, `Conectado${i().phone ? ` (+${i().phone})` : ``}`)),
+                W(e, t));
+        },
+        A = (e) => {
+            W(e, Fr(`Escanear QR Requerido`));
+        },
+        ee = (e) => {
+            W(e, Fr(`Autenticado, sincronizando...`));
+        },
+        te = (e) => {
+            W(e, Fr(`Iniciando WhatsApp Web...`));
+        },
+        ne = (e) => {
+            W(e, Fr(`Desconectado`));
+        };
+    (K(O, (e) => {
+        i().status === `ready`
+            ? e(k)
+            : i().status === `qr_ready`
+              ? e(A, 1)
+              : i().status === `authenticated`
+                ? e(ee, 2)
+                : i().status === `initializing`
+                  ? e(te, 3)
+                  : e(ne, -1);
+    }),
+        M(D),
+        M(E));
+    var re = z(E, 2),
+        ie = (e) => {
+            var t = ec(),
+                n = z(L(t), 2),
+                r = L(n),
+                a = (e) => {
+                    var t = Fr();
+                    (B(() =>
+                        G(t, `✅ ${i().phone ? `+${i().phone}` : `Conectado`}`),
+                    ),
+                        W(e, t));
+                },
+                o = (e) => {
+                    W(e, Fr(`📱 Escanear Código QR`));
+                },
+                s = (e) => {
+                    W(e, Fr(`⏳ Generando QR...`));
+                },
+                c = (e) => {
+                    W(e, Fr(`📱 Vincular WhatsApp`));
+                };
+            (K(r, (e) => {
+                i().status === `ready`
+                    ? e(a)
+                    : i().status === `qr_ready`
+                      ? e(o, 1)
+                      : i().status === `initializing`
+                        ? e(s, 2)
+                        : e(c, -1);
+            }),
+                M(n),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `btn btn-qr-prominent ${i().status === `ready` ? `is-connected` : `needs-scan`}`,
+                    ),
+                ),
+                H(`click`, t, () => ys.set(!0)),
+                W(e, t));
+        },
+        ae = P(() => a()(`whatsapp:connect`));
+    K(re, (e) => {
+        V(ae) && e(ie);
+    });
+    var oe = z(re, 2),
+        se = (e) => {
+            var t = tc(),
+                n = L(t),
+                r = L(n);
+            (J(r), N(2), M(n));
+            var a = R(z(n, 2), !0);
+            (M(t),
+                B(() => {
+                    (wi(r, i().botEnabled),
+                        G(a, i().botEnabled ? `Bot Activo` : `Bot Pausado`));
+                }),
+                H(`change`, r, function (...e) {
+                    ks?.apply(this, e);
+                }),
+                W(e, t));
+        },
+        ce = P(() => a()(`whatsapp:toggle`));
+    K(oe, (e) => {
+        V(ce) && e(se);
+    });
+    var le = z(oe, 2),
+        ue = (e) => {
+            var t = nc();
+            (H(`click`, t, function (...e) {
+                As?.apply(this, e);
+            }),
+                W(e, t));
+        },
+        de = P(() => a()(`whatsapp:connect`));
+    K(le, (e) => {
+        V(de) && e(ue);
+    });
+    var fe = z(le, 2),
+        pe = (e) => {
+            var t = rc();
+            (B(() =>
+                q(
+                    t,
+                    1,
+                    `btn btn-superadmin-header ${s() === `tab-superadmin` ? `active` : ``}`,
+                    `svelte-4b3o1e`,
+                ),
+            ),
+                H(`click`, t, () => sa.set(`tab-superadmin`)),
+                W(e, t));
+        };
+    K(fe, (e) => {
+        o() && e(pe);
+    });
+    var me = z(fe, 2),
+        he = (e) => {
+            var t = ic(),
+                n = L(t),
+                r = L(n),
+                i = R(r, !0),
+                a = z(r, 2),
+                s = L(a),
+                u = R(s, !0),
+                d = R(z(s, 2), !0);
+            (M(a), M(n));
+            var f = z(n, 2),
+                p = z(f, 2);
+            (M(t),
+                B(
+                    (e) => {
+                        (G(i, e),
+                            G(u, c().fullName || c().username),
+                            G(
+                                d,
+                                l()?.roleName ||
+                                    (o()
+                                        ? `⭐ Superusuario`
+                                        : `👑 Administrador`),
+                            ));
+                    },
+                    [
+                        () =>
+                            (c().fullName || c().username || `U`)
+                                .charAt(0)
+                                .toUpperCase(),
+                    ],
+                ),
+                H(`click`, f, () => ca.set(!0)),
+                H(`click`, p, () => Ws(!0)),
+                W(e, t));
+        };
+    (K(me, (e) => {
+        c() && e(he);
+    }),
+        M(T),
+        M(h),
+        B(() => {
+            ((v.disabled = r().length === 0),
+                S !== (S = n()) &&
+                    ((v.value = (v.__value = S) ?? ``), gi(v, S)),
+                q(
+                    E,
+                    1,
+                    `connection-pill status-${i().status ?? ``}`,
+                    `svelte-4b3o1e`,
+                ));
+        }),
+        H(`change`, v, f),
+        H(`click`, C, p),
+        H(`click`, w, m),
+        W(e, h),
+        We(),
+        d());
+}
+(Tr([`change`, `click`]), Be());
+var sc = U(
+        `<span class="nav-section-title superadmin-title svelte-1m85e6v">👑 Sistema Global</span>`,
+    ),
+    cc = U(
+        `<span class="nav-label superadmin-label svelte-1m85e6v">Panel Superadmin</span> <span class="sidebar-badge superadmin-badge svelte-1m85e6v">ROOT</span>`,
+        1,
+    ),
+    lc = U(
+        `<span class="collapsed-dot superadmin-dot svelte-1m85e6v" title="Panel Superadmin"></span>`,
+    ),
+    uc = U(
+        `<div class="nav-section superadmin-nav-group top svelte-1m85e6v"><!> <button type="button" title="Panel de Superusuario (Programador / Admin Global)"><div class="nav-icon-box crown-icon svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" class="svelte-1m85e6v"></polygon></svg></div> <!></button></div>`,
+    ),
+    dc = U(
+        `<span class="nav-section-title svelte-1m85e6v">Comunicación & Ventas</span>`,
+    ),
+    fc = U(`<span class="nav-label svelte-1m85e6v">Rutas de Respuesta</span>`),
+    pc = U(
+        `<button type="button" title="Rutas de Respuesta (Flujos de Venta)"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" class="svelte-1m85e6v"></path></svg></div> <!></button>`,
+    ),
+    mc = U(`<span class="sidebar-badge schedules svelte-1m85e6v"> </span>`),
+    hc = U(
+        `<span class="nav-label svelte-1m85e6v">Programar Envíos</span> <!>`,
+        1,
+    ),
+    gc = U(`<span class="collapsed-dot schedules svelte-1m85e6v"></span>`),
+    _c = U(
+        `<button type="button" title="Programar Envíos y Difusiones"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><circle cx="12" cy="12" r="10" class="svelte-1m85e6v"></circle><polyline points="12 6 12 12 16 14" class="svelte-1m85e6v"></polyline></svg></div> <!></button>`,
+    ),
+    vc = U(`<span class="nav-label svelte-1m85e6v">Prospectos & CRM</span>`),
+    yc = U(
+        `<button type="button" title="Prospectos, Contactos &amp; CRM"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" class="svelte-1m85e6v"></path><circle cx="9" cy="7" r="4" class="svelte-1m85e6v"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87" class="svelte-1m85e6v"></path><path d="M16 3.13a4 4 0 0 1 0 7.75" class="svelte-1m85e6v"></path></svg></div> <!></button>`,
+    ),
+    bc = U(
+        `<span class="nav-section-title svelte-1m85e6v">Pruebas & Operación</span>`,
+    ),
+    xc = U(`<span class="nav-label svelte-1m85e6v">Simulador en Vivo</span>`),
+    Sc = U(
+        `<button type="button" title="Simulador Interactivo en Vivo"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" class="svelte-1m85e6v"></rect><line x1="12" y1="18" x2="12.01" y2="18" class="svelte-1m85e6v"></line></svg></div> <!></button>`,
+    ),
+    Cc = U(`<span class="nav-label svelte-1m85e6v">Envío de Prueba</span>`),
+    wc = U(
+        `<button type="button" title="Envío Rápido de Prueba"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><line x1="22" y1="2" x2="11" y2="13" class="svelte-1m85e6v"></line><polygon points="22 2 15 22 11 13 2 9 22 2" class="svelte-1m85e6v"></polygon></svg></div> <!></button>`,
+    ),
+    Tc = U(
+        `<span class="nav-section-title svelte-1m85e6v">Inteligencia Artificial</span>`,
+    ),
+    Ec = U(`<span class="sidebar-badge library svelte-1m85e6v"> </span>`),
+    Dc = U(
+        `<span class="nav-label svelte-1m85e6v">Biblioteca IA</span> <!>`,
+        1,
+    ),
+    Oc = U(`<span class="collapsed-dot library svelte-1m85e6v"></span>`),
+    kc = U(
+        `<button type="button" title="Biblioteca de Conocimiento de la IA"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" class="svelte-1m85e6v"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" class="svelte-1m85e6v"></path></svg></div> <!></button>`,
+    ),
+    Ac = U(
+        `<span class="nav-section-title svelte-1m85e6v">Administración</span>`,
+    ),
+    jc = U(`<span class="nav-label svelte-1m85e6v">Configuración</span>`),
+    Mc = U(
+        `<button type="button" title="Configuración General del Bot"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><circle cx="12" cy="12" r="3" class="svelte-1m85e6v"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" class="svelte-1m85e6v"></path></svg></div> <!></button>`,
+    ),
+    Nc = U(`<span class="sidebar-badge team svelte-1m85e6v"> </span>`),
+    Pc = U(
+        `<span class="nav-label svelte-1m85e6v">Equipo & Roles</span> <!>`,
+        1,
+    ),
+    Fc = U(`<span class="collapsed-dot team svelte-1m85e6v"></span>`),
+    Ic = U(
+        `<button type="button" title="Equipo de Trabajo y Roles"><div class="nav-icon-box svelte-1m85e6v"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="svelte-1m85e6v"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" class="svelte-1m85e6v"></path></svg></div> <!></button>`,
+    ),
+    Lc = U(
+        `<button type="button" class="mini-qr-link svelte-1m85e6v">Escanear QR</button>`,
+    ),
+    Rc = U(
+        `<div class="bot-mini-status svelte-1m85e6v"><div></div> <div class="status-mini-text svelte-1m85e6v"><span class="status-title svelte-1m85e6v"> </span> <!></div></div>`,
+    ),
+    zc = U(`<span class="svelte-1m85e6v">Contraer menú</span>`),
+    Bc = U(
+        `<aside aria-label="Navegación principal"><div class="sidebar-scroll-area svelte-1m85e6v"><!> <div class="nav-section svelte-1m85e6v"><!> <!> <!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!></div> <div class="nav-section svelte-1m85e6v"><!> <!> <!></div></div> <div class="sidebar-footer svelte-1m85e6v"><!> <button type="button" class="sidebar-toggle-btn svelte-1m85e6v"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6" class="svelte-1m85e6v"></polyline></svg> <!></button></div></aside>`,
+    );
+function Vc(e, t) {
+    Ue(t, !1);
+    let n = () => Z(ua, `$isSidebarCollapsed`, l),
+        r = () => Z(Rs, `$isSuperadmin`, l),
+        i = () => Z(sa, `$activeTab`, l),
+        a = () => Z(zs, `$hasPermission`, l),
+        o = () => Z(vs, `$botStatus`, l),
+        s = () => Z(Yo, `$libraryStats`, l),
+        c = () => Z(os, `$teamMembers`, l),
+        [l, u] = Ui();
+    function d(e) {
+        sa.set(e);
+    }
+    function f() {
+        ua.update((e) => !e);
+    }
+    Pi();
+    var p = Bc(),
+        m = L(p),
+        h = L(m),
+        g = (e) => {
+            var t = uc(),
+                r = L(t),
+                a = (e) => {
+                    W(e, sc());
+                };
+            K(r, (e) => {
+                n() || e(a);
+            });
+            var o = z(r, 2),
+                s = z(L(o), 2),
+                c = (e) => {
+                    var t = cc();
+                    (N(2), W(e, t));
+                },
+                l = (e) => {
+                    W(e, lc());
+                };
+            (K(s, (e) => {
+                n() ? e(l, -1) : e(c);
+            }),
+                M(o),
+                M(t),
+                B(() =>
+                    q(
+                        o,
+                        1,
+                        `sidebar-nav-item superadmin-btn ${i() === `tab-superadmin` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, o, () => d(`tab-superadmin`)),
+                W(e, t));
+        };
+    K(h, (e) => {
+        r() && e(g);
+    });
+    var _ = z(h, 2),
+        v = L(_),
+        y = (e) => {
+            W(e, dc());
+        };
+    K(v, (e) => {
+        n() || e(y);
+    });
+    var b = z(v, 2),
+        x = (e) => {
+            var t = pc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    W(e, fc());
+                };
+            (K(r, (e) => {
+                n() || e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-rules` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-rules`)),
+                W(e, t));
+        },
+        S = P(() => a()(`rules:view`));
+    K(b, (e) => {
+        V(S) && e(x);
+    });
+    var C = z(b, 2),
+        w = (e) => {
+            var t = _c(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    var t = hc(),
+                        n = z(cn(t), 2),
+                        r = (e) => {
+                            var t = mc(),
+                                n = R(t, !0);
+                            (B(() => G(n, o().pendingSchedulesCount)), W(e, t));
+                        };
+                    (K(n, (e) => {
+                        (o().pendingSchedulesCount || 0) > 0 && e(r);
+                    }),
+                        W(e, t));
+                },
+                s = (e) => {
+                    var t = gc();
+                    (B(() =>
+                        Ti(
+                            t,
+                            `title`,
+                            `${o().pendingSchedulesCount} envíos pendientes`,
+                        ),
+                    ),
+                        W(e, t));
+                };
+            (K(r, (e) => {
+                n() ? (o().pendingSchedulesCount || 0) > 0 && e(s, 1) : e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-scheduler` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-scheduler`)),
+                W(e, t));
+        },
+        T = P(() => a()(`schedules:view`));
+    K(C, (e) => {
+        V(T) && e(w);
+    });
+    var E = z(C, 2),
+        D = (e) => {
+            var t = yc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    W(e, vc());
+                };
+            (K(r, (e) => {
+                n() || e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-leads` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-leads`)),
+                W(e, t));
+        },
+        O = P(() => a()(`leads:view`));
+    (K(E, (e) => {
+        V(O) && e(D);
+    }),
+        M(_));
+    var k = z(_, 2),
+        A = L(k),
+        ee = (e) => {
+            W(e, bc());
+        };
+    K(A, (e) => {
+        n() || e(ee);
+    });
+    var te = z(A, 2),
+        ne = (e) => {
+            var t = Sc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    W(e, xc());
+                };
+            (K(r, (e) => {
+                n() || e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-simulator` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-simulator`)),
+                W(e, t));
+        },
+        re = P(() => a()(`simulator:use`));
+    K(te, (e) => {
+        V(re) && e(ne);
+    });
+    var ie = z(te, 2),
+        ae = (e) => {
+            var t = wc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    W(e, Cc());
+                };
+            (K(r, (e) => {
+                n() || e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-quick-send` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-quick-send`)),
+                W(e, t));
+        },
+        oe = P(() => a()(`quick_send:use`));
+    (K(ie, (e) => {
+        V(oe) && e(ae);
+    }),
+        M(k));
+    var se = z(k, 2),
+        ce = L(se),
+        le = (e) => {
+            W(e, Tc());
+        };
+    K(ce, (e) => {
+        n() || e(le);
+    });
+    var ue = z(ce, 2),
+        de = (e) => {
+            var t = kc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    var t = Dc(),
+                        n = z(cn(t), 2),
+                        r = (e) => {
+                            var t = Ec(),
+                                n = R(t, !0);
+                            (B(() => G(n, s().activeDocuments)), W(e, t));
+                        };
+                    (K(n, (e) => {
+                        (s().activeDocuments || 0) > 0 && e(r);
+                    }),
+                        W(e, t));
+                },
+                o = (e) => {
+                    var t = Oc();
+                    (B(() =>
+                        Ti(t, `title`, `${s().activeDocuments} docs activos`),
+                    ),
+                        W(e, t));
+                };
+            (K(r, (e) => {
+                n() ? (s().activeDocuments || 0) > 0 && e(o, 1) : e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-library` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-library`)),
+                W(e, t));
+        },
+        fe = P(() => a()(`library:view`));
+    (K(ue, (e) => {
+        V(fe) && e(de);
+    }),
+        M(se));
+    var pe = z(se, 2),
+        me = L(pe),
+        he = (e) => {
+            W(e, Ac());
+        };
+    K(me, (e) => {
+        n() || e(he);
+    });
+    var ge = z(me, 2),
+        _e = (e) => {
+            var t = Mc(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    W(e, jc());
+                };
+            (K(r, (e) => {
+                n() || e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-settings` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-settings`)),
+                W(e, t));
+        },
+        j = P(() => a()(`settings:view`));
+    K(ge, (e) => {
+        V(j) && e(_e);
+    });
+    var ve = z(ge, 2),
+        ye = (e) => {
+            var t = Ic(),
+                r = z(L(t), 2),
+                a = (e) => {
+                    var t = Pc(),
+                        n = z(cn(t), 2),
+                        r = (e) => {
+                            var t = Nc(),
+                                n = R(t, !0);
+                            (B(() => G(n, c().length)), W(e, t));
+                        };
+                    (K(n, (e) => {
+                        (c().length || 0) > 0 && e(r);
+                    }),
+                        W(e, t));
+                },
+                o = (e) => {
+                    var t = Fc();
+                    (B(() => Ti(t, `title`, `${c().length} colaboradores`)),
+                        W(e, t));
+                };
+            (K(r, (e) => {
+                n() ? (c().length || 0) > 0 && e(o, 1) : e(a);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `sidebar-nav-item ${i() === `tab-team` ? `active` : ``}`,
+                        `svelte-1m85e6v`,
+                    ),
+                ),
+                H(`click`, t, () => d(`tab-team`)),
+                W(e, t));
+        },
+        be = P(() => a()(`team:view`));
+    (K(ve, (e) => {
+        V(be) && e(ye);
+    }),
+        M(pe),
+        M(m));
+    var xe = z(m, 2),
+        Se = L(xe),
+        Ce = (e) => {
+            var t = Rc(),
+                n = L(t),
+                r = z(n, 2),
+                i = L(r),
+                a = R(i, !0),
+                s = z(i, 2),
+                c = (e) => {
+                    var t = Lc();
+                    (H(`click`, t, () => ys.set(!0)), W(e, t));
+                };
+            (K(s, (e) => {
+                o().status === `qr_ready` && e(c);
+            }),
+                M(r),
+                M(t),
+                B(() => {
+                    (q(
+                        n,
+                        1,
+                        `status-indicator-dot ${o().status === `ready` ? `ready` : o().status === `qr_ready` ? `qr` : `idle`}`,
+                        `svelte-1m85e6v`,
+                    ),
+                        G(
+                            a,
+                            o().status === `ready`
+                                ? `WhatsApp Conectado`
+                                : o().status === `qr_ready`
+                                  ? `Esperando Escaneo QR`
+                                  : `WhatsApp Desconectado`,
+                        ));
+                }),
+                W(e, t));
+        };
+    K(Se, (e) => {
+        n() || e(Ce);
+    });
+    var we = z(Se, 2),
+        Te = L(we),
+        Ee = z(Te, 2),
+        De = (e) => {
+            W(e, zc());
+        };
+    (K(Ee, (e) => {
+        n() || e(De);
+    }),
+        M(we),
+        M(xe),
+        M(p),
+        B(() => {
+            (q(
+                p,
+                1,
+                `sidebar-wrapper ${n() ? `collapsed` : ``}`,
+                `svelte-1m85e6v`,
+            ),
+                Ti(
+                    we,
+                    `title`,
+                    n() ? `Expandir barra lateral` : `Contraer barra lateral`,
+                ),
+                Ti(
+                    we,
+                    `aria-label`,
+                    n() ? `Expandir barra lateral` : `Contraer barra lateral`,
+                ),
+                q(
+                    Te,
+                    0,
+                    `toggle-icon ${n() ? `collapsed` : ``}`,
+                    `svelte-1m85e6v`,
+                ));
+        }),
+        H(`click`, we, f),
+        W(e, p),
+        We(),
+        u());
+}
+Tr([`click`]);
+var Hc = U(
+        `<div><span class="toast-icon svelte-1cpgbq5"><!></span> <span class="toast-message svelte-1cpgbq5"> </span> <button type="button" class="toast-close svelte-1cpgbq5">&times;</button></div>`,
+    ),
+    Uc = U(`<div class="toast-container svelte-1cpgbq5"></div>`);
+function Wc(e, t) {
+    Ue(t, !1);
+    let n = () => Z(ia, `$toasts`, r),
+        [r, i] = Ui();
+    Pi();
+    var a = Uc();
+    (Xr(
+        a,
+        5,
+        n,
+        (e) => e.id,
+        (e, t) => {
+            var n = Hc(),
+                r = L(n),
+                i = L(r),
+                a = (e) => {
+                    W(e, Fr(`✓`));
+                },
+                o = (e) => {
+                    W(e, Fr(`✕`));
+                },
+                s = (e) => {
+                    W(e, Fr(`⚠️`));
+                },
+                c = (e) => {
+                    W(e, Fr(`ℹ`));
+                };
+            (K(i, (e) => {
+                V(t).type === `success`
+                    ? e(a)
+                    : V(t).type === `error`
+                      ? e(o, 1)
+                      : V(t).type === `warning`
+                        ? e(s, 2)
+                        : e(c, -1);
+            }),
+                M(r));
+            var l = z(r, 2),
+                u = R(l, !0),
+                d = z(l, 2);
+            (M(n),
+                B(() => {
+                    (q(
+                        n,
+                        1,
+                        `toast toast-${V(t).type ?? ``}`,
+                        `svelte-1cpgbq5`,
+                    ),
+                        G(u, V(t).message));
+                }),
+                H(`click`, n, () => oa(V(t).id)),
+                H(`click`, d, () => oa(V(t).id)),
+                W(e, n));
+        },
+    ),
+        M(a),
+        W(e, a),
+        We(),
+        i());
+}
+Tr([`click`]);
+var Gc = U(`<div class="auth-alert error"> </div>`),
+    Kc = Pr(
+        `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`,
+        1,
+    ),
+    qc = Pr(
+        `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`,
+        1,
+    ),
+    Jc = Pr(
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+    ),
+    Yc = U(
+        `<div class="form-group auth-field"><label for="login-identifier" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> USUARIO O CORREO ELECTRÓNICO</label> <div class="auth-input-wrapper"><input type="text" id="login-identifier" class="auth-input" placeholder="ej. admin@empresa.com o tu_usuario" required="" autocomplete="username"/></div></div> <div class="form-group auth-field"><label for="login-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> CONTRASEÑA</label> <div class="auth-input-wrapper password-wrapper"><input id="login-password" class="auth-input" placeholder="Ingresa tu contraseña" required="" autocomplete="current-password"/> <button type="button" class="btn-eye-toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!></svg></button></div></div> <button type="submit" class="btn btn-auth-submit"><span> </span> <!></button> <div class="auth-switch-prompt svelte-6rive1">¿No tienes una cuenta aún? <button type="button" class="auth-link-button svelte-6rive1">Regístrate aquí</button></div>`,
+        1,
+    ),
+    Xc = U(
+        `<div class="form-group auth-field"><label for="reg-fullname" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> NOMBRE COMPLETO</label> <div class="auth-input-wrapper"><input type="text" id="reg-fullname" class="auth-input" placeholder="Ej. Juan Pérez" required="" autocomplete="name"/></div></div> <div class="form-group auth-field"><label for="reg-email" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> CORREO ELECTRÓNICO</label> <div class="auth-input-wrapper"><input type="email" id="reg-email" class="auth-input" placeholder="ejemplo@negocio.com" required="" autocomplete="email"/></div></div> <div class="form-group auth-field"><label for="reg-company" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> NOMBRE DE TU EMPRESA / NEGOCIO</label> <div class="auth-input-wrapper"><input type="text" id="reg-company" class="auth-input" placeholder="Ej. Digital Pass Express (opcional)"/></div></div> <div class="form-group auth-field"><label for="reg-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> CONTRASEÑA (MÍNIMO 6 CARACTERES)</label> <div class="auth-input-wrapper password-wrapper"><input id="reg-password" class="auth-input" placeholder="Crea una contraseña segura" required="" minlength="6" autocomplete="new-password"/> <button type="button" class="btn-eye-toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><!></svg></button></div></div> <div class="form-group auth-field"><label for="reg-confirm-password" class="auth-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> CONFIRMAR CONTRASEÑA</label> <div class="auth-input-wrapper"><input id="reg-confirm-password" class="auth-input" placeholder="Repite tu contraseña" required="" minlength="6" autocomplete="new-password"/></div></div> <button type="submit" class="btn btn-auth-submit"><span> </span> <!></button> <div class="auth-switch-prompt svelte-6rive1">¿Ya tienes una cuenta? <button type="button" class="auth-link-button svelte-6rive1">Inicia sesión aquí</button></div>`,
+        1,
+    ),
+    Zc = U(
+        `<div class="auth-modal-overlay"><div class="auth-card"><div class="auth-card-glow"></div> <div class="auth-header"><div class="auth-badge-icon"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg></div> <h2 class="auth-title"> </h2> <p class="auth-subtitle"> </p> <div class="auth-mode-tabs svelte-6rive1"><button type="button">🔑 Iniciar Sesión</button> <button type="button">✨ Registrarse</button></div></div> <form class="auth-form-body"><!> <!> <div class="auth-footer-note"><span>🛡️ Acceso seguro con roles y base de datos PostgreSQL</span></div></form></div></div>`,
+    );
+function Qc(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Is, `$isAuthModalOpen`, r),
+        [r, i] = Ui(),
+        a = F(`login`),
+        o = F(``),
+        s = F(``),
+        c = F(!1),
+        l = F(``),
+        u = F(``),
+        d = F(``),
+        f = F(``),
+        p = F(``),
+        m = F(!1),
+        h = F(!1),
+        g = F(``);
+    function _(e) {
+        (I(a, e, !0), I(g, ``));
+    }
+    async function v(e) {
+        if ((e.preventDefault(), I(g, ``), V(a) === `login`)) {
+            if (!V(o).trim() || !V(s)) {
+                I(g, `Por favor ingresa tu usuario o correo y tu contraseña.`);
+                return;
+            }
+            I(h, !0);
+            let e = await Vs(V(o).trim(), V(s));
+            (I(h, !1),
+                e.success || I(g, e.error || `Credenciales incorrectas`, !0));
+        } else {
+            if (!V(l).trim() || !V(u).trim() || !V(f)) {
+                I(
+                    g,
+                    `Nombre, correo electrónico y contraseña son obligatorios.`,
+                );
+                return;
+            }
+            if (V(f).length < 6) {
+                I(g, `La contraseña debe tener al menos 6 caracteres.`);
+                return;
+            }
+            if (V(f) !== V(p)) {
+                I(g, `Las contraseñas no coinciden.`);
+                return;
+            }
+            I(h, !0);
+            let e = await Hs(
+                V(l).trim(),
+                V(u).trim(),
+                V(f),
+                V(d).trim() || void 0,
+            );
+            (I(h, !1),
+                e.success || I(g, e.error || `Error al crear la cuenta.`, !0));
+        }
+    }
+    var y = Ir(),
+        b = cn(y),
+        x = (e) => {
+            var t = Zc(),
+                n = L(t),
+                r = z(L(n), 2),
+                i = z(L(r), 2),
+                y = R(i, !0),
+                b = z(i, 2),
+                x = R(b, !0),
+                S = z(b, 2),
+                C = L(S),
+                w = z(C, 2);
+            (M(S), M(r));
+            var T = z(r, 2),
+                E = L(T),
+                D = (e) => {
+                    var t = Gc(),
+                        n = R(t, !0);
+                    (B(() => G(n, V(g))), W(e, t));
+                };
+            K(E, (e) => {
+                V(g) && e(D);
+            });
+            var O = z(E, 2),
+                k = (e) => {
+                    var t = Yc(),
+                        n = cn(t),
+                        r = z(L(n), 2),
+                        i = L(r);
+                    (J(i), M(r), M(n));
+                    var a = z(n, 2),
+                        l = z(L(a), 2),
+                        u = L(l);
+                    J(u);
+                    var d = z(u, 2),
+                        f = L(d),
+                        p = L(f),
+                        m = (e) => {
+                            var t = Kc();
+                            (N(), W(e, t));
+                        },
+                        g = (e) => {
+                            var t = qc();
+                            (N(), W(e, t));
+                        };
+                    (K(p, (e) => {
+                        V(c) ? e(m) : e(g, -1);
+                    }),
+                        M(f),
+                        M(d),
+                        M(l),
+                        M(a));
+                    var v = z(a, 2),
+                        y = L(v),
+                        b = R(y, !0),
+                        x = z(y, 2),
+                        S = (e) => {
+                            W(e, Jc());
+                        };
+                    (K(x, (e) => {
+                        V(h) || e(S);
+                    }),
+                        M(v));
+                    var C = z(v, 2),
+                        w = z(L(C));
+                    (M(C),
+                        B(() => {
+                            (Ti(u, `type`, V(c) ? `text` : `password`),
+                                Ti(
+                                    d,
+                                    `title`,
+                                    V(c)
+                                        ? `Ocultar contraseña`
+                                        : `Ver contraseña`,
+                                ),
+                                Ti(
+                                    d,
+                                    `aria-label`,
+                                    V(c)
+                                        ? `Ocultar contraseña`
+                                        : `Ver contraseña`,
+                                ),
+                                (v.disabled = V(h)),
+                                G(
+                                    b,
+                                    V(h)
+                                        ? `Iniciando sesión...`
+                                        : `Ingresar al Panel`,
+                                ));
+                        }),
+                        Y(
+                            i,
+                            () => V(o),
+                            (e) => I(o, e),
+                        ),
+                        Y(
+                            u,
+                            () => V(s),
+                            (e) => I(s, e),
+                        ),
+                        H(`click`, d, () => I(c, !V(c))),
+                        H(`click`, w, () => _(`register`)),
+                        W(e, t));
+                },
+                A = (e) => {
+                    var t = Xc(),
+                        n = cn(t),
+                        r = z(L(n), 2),
+                        i = L(r);
+                    (J(i), M(r), M(n));
+                    var a = z(n, 2),
+                        o = z(L(a), 2),
+                        s = L(o);
+                    (J(s), M(o), M(a));
+                    var c = z(a, 2),
+                        g = z(L(c), 2),
+                        v = L(g);
+                    (J(v), M(g), M(c));
+                    var y = z(c, 2),
+                        b = z(L(y), 2),
+                        x = L(b);
+                    J(x);
+                    var S = z(x, 2),
+                        C = L(S),
+                        w = L(C),
+                        T = (e) => {
+                            var t = Kc();
+                            (N(), W(e, t));
+                        },
+                        E = (e) => {
+                            var t = qc();
+                            (N(), W(e, t));
+                        };
+                    (K(w, (e) => {
+                        V(m) ? e(T) : e(E, -1);
+                    }),
+                        M(C),
+                        M(S),
+                        M(b),
+                        M(y));
+                    var D = z(y, 2),
+                        O = z(L(D), 2),
+                        k = L(O);
+                    (J(k), M(O), M(D));
+                    var A = z(D, 2),
+                        ee = L(A),
+                        te = R(ee, !0),
+                        ne = z(ee, 2),
+                        re = (e) => {
+                            W(e, Jc());
+                        };
+                    (K(ne, (e) => {
+                        V(h) || e(re);
+                    }),
+                        M(A));
+                    var ie = z(A, 2),
+                        ae = z(L(ie));
+                    (M(ie),
+                        B(() => {
+                            (Ti(x, `type`, V(m) ? `text` : `password`),
+                                Ti(
+                                    S,
+                                    `title`,
+                                    V(m)
+                                        ? `Ocultar contraseña`
+                                        : `Ver contraseña`,
+                                ),
+                                Ti(
+                                    S,
+                                    `aria-label`,
+                                    V(m)
+                                        ? `Ocultar contraseña`
+                                        : `Ver contraseña`,
+                                ),
+                                Ti(k, `type`, V(m) ? `text` : `password`),
+                                (A.disabled = V(h)),
+                                G(
+                                    te,
+                                    V(h)
+                                        ? `Creando cuenta...`
+                                        : `Crear Cuenta y Comenzar`,
+                                ));
+                        }),
+                        Y(
+                            i,
+                            () => V(l),
+                            (e) => I(l, e),
+                        ),
+                        Y(
+                            s,
+                            () => V(u),
+                            (e) => I(u, e),
+                        ),
+                        Y(
+                            v,
+                            () => V(d),
+                            (e) => I(d, e),
+                        ),
+                        Y(
+                            x,
+                            () => V(f),
+                            (e) => I(f, e),
+                        ),
+                        H(`click`, S, () => I(m, !V(m))),
+                        Y(
+                            k,
+                            () => V(p),
+                            (e) => I(p, e),
+                        ),
+                        H(`click`, ae, () => _(`login`)),
+                        W(e, t));
+                };
+            (K(O, (e) => {
+                V(a) === `login` ? e(k) : e(A, -1);
+            }),
+                N(2),
+                M(T),
+                M(n),
+                M(t),
+                B(() => {
+                    (G(
+                        y,
+                        V(a) === `login`
+                            ? `WhatsApp Sales Bot Studio`
+                            : `Crear Nueva Cuenta`,
+                    ),
+                        G(
+                            x,
+                            V(a) === `login`
+                                ? `Ingresa tus credenciales para acceder al panel de control`
+                                : `Registra tu usuario y crea tu primer entorno empresarial`,
+                        ),
+                        q(
+                            C,
+                            1,
+                            `auth-mode-tab ${V(a) === `login` ? `active` : ``}`,
+                            `svelte-6rive1`,
+                        ),
+                        q(
+                            w,
+                            1,
+                            `auth-mode-tab ${V(a) === `register` ? `active` : ``}`,
+                            `svelte-6rive1`,
+                        ));
+                }),
+                H(`click`, C, () => _(`login`)),
+                H(`click`, w, () => _(`register`)),
+                wr(`submit`, T, v),
+                W(e, t));
+        };
+    (K(b, (e) => {
+        n() && e(x);
+    }),
+        W(e, y),
+        We(),
+        i());
+}
+Tr([`click`]);
+var $c = U(`<h3> </h3>`),
+    el = U(`<span class="lead-modal-subtitle"> </span>`),
+    tl = U(
+        `<button type="button" class="btn-close" aria-label="Cerrar">&times;</button>`,
+    ),
+    nl = U(`<div class="modal-actions"><!></div>`),
+    rl = U(
+        `<div class="modal-overlay"><div class="modal-card"><div class="modal-header"><div><!> <!></div> <!></div> <div class="modal-body-scrollable svelte-19jhfg1"><!></div> <!></div></div>`,
+    );
+function il(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `title`, 3, ``),
+        i = Gi(t, `subtitle`, 3, ``),
+        a = Gi(t, `maxWidth`, 3, `650px`);
+    function o(e) {
+        e.target === e.currentTarget && t.onClose && t.onClose();
+    }
+    function s(e) {
+        e.key === `Escape` && t.onClose && n() && t.onClose();
+    }
+    var c = Ir();
+    wr(`keydown`, $t, s);
+    var l = cn(c),
+        u = (e) => {
+            var n = rl(),
+                s = L(n),
+                c = L(s),
+                l = L(c),
+                u = L(l),
+                f = (e) => {
+                    var t = $c(),
+                        n = R(t, !0);
+                    (B(() => G(n, r())), W(e, t));
+                };
+            K(u, (e) => {
+                r() && e(f);
+            });
+            var p = z(u, 2),
+                m = (e) => {
+                    var t = el(),
+                        n = R(t, !0);
+                    (B(() => G(n, i())), W(e, t));
+                };
+            (K(p, (e) => {
+                i() && e(m);
+            }),
+                M(l));
+            var h = z(l, 2),
+                g = (e) => {
+                    var n = tl();
+                    (H(`click`, n, function (...e) {
+                        t.onClose?.apply(this, e);
+                    }),
+                        W(e, n));
+                };
+            (K(h, (e) => {
+                t.onClose && e(g);
+            }),
+                M(c));
+            var _ = z(c, 2);
+            (ri(L(_), () => t.children ?? d), M(_));
+            var v = z(_, 2),
+                y = (e) => {
+                    var n = nl();
+                    (ri(L(n), () => t.actions), M(n), W(e, n));
+                };
+            (K(v, (e) => {
+                t.actions && e(y);
+            }),
+                M(s),
+                M(n),
+                B(() => pi(s, `max-width: ${a() ?? ``};`)),
+                H(`click`, n, o),
+                H(`click`, s, (e) => e.stopPropagation()),
+                W(e, n));
+        };
+    (K(l, (e) => {
+        n() && e(u);
+    }),
+        W(e, c),
+        We());
+}
+Tr([`click`]);
+var al = U(
+        `<div class="auth-alert error" style="margin-bottom: 14px;"> </div>`,
+    ),
+    ol = U(
+        `<form class="form-body"><!> <div class="form-group"><label for="pwd-current">Contraseña Actual</label> <input type="password" id="pwd-current" placeholder="Contraseña actual" required=""/></div> <div class="form-group"><label for="pwd-new">Nueva Contraseña</label> <input type="password" id="pwd-new" placeholder="Al menos 6 caracteres" minlength="6" required=""/></div> <div class="form-group"><label for="pwd-confirm">Confirmar Nueva Contraseña</label> <input type="password" id="pwd-confirm" placeholder="Repite la nueva contraseña" minlength="6" required=""/></div> <div class="modal-actions" style="margin-top: 20px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function sl(e, t) {
+    Ue(t, !0);
+    let n = () => Z(ca, `$isChangePasswordModalOpen`, r),
+        [r, i] = Ui(),
+        a = F(``),
+        o = F(``),
+        s = F(``),
+        c = F(``),
+        l = F(!1);
+    function u() {
+        (I(a, ``), I(o, ``), I(s, ``), I(c, ``), I(l, !1));
+    }
+    function d() {
+        (ca.set(!1), u());
+    }
+    async function f(e) {
+        if ((e.preventDefault(), V(o).length < 6)) {
+            I(c, `La nueva contraseña debe tener al menos 6 caracteres`);
+            return;
+        }
+        if (V(o) !== V(s)) {
+            I(c, `Las contraseñas no coinciden`);
+            return;
+        }
+        (I(l, !0), I(c, ``));
+        let t = await Gs(V(a), V(o));
+        (I(l, !1),
+            t.success
+                ? d()
+                : I(c, t.error || `Error al cambiar contraseña`, !0));
+    }
+    (il(e, {
+        get isOpen() {
+            return n();
+        },
+        title: `🔒 Cambiar Mi Contraseña`,
+        subtitle: `Actualiza tus credenciales de acceso`,
+        maxWidth: `440px`,
+        onClose: d,
+        children: (e, t) => {
+            var n = ol(),
+                r = L(n),
+                i = (e) => {
+                    var t = al(),
+                        n = R(t, !0);
+                    (B(() => G(n, V(c))), W(e, t));
+                };
+            K(r, (e) => {
+                V(c) && e(i);
+            });
+            var u = z(r, 2),
+                p = z(L(u), 2);
+            (J(p), M(u));
+            var m = z(u, 2),
+                h = z(L(m), 2);
+            (J(h), M(m));
+            var g = z(m, 2),
+                _ = z(L(g), 2);
+            (J(_), M(g));
+            var v = z(g, 2),
+                y = L(v),
+                b = z(y, 2),
+                x = R(b, !0);
+            (M(v),
+                M(n),
+                B(() => {
+                    ((b.disabled = V(l)),
+                        G(
+                            x,
+                            V(l) ? `Actualizando...` : `Actualizar Contraseña`,
+                        ));
+                }),
+                wr(`submit`, n, f),
+                Y(
+                    p,
+                    () => V(a),
+                    (e) => I(a, e),
+                ),
+                Y(
+                    h,
+                    () => V(o),
+                    (e) => I(o, e),
+                ),
+                Y(
+                    _,
+                    () => V(s),
+                    (e) => I(s, e),
+                ),
+                H(`click`, y, d),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        i());
+}
+Tr([`click`]);
+var cl = U(
+        `<button type="button" class="btn btn-primary">⚡ Generar Código QR</button>`,
+    ),
+    ll = U(
+        `<button type="button" class="btn btn-secondary" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" title="Borra la sesión local y genera un nuevo QR de cero">🗑️ Limpiar y Forzar QR</button>`,
+    ),
+    ul = U(
+        `<button type="button" class="btn btn-secondary">🔄 Regenerar QR</button> <!>`,
+        1,
+    ),
+    dl = U(
+        `<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; flex-wrap: wrap;"><div style="display: flex; gap: 8px; flex-wrap: wrap;"><!></div> <button type="button" class="btn btn-secondary">Cerrar</button></div>`,
+    ),
+    fl = U(`<div class="qr-auto-close-notice svelte-wiz4i4"> </div>`),
+    pl = U(
+        `<div class="qr-view-box"><div class="qr-connected-card"><div class="qr-connected-icon">✅</div> <h4>¡WhatsApp Vinculado con Éxito!</h4> <p> </p> <div class="qr-phone-box"><span>Número vinculado:</span> <strong> </strong></div> <!> <div style="margin-top: 18px;"><button type="button" class="btn btn-outline-sm btn-disconnect svelte-wiz4i4">Desvincular y cambiar de número</button></div></div></div>`,
+    ),
+    ml = U(
+        `<div class="qr-view-box"><div class="qr-body"><div class="qr-image-wrapper"><img alt="Código QR de WhatsApp" class="qr-image-img svelte-wiz4i4"/></div> <div class="qr-steps"><div class="step-item"><span class="step-num">1</span> <span>Abre <strong>WhatsApp</strong> en el celular de esta empresa.</span></div> <div class="step-item"><span class="step-num">2</span> <span>Toca <strong>Menú (⋮)</strong> y selecciona <strong>Dispositivos vinculados</strong>.</span></div> <div class="step-item"><span class="step-num">3</span> <span>Presiona <strong>Vincular un dispositivo</strong> y apunta tu cámara aquí.</span></div></div></div></div>`,
+    ),
+    hl = U(
+        `<div class="qr-view-box"><div class="qr-loading-box"><div class="spinner"></div> <h4>Sincronizando con WhatsApp...</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;"> </p> <div style="margin-top: 16px;"><button type="button" class="btn-clean-link svelte-wiz4i4">¿El teléfono se desvinculó o no avanza? Limpiar y forzar nuevo QR</button></div></div></div>`,
+    ),
+    gl = U(
+        `<div class="qr-view-box"><div class="qr-loading-box"><div style="font-size: 42px; margin-bottom: 12px;">📱</div> <h4>WhatsApp no está vinculado</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5;"> </p> <div style="margin-top: 20px;"><button type="button" class="btn btn-primary">⚡ Generar Código QR</button></div></div></div>`,
+    ),
+    _l = U(
+        `<div class="qr-view-box"><div class="qr-loading-box"><div class="spinner"></div> <h4>Generando Código QR...</h4> <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;"> </p> <div style="margin-top: 16px;"><button type="button" class="btn-clean-link svelte-wiz4i4">¿No aparece el QR o se desvinculó tu teléfono? Limpiar y forzar nuevo QR</button></div></div></div>`,
+    ),
+    vl = U(`<div class="qr-modal-body svelte-wiz4i4"><!></div>`);
+function yl(e, t) {
+    Ue(t, !0);
+    let n = () => Z(ys, `$isQrModalOpen`, o),
+        r = () => Z(ga, `$activeCompany`, o),
+        i = () => Z(vs, `$botStatus`, o),
+        a = () => Z(bs, `$autoCloseNotice`, o),
+        [o, s] = Ui();
+    bn(() => {
+        n() && Es();
+    });
+    function c() {
+        ys.set(!1);
+    }
+    async function l() {
+        confirm(
+            `¿Estás seguro de desvincular el WhatsApp de esta empresa? Dejará de responder mensajes hasta que vuelvas a escanear un QR.`,
+        ) && (await js());
+    }
+    async function u() {
+        confirm(
+            `¿Deseas limpiar las credenciales locales anteriores y forzar la generación de un nuevo código QR limpio?`,
+        ) && (await As(!0));
+    }
+    {
+        let t = (e) => {
+                var t = dl(),
+                    n = L(t),
+                    r = L(n),
+                    a = (e) => {
+                        var t = cl();
+                        (H(`click`, t, () => As(!1)), W(e, t));
+                    },
+                    o = (e) => {
+                        var t = ul(),
+                            n = cn(t),
+                            r = z(n, 2),
+                            a = (e) => {
+                                var t = ll();
+                                (H(`click`, t, u), W(e, t));
+                            };
+                        (K(r, (e) => {
+                            i().status !== `ready` && e(a);
+                        }),
+                            H(`click`, n, () => As(!1)),
+                            W(e, t));
+                    };
+                (K(r, (e) => {
+                    i().status === `disconnected` ? e(a) : e(o, -1);
+                }),
+                    M(n));
+                var s = z(n, 2);
+                (M(t), H(`click`, s, c), W(e, t));
+            },
+            o = P(() => r()?.name || `esta empresa`);
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            title: `Vincular WhatsApp`,
+            get subtitle() {
+                return `Conecta el número de teléfono exclusivo para ${V(o) ?? ``}`;
+            },
+            maxWidth: `540px`,
+            onClose: c,
+            actions: t,
+            children: (e, t) => {
+                var n = vl(),
+                    o = L(n),
+                    s = (e) => {
+                        var t = pl(),
+                            n = L(t),
+                            o = z(L(n), 4),
+                            s = R(o),
+                            c = z(o, 2),
+                            u = R(z(L(c), 2));
+                        M(c);
+                        var d = z(c, 2),
+                            f = (e) => {
+                                var t = fl(),
+                                    n = R(t, !0);
+                                (B(() => G(n, a())), W(e, t));
+                            };
+                        K(d, (e) => {
+                            a() && e(f);
+                        });
+                        var p = R(z(d, 2));
+                        (M(n),
+                            M(t),
+                            B(() => {
+                                (G(
+                                    s,
+                                    `El bot de "${(r()?.name || `esta empresa`) ?? ``}" ya está conectado y listo para atender mensajes y notas de voz.`,
+                                ),
+                                    G(
+                                        u,
+                                        `+${(i().phone || r()?.phone || `Conectado`) ?? ``}`,
+                                    ));
+                            }),
+                            H(`click`, p, l),
+                            W(e, t));
+                    },
+                    c = (e) => {
+                        var t = ml(),
+                            n = L(t),
+                            r = R(L(n));
+                        (N(2),
+                            M(n),
+                            M(t),
+                            B(() => Ti(r, `src`, i().qrCode)),
+                            W(e, t));
+                    },
+                    d = (e) => {
+                        var t = hl(),
+                            n = L(t),
+                            i = z(L(n), 4),
+                            a = R(i),
+                            o = R(z(i, 2));
+                        (M(n),
+                            M(t),
+                            B(() =>
+                                G(
+                                    a,
+                                    `Sesión detectada. Sincronizando chats y preparando el bot para "${(r()?.name || `esta empresa`) ?? ``}".`,
+                                ),
+                            ),
+                            H(`click`, o, u),
+                            W(e, t));
+                    },
+                    f = (e) => {
+                        var t = gl(),
+                            n = L(t),
+                            i = z(L(n), 4),
+                            a = R(i),
+                            o = R(z(i, 2));
+                        (M(n),
+                            M(t),
+                            B(() =>
+                                G(
+                                    a,
+                                    `El bot de WhatsApp para "${(r()?.name || `esta empresa`) ?? ``}" no está vinculado. Haz clic en el botón de abajo para generar un código QR y conectar tu teléfono móvil.`,
+                                ),
+                            ),
+                            H(`click`, o, () => As(!1)),
+                            W(e, t));
+                    },
+                    p = (e) => {
+                        var t = _l(),
+                            n = L(t),
+                            i = z(L(n), 4),
+                            a = R(i),
+                            o = R(z(i, 2));
+                        (M(n),
+                            M(t),
+                            B(() =>
+                                G(
+                                    a,
+                                    `Iniciando sesión aislada de WhatsApp Web para "${(r()?.name || `esta empresa`) ?? ``}". Por favor espera unos segundos.`,
+                                ),
+                            ),
+                            H(`click`, o, u),
+                            W(e, t));
+                    };
+                (K(o, (e) => {
+                    i().status === `ready`
+                        ? e(s)
+                        : i().status === `qr_ready` && i().qrCode
+                          ? e(c, 1)
+                          : i().status === `authenticated`
+                            ? e(d, 2)
+                            : i().status === `disconnected`
+                              ? e(f, 3)
+                              : e(p, -1);
+                }),
+                    M(n),
+                    W(e, n));
+            },
+            $$slots: { actions: !0, default: !0 },
+        });
+    }
+    (We(), s());
+}
+Tr([`click`]);
+var bl = U(
+        `<div class="danger-zone" style="margin-top: 20px; padding-top: 14px; border-top: 1px solid rgba(244, 63, 94, 0.2);"><button type="button" class="btn btn-outline-sm btn-delete-company svelte-w4dgz8">🗑️ Eliminar esta Empresa</button></div>`,
+    ),
+    xl = U(
+        `<div class="company-edit-details svelte-w4dgz8"><div class="detail-row svelte-w4dgz8"><span>Estado del WhatsApp:</span> <strong> </strong></div> <div class="detail-row svelte-w4dgz8"><span>Número Vinculado:</span> <strong> </strong></div></div> <div class="company-action-buttons svelte-w4dgz8"><button type="button" class="btn btn-outline-sm">📱 Ver / Cambiar QR de WhatsApp</button> <button type="button" class="btn btn-outline-sm">🔄 Reiniciar Bot de esta Empresa</button></div> <!>`,
+        1,
+    ),
+    Sl = U(
+        `<form class="form-body"><div class="form-group"><label for="company-name-input">Nombre de la Empresa o Marca</label> <input type="text" id="company-name-input" placeholder="Ej: Digital Pass Express" required=""/></div> <!> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function Cl(e, t) {
+    Ue(t, !0);
+    let n = () => Z(pa, `$isCompanyModalOpen`, s),
+        r = () => Z(ma, `$companyModalMode`, s),
+        i = () => Z(ga, `$activeCompany`, s),
+        a = () => Z(fa, `$currentCompanyId`, s),
+        o = () => Z(da, `$companies`, s),
+        [s, c] = Ui(),
+        l = F(``),
+        u = F(!1);
+    bn(() => {
+        n() && (r() === `edit` && i() ? I(l, i().name || ``, !0) : I(l, ``));
+    });
+    function d() {
+        pa.set(!1);
+    }
+    async function f(e) {
+        (e.preventDefault(),
+            V(l).trim() &&
+                (I(u, !0),
+                r() === `create`
+                    ? (await ya({ name: V(l).trim() })).success && ys.set(!0)
+                    : await ba(a(), { name: V(l).trim() }),
+                I(u, !1)));
+    }
+    async function p() {
+        if (o().length <= 1) {
+            alert(`No puedes eliminar la única empresa activa`);
+            return;
+        }
+        let e = i()?.name || `esta empresa`;
+        confirm(
+            `¿Estás SEGURO de eliminar la empresa "${e}"?\nSe borrarán todas sus rutas, biblioteca, prospectos y se cerrará su sesión de WhatsApp.`,
+        ) && (await xa(a()));
+    }
+    {
+        let t = P(() =>
+                r() === `create`
+                    ? `➕ Nueva Empresa / Bot`
+                    : `⚙️ Gestionar: ${i()?.name || `Empresa`}`,
+            ),
+            a = P(() =>
+                r() === `create`
+                    ? `Crea un nuevo bot con número de WhatsApp y datos aislados`
+                    : `Configura los detalles de esta empresa`,
+            );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(a);
+            },
+            maxWidth: `500px`,
+            onClose: d,
+            children: (e, t) => {
+                var n = Sl(),
+                    a = L(n),
+                    s = z(L(a), 2);
+                (J(s), M(a));
+                var c = z(a, 2),
+                    m = (e) => {
+                        var t = xl(),
+                            n = cn(t),
+                            r = L(n),
+                            a = R(z(L(r), 2), !0);
+                        M(r);
+                        var s = z(r, 2),
+                            c = R(z(L(s), 2), !0);
+                        (M(s), M(n));
+                        var l = z(n, 2),
+                            u = L(l),
+                            f = z(u, 2);
+                        M(l);
+                        var m = z(l, 2),
+                            h = (e) => {
+                                var t = bl();
+                                (H(`click`, R(t), p), W(e, t));
+                            };
+                        (K(m, (e) => {
+                            o().length > 1 && e(h);
+                        }),
+                            B(() => {
+                                (G(
+                                    a,
+                                    i()?.status === `ready`
+                                        ? `✅ Conectado`
+                                        : `⏳ Pendiente / Desconectado`,
+                                ),
+                                    G(
+                                        c,
+                                        i()?.phone
+                                            ? `+${i().phone}`
+                                            : `Sin vincular`,
+                                    ));
+                            }),
+                            H(`click`, u, () => {
+                                (d(), ys.set(!0));
+                            }),
+                            H(`click`, f, function (...e) {
+                                As?.apply(this, e);
+                            }),
+                            W(e, t));
+                    };
+                K(c, (e) => {
+                    r() === `edit` && e(m);
+                });
+                var h = z(c, 2),
+                    g = L(h),
+                    _ = z(g, 2),
+                    v = R(_, !0);
+                (M(h),
+                    M(n),
+                    B(() => {
+                        ((_.disabled = V(u)),
+                            G(
+                                v,
+                                V(u)
+                                    ? `Guardando...`
+                                    : r() === `create`
+                                      ? `Crear Empresa`
+                                      : `Guardar Cambios`,
+                            ));
+                    }),
+                    wr(`submit`, n, f),
+                    Y(
+                        s,
+                        () => V(l),
+                        (e) => I(l, e),
+                    ),
+                    H(`click`, g, d),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), c());
+}
+Tr([`click`]);
+function wl(e, t = 1) {
+    if (!e || e === 0) return `0 B`;
+    let n = 1024,
+        r = t < 0 ? 0 : t,
+        i = [`B`, `KB`, `MB`, `GB`, `TB`],
+        a = Math.floor(Math.log(e) / Math.log(n));
+    return parseFloat((e / n ** a).toFixed(r)) + ` ` + i[a];
+}
+function Tl(e, t = {}) {
+    if (!e) return `-`;
+    let n = { dateStyle: `short`, timeStyle: `short` };
+    try {
+        return new Date(e).toLocaleString(`es-CO`, { ...n, ...t });
+    } catch {
+        return e;
+    }
+}
+function El(e) {
+    return new Promise((t, n) => {
+        let r = new FileReader();
+        ((r.onload = () => {
+            let e = r.result.split(`,`)[1];
+            t(e);
+        }),
+            (r.onerror = (e) => n(e)),
+            r.readAsDataURL(e));
+    });
+}
+var Dl = U(
+        `<div class="dropzone-spinner svelte-qozupf"></div> <p class="dropzone-text">Subiendo archivo al servidor...</p>`,
+        1,
+    ),
+    Ol = U(
+        `<div class="dropzone-icon svelte-qozupf"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div> <p class="dropzone-title svelte-qozupf"> </p> <span class="dropzone-sub svelte-qozupf"> </span>`,
+        1,
+    ),
+    kl = U(`<div><input type="file" style="display: none;"/> <!></div>`),
+    Al = U(`<img class="preview-thumbnail svelte-qozupf"/>`),
+    jl = U(`<span class="file-type-icon svelte-qozupf">📄</span>`),
+    Ml = U(`<span class="file-type-icon svelte-qozupf">🎵</span>`),
+    Nl = U(`<span class="file-type-icon svelte-qozupf">📁</span>`),
+    Pl = U(
+        `<div class="file-preview-card svelte-qozupf"><div class="file-preview-left svelte-qozupf"><!> <div class="file-preview-info svelte-qozupf"><strong class="file-preview-name svelte-qozupf"> </strong> <span class="file-preview-size svelte-qozupf"> </span></div></div> <button type="button" class="btn-remove-media svelte-qozupf" title="Quitar archivo">&times;</button></div>`,
+    ),
+    Fl = U(`<div class="dropzone-container svelte-qozupf"><!></div>`);
+function Il(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `category`, 3, `rules`),
+        r = Gi(t, `media`, 3, null),
+        i = Gi(
+            t,
+            `label`,
+            3,
+            `Arrastra una foto, catálogo en PDF o audio aquí`,
+        ),
+        a = Gi(t, `sublabel`, 3, `o haz clic para explorar en tu dispositivo`),
+        o = Gi(
+            t,
+            `accept`,
+            3,
+            `image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/*`,
+        ),
+        s = F(!1),
+        c = F(!1),
+        l = F(void 0);
+    function u(e) {
+        (e.preventDefault(), I(s, !0));
+    }
+    function d(e) {
+        (e.preventDefault(), I(s, !1));
+    }
+    function f(e) {
+        (e.preventDefault(),
+            I(s, !1),
+            e.dataTransfer.files &&
+                e.dataTransfer.files.length > 0 &&
+                m(e.dataTransfer.files[0]));
+    }
+    function p(e) {
+        e.target.files && e.target.files.length > 0 && m(e.target.files[0]);
+    }
+    async function m(e) {
+        I(c, !0);
+        try {
+            let r = await Q.upload(e, n()),
+                i = r?.file || (r?.url ? r : null);
+            i &&
+                (t.onMediaChange?.(i),
+                $(`Archivo "${e.name}" cargado con éxito`, `success`));
+        } catch (e) {
+            $(`Error al subir archivo: ${e.message}`, `error`);
+        } finally {
+            (I(c, !1), V(l) && (V(l).value = ``));
+        }
+    }
+    function h(e) {
+        (e.stopPropagation(), t.onMediaChange?.(null));
+    }
+    var g = Fl(),
+        _ = L(g),
+        v = (e) => {
+            var t = kl(),
+                n = L(t);
+            Ni(
+                n,
+                (e) => I(l, e),
+                () => V(l),
+            );
+            var r = z(n, 2),
+                m = (e) => {
+                    var t = Dl();
+                    (N(2), W(e, t));
+                },
+                h = (e) => {
+                    var t = Ol(),
+                        n = z(cn(t), 2),
+                        r = R(n, !0),
+                        o = R(z(n, 2), !0);
+                    (B(() => {
+                        (G(r, i()), G(o, a()));
+                    }),
+                        W(e, t));
+                };
+            (K(r, (e) => {
+                V(c) ? e(m) : e(h, -1);
+            }),
+                M(t),
+                B(() => {
+                    (q(
+                        t,
+                        1,
+                        `file-dropzone ${V(s) ? `dragover` : ``} ${V(c) ? `uploading` : ``}`,
+                        `svelte-qozupf`,
+                    ),
+                        Ti(n, `accept`, o()));
+                }),
+                wr(`dragover`, t, u),
+                wr(`dragleave`, t, d),
+                wr(`drop`, t, f),
+                H(`click`, t, () => V(l)?.click()),
+                H(`change`, n, p),
+                W(e, t));
+        },
+        y = (e) => {
+            var t = Pl(),
+                n = L(t),
+                i = L(n),
+                a = (e) => {
+                    var t = Al();
+                    (B(() => {
+                        (Ti(t, `src`, r().url), Ti(t, `alt`, r().filename));
+                    }),
+                        W(e, t));
+                },
+                o = P(() => (r().mimetype || ``).startsWith(`image/`)),
+                s = (e) => {
+                    W(e, jl());
+                },
+                c = P(() => (r().mimetype || ``).includes(`pdf`)),
+                l = (e) => {
+                    W(e, Ml());
+                },
+                u = P(() => (r().mimetype || ``).startsWith(`audio/`)),
+                d = (e) => {
+                    W(e, Nl());
+                };
+            K(i, (e) => {
+                V(o) ? e(a) : V(c) ? e(s, 1) : V(u) ? e(l, 2) : e(d, -1);
+            });
+            var f = z(i, 2),
+                p = L(f),
+                m = R(p, !0),
+                g = R(z(p, 2), !0);
+            (M(f), M(n));
+            var _ = z(n, 2);
+            (M(t),
+                B(
+                    (e) => {
+                        (Ti(p, `title`, r().filename || r().originalName),
+                            G(m, r().filename || r().originalName),
+                            G(g, e));
+                    },
+                    [() => wl(r().size || 0)],
+                ),
+                H(`click`, _, h),
+                W(e, t));
+        };
+    (K(_, (e) => {
+        r() ? e(y, -1) : e(v);
+    }),
+        M(g),
+        W(e, g),
+        We());
+}
+Tr([`click`, `change`]);
+var Ll = U(`<option> </option>`),
+    Rl = U(
+        `<div class="form-group flex-1 svelte-whi3pb"><label for="rule-media-filter-select">Tipo de Archivo Esperado</label> <select id="rule-media-filter-select"><option>Cualquier tipo de archivo</option><option>Solo Fotos / Comprobantes</option><option>Solo Documentos / PDFs</option><option>Solo Audios / Notas de Voz</option></select></div>`,
+    ),
+    zl = U(
+        `<div class="form-group flex-1 svelte-whi3pb"><label for="rule-match-type-select">Tipo de Coincidencia</label> <select id="rule-match-type-select"><option>Contiene cualquiera de las palabras</option><option>Coincidencia Exacta</option><option>Empieza con la palabra</option></select></div>`,
+    ),
+    Bl = U(
+        `<div class="form-group"><label for="rule-triggers-input">Palabras Clave Disparadoras <span class="label-hint svelte-whi3pb">(Separadas por comas)</span></label> <input type="text" id="rule-triggers-input" placeholder="ej: precio, costo, valor, catalogo, hola"/></div>`,
+    ),
+    Vl = U(
+        `<form class="form-body"><div class="form-row svelte-whi3pb"><div class="form-group flex-2 svelte-whi3pb"><label for="rule-name-input">Nombre Descriptivo de la Ruta</label> <input type="text" id="rule-name-input" placeholder="Ej: Menú de Precios, Bienvenida o Catálogo PDF" required=""/></div> <div class="form-group flex-1 svelte-whi3pb"><label for="rule-parent-select">Submenú de (Opcional)</label> <select id="rule-parent-select"><option>(Ninguno - Ruta Principal)</option><!></select></div></div> <div class="form-row svelte-whi3pb"><div class="form-group flex-1 svelte-whi3pb"><label for="rule-trigger-type-select">Tipo de Disparador</label> <select id="rule-trigger-type-select"><option>💬 Por Palabras Clave (Texto)</option><option>📥 Por Archivo Recibido (Foto / Audio / PDF)</option><option>🔄 Ambos (Texto O Archivo)</option></select></div> <!> <!></div> <!> <div class="form-group"><div class="form-label-with-tools svelte-whi3pb"><label for="rule-response-input">Mensaje de Respuesta de WhatsApp</label> <div class="editor-quick-tools svelte-whi3pb"><button type="button" class="tool-btn svelte-whi3pb" title="Negrita">*B*</button> <button type="button" class="tool-btn svelte-whi3pb" title="Cursiva">_I_</button> <button type="button" class="tool-btn svelte-whi3pb" title="Tachado">~S~</button> <button type="button" class="tool-btn svelte-whi3pb" title="Insertar variable nombre">👤 &#123;nombre&#125;</button> <button type="button" class="tool-btn svelte-whi3pb" title="Salto de línea">↵ Salto</button> <button type="button" class="tool-btn svelte-whi3pb" title="Icono Precios">💰 Precios</button> <button type="button" class="tool-btn svelte-whi3pb" title="Atención Asesor">📞 Asesor</button></div></div> <textarea id="rule-response-input" rows="5" placeholder="¡Hola! Gracias por comunicarte con nosotros. ¿En qué podemos ayudarte?"></textarea></div> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Adjuntar Archivo al Responder (Opcional)</div> <!></div> <div class="form-row svelte-whi3pb"><div class="form-group flex-1 svelte-whi3pb"><label for="rule-lead-tag-input">Etiqueta para el CRM de Leads</label> <input type="text" id="rule-lead-tag-input" placeholder="ej: Interesado, Comprobante Recibido"/></div> <div class="form-group flex-1 svelte-whi3pb" style="display: flex; align-items: center; padding-top: 22px;"><label class="checkbox-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;"><input type="checkbox"/> <span style="font-size: 0.88rem; font-weight: 500;">👤 Pausar bot y transferir a asesor humano tras responder</span></label></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function Hl(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Ka, `$isRuleModalOpen`, a),
+        r = () => Z(Ga, `$editingRule`, a),
+        i = () => Z(Wa, `$rules`, a),
+        [a, o] = Ui(),
+        s = F(``),
+        c = F(``),
+        l = F(`text`),
+        u = F(`any`),
+        d = F(`contains_any`),
+        f = F(``),
+        p = F(``),
+        m = F(null),
+        h = F(`Interesado`),
+        g = F(!1),
+        _ = F(!1),
+        v;
+    bn(() => {
+        n() &&
+            (r()
+                ? (I(s, r().name || ``, !0),
+                  I(c, r().parentRuleId || ``, !0),
+                  I(l, r().triggerType || `text`, !0),
+                  I(u, r().mediaTypeFilter || `any`, !0),
+                  I(d, r().matchType || `contains_any`, !0),
+                  I(f, (r().triggers || []).join(`, `), !0),
+                  I(p, r().response || ``, !0),
+                  I(m, r().media || null, !0),
+                  I(h, r().leadTag || `Interesado`, !0),
+                  I(g, !!r().pauseBot, !0))
+                : (I(s, ``),
+                  I(c, ``),
+                  I(l, `text`),
+                  I(u, `any`),
+                  I(d, `contains_any`),
+                  I(f, ``),
+                  I(p, ``),
+                  I(m, null),
+                  I(h, `Interesado`),
+                  I(g, !1)));
+    });
+    function y() {
+        (Ka.set(!1), Ga.set(null));
+    }
+    function b(e, t = null) {
+        if (!v) return;
+        let n = v.selectionStart,
+            r = v.selectionEnd,
+            i = V(p).substring(n, r);
+        if (t) {
+            let e = `${t}${i || `texto`}${t}`;
+            I(p, V(p).substring(0, n) + e + V(p).substring(r));
+        } else e && I(p, V(p).substring(0, n) + e + V(p).substring(r));
+        v.focus();
+    }
+    async function x(e) {
+        if ((e.preventDefault(), !V(s).trim())) {
+            $(`Ingresa un nombre para la ruta`, `warning`);
+            return;
+        }
+        let t = V(f)
+            .split(`,`)
+            .map((e) => e.trim().toLowerCase())
+            .filter(Boolean);
+        if (V(l) === `text` && !t.length) {
+            $(
+                `Ingresa al menos una palabra clave para rutas de texto`,
+                `warning`,
+            );
+            return;
+        }
+        if (!V(p).trim() && !V(m)) {
+            $(
+                `Ingresa un texto de respuesta o adjunta un archivo para enviar`,
+                `warning`,
+            );
+            return;
+        }
+        I(_, !0);
+        let n = await Ja(
+            {
+                name: V(s).trim(),
+                parentRuleId: V(c) || null,
+                triggerType: V(l),
+                mediaTypeFilter: V(u),
+                matchType: V(d),
+                triggers: t,
+                response: V(p).trim(),
+                media: V(m),
+                leadTag: V(h).trim() || `Interesado`,
+                pauseBot: V(g),
+                enabled: !r() || r().enabled !== !1,
+            },
+            r()?.id || null,
+        );
+        (I(_, !1), n.success && y());
+    }
+    {
+        let t = P(() => (r() ? `Editar Ruta de Venta` : `Nueva Ruta de Venta`));
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            subtitle: `Configura disparadores por palabras clave, archivos recibidos y respuestas enriquecidas`,
+            maxWidth: `720px`,
+            onClose: y,
+            children: (e, t) => {
+                var n = Vl(),
+                    a = L(n),
+                    o = L(a),
+                    S = z(L(o), 2);
+                (J(S), M(o));
+                var C = z(o, 2),
+                    w = z(L(C), 2),
+                    T = L(w);
+                ((T.value = T.__value = ``),
+                    Xr(
+                        z(T),
+                        1,
+                        () => i().filter((e) => !r() || e.id !== r().id),
+                        Kr,
+                        (e, t) => {
+                            var n = Ll(),
+                                r = R(n, !0),
+                                i = {};
+                            (B(() => {
+                                (G(r, V(t).name),
+                                    i !== (i = V(t).id) &&
+                                        (n.value = (n.__value = i) ?? ``));
+                            }),
+                                W(e, n));
+                        },
+                    ),
+                    M(w),
+                    _i(w),
+                    M(C),
+                    M(a));
+                var E = z(a, 2),
+                    D = L(E),
+                    O = z(L(D), 2),
+                    k = L(O);
+                k.value = k.__value = `text`;
+                var A = z(k);
+                A.value = A.__value = `media`;
+                var ee = z(A);
+                ((ee.value = ee.__value = `both`), M(O), _i(O), M(D));
+                var te = z(D, 2),
+                    ne = (e) => {
+                        var t = Rl(),
+                            n = z(L(t), 2),
+                            r = L(n);
+                        r.value = r.__value = `any`;
+                        var i = z(r);
+                        i.value = i.__value = `image`;
+                        var a = z(i);
+                        a.value = a.__value = `document`;
+                        var o = z(a);
+                        ((o.value = o.__value = `audio`),
+                            M(n),
+                            _i(n),
+                            M(t),
+                            vi(
+                                n,
+                                () => V(u),
+                                (e) => I(u, e),
+                            ),
+                            W(e, t));
+                    };
+                K(te, (e) => {
+                    (V(l) === `media` || V(l) === `both`) && e(ne);
+                });
+                var re = z(te, 2),
+                    ie = (e) => {
+                        var t = zl(),
+                            n = z(L(t), 2),
+                            r = L(n);
+                        r.value = r.__value = `contains_any`;
+                        var i = z(r);
+                        i.value = i.__value = `exact`;
+                        var a = z(i);
+                        ((a.value = a.__value = `starts_with`),
+                            M(n),
+                            _i(n),
+                            M(t),
+                            vi(
+                                n,
+                                () => V(d),
+                                (e) => I(d, e),
+                            ),
+                            W(e, t));
+                    };
+                (K(re, (e) => {
+                    (V(l) === `text` || V(l) === `both`) && e(ie);
+                }),
+                    M(E));
+                var ae = z(E, 2),
+                    oe = (e) => {
+                        var t = Bl(),
+                            n = z(L(t), 2);
+                        (J(n),
+                            M(t),
+                            Y(
+                                n,
+                                () => V(f),
+                                (e) => I(f, e),
+                            ),
+                            W(e, t));
+                    };
+                K(ae, (e) => {
+                    (V(l) === `text` || V(l) === `both`) && e(oe);
+                });
+                var se = z(ae, 2),
+                    ce = L(se),
+                    le = z(L(ce), 2),
+                    ue = L(le),
+                    de = z(ue, 2),
+                    fe = z(de, 2),
+                    pe = z(fe, 2),
+                    me = z(pe, 2),
+                    he = z(me, 2),
+                    ge = z(he, 2);
+                (M(le), M(ce));
+                var _e = z(ce, 2);
+                (tt(_e),
+                    Ni(
+                        _e,
+                        (e) => (v = e),
+                        () => v,
+                    ),
+                    M(se));
+                var j = z(se, 2);
+                (Il(z(L(j), 2), {
+                    category: `rules`,
+                    get media() {
+                        return V(m);
+                    },
+                    onMediaChange: (e) => I(m, e, !0),
+                }),
+                    M(j));
+                var ve = z(j, 2),
+                    ye = L(ve),
+                    be = z(L(ye), 2);
+                (J(be), M(ye));
+                var xe = z(ye, 2),
+                    Se = L(xe),
+                    Ce = L(Se);
+                (J(Ce), N(2), M(Se), M(xe), M(ve));
+                var we = z(ve, 2),
+                    Te = L(we),
+                    Ee = z(Te, 2),
+                    De = R(Ee, !0);
+                (M(we),
+                    M(n),
+                    B(() => {
+                        ((Ee.disabled = V(_)),
+                            G(
+                                De,
+                                V(_)
+                                    ? `Guardando...`
+                                    : r()
+                                      ? `Actualizar Ruta`
+                                      : `Crear Ruta`,
+                            ));
+                    }),
+                    wr(`submit`, n, x),
+                    Y(
+                        S,
+                        () => V(s),
+                        (e) => I(s, e),
+                    ),
+                    vi(
+                        w,
+                        () => V(c),
+                        (e) => I(c, e),
+                    ),
+                    vi(
+                        O,
+                        () => V(l),
+                        (e) => I(l, e),
+                    ),
+                    H(`click`, ue, () => b(null, `*`)),
+                    H(`click`, de, () => b(null, `_`)),
+                    H(`click`, fe, () => b(null, `~`)),
+                    H(`click`, pe, () => b(`{nombre}`)),
+                    H(`click`, me, () =>
+                        b(`
 
-`)),H(`click`,he,()=>b(`💰 Precios: `)),H(`click`,ge,()=>b(`📞 En breve un asesor te atenderá.`)),Y(_e,()=>V(p),e=>I(p,e)),Y(be,()=>V(h),e=>I(h,e)),ki(Ce,()=>V(g),e=>I(g,e)),H(`click`,Te,y),W(e,n)},$$slots:{default:!0}})}We(),o()}Tr([`click`]);var Ul=U(`<div class="relaunch-banner svelte-1wibhgs"><span>🔄 <strong>Campaña previamente finalizada:</strong> Al
+`),
+                    ),
+                    H(`click`, he, () => b(`💰 Precios: `)),
+                    H(`click`, ge, () =>
+                        b(`📞 En breve un asesor te atenderá.`),
+                    ),
+                    Y(
+                        _e,
+                        () => V(p),
+                        (e) => I(p, e),
+                    ),
+                    Y(
+                        be,
+                        () => V(h),
+                        (e) => I(h, e),
+                    ),
+                    ki(
+                        Ce,
+                        () => V(g),
+                        (e) => I(g, e),
+                    ),
+                    H(`click`, Te, y),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), o());
+}
+Tr([`click`]);
+var Ul =
+        U(`<div class="relaunch-banner svelte-1wibhgs"><span>🔄 <strong>Campaña previamente finalizada:</strong> Al
                     guardarla con una nueva fecha y hora se reactivará
                     automáticamente como <em>Pendiente</em> para ejecutarse en su
-                    nuevo ciclo (mensual, anual o inmediato).</span></div>`),Wl=U(`<div class="form-group flex-1 svelte-1wibhgs"><label for="sched-phone-input">Número de WhatsApp (con código de país)</label> <input type="tel" id="sched-phone-input" placeholder="ej: 573001234567" required=""/></div>`),Gl=U(`<div class="audience-empty-notice svelte-1wibhgs"><span>⚠️ No hay prospectos con etiquetas en tu CRM
-                                aún.</span> <button type="button" class="btn-action-inline svelte-1wibhgs">📥 Importar Contactos (CSV / WhatsApp)</button></div>`),Kl=U(`<option> </option>`),ql=U(`<select id="sched-tag-select" class="form-select svelte-1wibhgs"></select>`),Jl=U(`<div class="form-group flex-1 svelte-1wibhgs"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-tag-select" style="margin-bottom: 0;">Selecciona la Etiqueta de Destino</label> <button type="button" class="btn-micro-action svelte-1wibhgs" title="Importar o sincronizar más contactos">📥 Importar contactos</button></div> <!></div>`),Yl=U(`<div class="audience-empty-notice svelte-1wibhgs"><span>⚠️ No tienes grupos de difusión creados aún.</span> <button type="button" class="btn-action-inline svelte-1wibhgs">👥 Crear mi Primer Grupo</button></div>`),Xl=U(`<select id="sched-group-select" class="form-select svelte-1wibhgs"></select>`),Zl=U(`<div class="form-group flex-1 svelte-1wibhgs"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-group-select" style="margin-bottom: 0;">Selecciona el Grupo de Difusión</label> <button type="button" class="btn-micro-action svelte-1wibhgs" title="Crear un nuevo grupo personalizado">+ Crear / Gestionar Grupos</button></div> <!></div>`),Ql=U(`<small style="color: #fb7185; margin-left: 6px;">(Sin contactos asignados)</small>`),$l=U(`<div class="audience-info-banner svelte-1wibhgs"><span>📊 Alcance estimado: <strong> </strong> <!></span> <div class="pacing-box svelte-1wibhgs"><label for="delay-sec-input">Pausa anti-baneo:</label> <select id="delay-sec-input" class="pacing-select svelte-1wibhgs"><option>5 seg (Rápido)</option><option>10 seg (Recomendado)</option><option>15 seg (Muy seguro)</option><option>20 seg (Ultra seguro)</option></select></div></div>`),eu=U(`Ideal para <em>recordatorios de pago y cobro de mensualidades</em>. Al finalizar cada entrega, el sistema se
+                    nuevo ciclo (mensual, anual o inmediato).</span></div>`),
+    Wl = U(
+        `<div class="form-group flex-1 svelte-1wibhgs"><label for="sched-phone-input">Número de WhatsApp (con código de país)</label> <input type="tel" id="sched-phone-input" placeholder="ej: 573001234567" required=""/></div>`,
+    ),
+    Gl =
+        U(`<div class="audience-empty-notice svelte-1wibhgs"><span>⚠️ No hay prospectos con etiquetas en tu CRM
+                                aún.</span> <button type="button" class="btn-action-inline svelte-1wibhgs">📥 Importar Contactos (CSV / WhatsApp)</button></div>`),
+    Kl = U(`<option> </option>`),
+    ql = U(
+        `<select id="sched-tag-select" class="form-select svelte-1wibhgs"></select>`,
+    ),
+    Jl = U(
+        `<div class="form-group flex-1 svelte-1wibhgs"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-tag-select" style="margin-bottom: 0;">Selecciona la Etiqueta de Destino</label> <button type="button" class="btn-micro-action svelte-1wibhgs" title="Importar o sincronizar más contactos">📥 Importar contactos</button></div> <!></div>`,
+    ),
+    Yl = U(
+        `<div class="audience-empty-notice svelte-1wibhgs"><span>⚠️ No tienes grupos de difusión creados aún.</span> <button type="button" class="btn-action-inline svelte-1wibhgs">👥 Crear mi Primer Grupo</button></div>`,
+    ),
+    Xl = U(
+        `<select id="sched-group-select" class="form-select svelte-1wibhgs"></select>`,
+    ),
+    Zl = U(
+        `<div class="form-group flex-1 svelte-1wibhgs"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-group-select" style="margin-bottom: 0;">Selecciona el Grupo de Difusión</label> <button type="button" class="btn-micro-action svelte-1wibhgs" title="Crear un nuevo grupo personalizado">+ Crear / Gestionar Grupos</button></div> <!></div>`,
+    ),
+    Ql = U(
+        `<small style="color: #fb7185; margin-left: 6px;">(Sin contactos asignados)</small>`,
+    ),
+    $l = U(
+        `<div class="audience-info-banner svelte-1wibhgs"><span>📊 Alcance estimado: <strong> </strong> <!></span> <div class="pacing-box svelte-1wibhgs"><label for="delay-sec-input">Pausa anti-baneo:</label> <select id="delay-sec-input" class="pacing-select svelte-1wibhgs"><option>5 seg (Rápido)</option><option>10 seg (Recomendado)</option><option>15 seg (Muy seguro)</option><option>20 seg (Ultra seguro)</option></select></div></div>`,
+    ),
+    eu = U(
+        `Ideal para <em>recordatorios de pago y cobro de mensualidades</em>. Al finalizar cada entrega, el sistema se
                             reprogramará automáticamente para el mes siguiente
-                            conservando la hora fijada.`,1),tu=U(`<div class="recurrence-notice svelte-1wibhgs"><span style="font-size: 1.1rem;">🔁</span> <div><strong class="svelte-1wibhgs"> </strong> <!></div></div>`),nu=U(`<form class="form-body"><!> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Tipo de Audiencia / Destinatarios</div> <div class="audience-selector svelte-1wibhgs"><button type="button"><span class="pill-icon">👤</span> <span class="pill-title">Cliente Individual</span></button> <button type="button"><span class="pill-icon">🏷️</span> <span class="pill-title">Por Etiqueta CRM</span></button> <button type="button"><span class="pill-icon">👥</span> <span class="pill-title">Por Grupo de Difusión</span></button></div></div> <div class="form-row svelte-1wibhgs"><div class="form-group flex-1 svelte-1wibhgs"><label for="sched-name-input">Nombre de la Campaña / Identificador</label> <input type="text" id="sched-name-input" placeholder="Ej: Promo Fin de Mes, Recordatorio de Pago..." required=""/></div> <!></div> <!> <div class="form-group"><label for="sched-datetime-input"> </label> <input type="datetime-local" id="sched-datetime-input" required=""/> <div class="form-row svelte-1wibhgs"><div class="form-group flex-1 svelte-1wibhgs"><label for="sched-datetime-input"> </label> <input type="datetime-local" id="sched-datetime-input" required=""/></div> <div class="form-group flex-1 svelte-1wibhgs"><label for="sched-recurrence-select">Frecuencia / Repetición Periódica</label> <select id="sched-recurrence-select"><option>Una sola vez (Sin repetición)</option><option>🔁 Diario (Cada 24 horas)</option><option>🔁 Semanal (Mismo día cada semana)</option><option>🔁 Mensual (Cobro mensual, recordatorios)</option><option>🔁 Anual (Renovación anual, aniversarios)</option></select></div></div> <!> <div class="form-group"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-message-input" style="margin-bottom: 0;">Mensaje de Texto</label> <div class="vars-helper svelte-1wibhgs"><span style="font-size: 0.78rem; color: var(--text-dim);">Insertar variable:</span> <button type="button" class="btn-chip svelte-1wibhgs"></button> <button type="button" class="btn-chip svelte-1wibhgs"></button></div></div> <textarea id="sched-message-input" rows="4" placeholder="¡Hola! Escribe aquí el mensaje de tu campaña..."></textarea></div> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Adjuntar Archivo al Envío Programado (Opcional)</div> <!></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><!></button></div></div></form>`);function ru(e,t){Ue(t,!0);let n=()=>Z(fo,`$leads`,s),r=()=>Z(Za,`$groups`,s),i=()=>Z(Io,`$isScheduleModalOpen`,s),a=()=>Z(Lo,`$selectedSchedule`,s),o=()=>Z(Ro,`$modalMode`,s),[s,c]=Ui(),l=F(``),u=F(`single`),d=F(``),f=F(``),p=F(``),m=F(10),h=F(``),g=F(`none`),_=F(``),v=F(null),y=F(!1),b=P(()=>{let e={};for(let t of n()||[])if(t.phone&&t.phone!==`status@broadcast`&&!t.phone.includes(`@broadcast`)){let n=t.tag||`Nuevo`;e[n]=(e[n]||0)+1}return Object.entries(e).map(([e,t])=>({tag:e,count:t}))}),x=P(()=>{if(V(u)===`single`)return+!!V(d).trim();if(V(u)===`tag`){let e=V(b).find(e=>e.tag===V(f));return e?e.count:0}if(V(u)===`group`){let e=(r()||[]).find(e=>e.id===V(p));return e&&e.memberCount||0}return 0});function S(e){I(u,e,!0),e===`tag`?!V(f)&&V(b).length>0&&I(f,V(b)[0].tag,!0):e===`group`&&!V(p)&&(r()||[]).length>0&&I(p,r()[0].id,!0)}bn(()=>{V(u)===`tag`&&!V(f)&&V(b).length>0&&I(f,V(b)[0].tag,!0)}),bn(()=>{V(u)===`group`&&!V(p)&&(r()||[]).length>0&&I(p,r()[0].id,!0)});let C=!1;bn(()=>{let e=i();e&&!C?(C=!0,hr(()=>{$a();let e=a(),t=o();if(e&&(t===`edit`||t===`duplicate`)){I(l,t===`duplicate`?`${e.name||`Campaña`} (Copia)`:e.name||``,!0),I(u,e.targetType||`single`,!0),I(d,e.targetType===`single`&&(e.recipient||e.targetValue)||``,!0),I(f,e.targetType===`tag`?e.targetValue||``:V(b)[0]?.tag||``,!0),I(p,e.targetType===`group`?e.targetValue||``:(r()||[])[0]?.id||``,!0),I(m,e.delaySeconds||10,!0),I(g,e.recurrence||`none`,!0),I(_,e.message||``,!0),I(v,e.media||null,!0);let n=e.status===`sent`||e.status===`failed`||e.status===`cancelled`||new Date(e.scheduledTime)<=new Date;if(t===`duplicate`||n){let e=new Date(Date.now()+36e5-new Date().getTimezoneOffset()*6e4);I(h,e.toISOString().slice(0,16),!0)}else try{let t=new Date(new Date(e.scheduledTime).getTime()-new Date().getTimezoneOffset()*6e4);I(h,t.toISOString().slice(0,16),!0)}catch{let e=new Date(Date.now()+36e5-new Date().getTimezoneOffset()*6e4);I(h,e.toISOString().slice(0,16),!0)}}else{I(l,``),I(u,`single`),I(d,``),I(m,10),I(g,`none`),I(_,``),I(v,null),V(b).length>0?I(f,V(b)[0].tag,!0):I(f,``);let e=r()||[];e.length>0?I(p,e[0].id,!0):I(p,``);let t=new Date(Date.now()+36e5-new Date().getTimezoneOffset()*6e4);I(h,t.toISOString().slice(0,16),!0)}})):e||(C=!1)});function w(){Io.set(!1),Lo.set(null)}function T(e){I(_,(V(_)||``)+e)}function E(){w(),Qa.set(!0)}function D(){w(),ho.set(!0)}async function O(e){e.preventDefault();let t=``;if(V(u)===`single`){if(t=V(d).replace(/\D/g,``),!t){$(`Ingresa el número de WhatsApp de destino`,`warning`);return}}else if(V(u)===`tag`){if(t=V(f),!t){$(`Selecciona la etiqueta de clientes para la difusión`,`warning`);return}if(V(x)===0){$(`No hay prospectos registrados con la etiqueta "${t}"`,`warning`);return}}else if(V(u)===`group`){if(t=V(p),!t){$(`Selecciona el grupo de difusión`,`warning`);return}if(V(x)===0){$(`Este grupo no tiene miembros asignados aún. Agrega contactos primero.`,`warning`);return}}if(!V(_).trim()&&!V(v)){$(`Ingresa un mensaje o adjunta un archivo para programar`,`warning`);return}if(!V(h)){$(`Selecciona la fecha y hora de envío`,`warning`);return}I(y,!0);let n={name:V(l).trim()||(V(u)===`single`?`Envío Individual`:`Difusión a ${V(u)}: ${t}`),targetType:V(u),targetValue:t,recipient:V(u)===`single`?t:V(u)===`tag`?`[Etiqueta: ${t}]`:`[Grupo: ${t}]`,delaySeconds:parseInt(V(m),10)||10,recurrence:V(g),scheduledTime:V(h),message:V(_).trim(),media:V(v),relaunch:!0},r;r=o()===`edit`&&a()?await Wo(a().id,n):await Uo(n),I(y,!1),r.success&&w()}{let t=P(()=>o()===`edit`?`✏️ Editar y Reprogramar Campaña`:o()===`duplicate`?`📋 Duplicar Campaña de Difusión`:`⏰ Programar Envío o Difusión`),n=P(()=>o()===`edit`?`Modifica los destinatarios, ajusta el mensaje o define una nueva fecha/hora para reactivar esta campaña periódica.`:o()===`duplicate`?`Crea una nueva campaña a partir de esta plantilla con fecha actualizada.`:`Programa mensajes para un contacto individual o difusiones masivas segmentadas por etiqueta o grupo.`);il(e,{get isOpen(){return i()},get title(){return V(t)},get subtitle(){return V(n)},maxWidth:`720px`,onClose:w,children:(e,t)=>{var n=nu(),i=L(n),s=e=>{W(e,Ul())};K(i,e=>{o()===`edit`&&a()&&(a().status===`sent`||a().status===`failed`||a().status===`cancelled`)&&e(s)});var c=z(i,2),C=z(L(c),2),k=L(C);let A;var ee=z(k,2);let te;var ne=z(ee,2);let re;M(C),M(c);var ie=z(c,2),ae=L(ie),oe=z(L(ae),2);J(oe),M(ae);var se=z(ae,2),ce=e=>{var t=Wl(),n=z(L(t),2);J(n),M(t),Y(n,()=>V(d),e=>I(d,e)),W(e,t)},le=e=>{var t=Jl(),n=L(t),r=z(L(n),2);M(n);var i=z(n,2),a=e=>{var t=Gl(),n=z(L(t),2);M(t),H(`click`,n,D),W(e,t)},o=e=>{var t=ql();Xr(t,21,()=>V(b),Kr,(e,t)=>{var n=Kl(),r=R(n),i={};B(()=>{G(r,`${V(t).tag??``} (${V(t).count??``} contacto${V(t).count===1?``:`s`})`),i!==(i=V(t).tag)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(t),_i(t),vi(t,()=>V(f),e=>I(f,e)),W(e,t)};K(i,e=>{V(b).length===0?e(a):e(o,-1)}),M(t),H(`click`,r,D),W(e,t)},ue=e=>{var t=Zl(),n=L(t),i=z(L(n),2);M(n);var a=z(n,2),o=e=>{var t=Yl(),n=z(L(t),2);M(t),H(`click`,n,E),W(e,t)},s=e=>{var t=Xl();Xr(t,5,()=>r()||[],Kr,(e,t)=>{var n=Kl(),r=R(n),i={};B(()=>{G(r,`${V(t).name??``} (${(V(t).memberCount||0)??``} contacto${V(t).memberCount===1?``:`s`})`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(t),_i(t),vi(t,()=>V(p),e=>I(p,e)),W(e,t)};K(a,e=>{(r()||[]).length===0?e(o):e(s,-1)}),M(t),H(`click`,i,E),W(e,t)};K(se,e=>{V(u)===`single`?e(ce):V(u)===`tag`?e(le,1):V(u)===`group`&&e(ue,2)}),M(ie);var de=z(ie,2),fe=e=>{var t=$l(),n=L(t);let r;var i=z(L(n)),a=R(i),o=z(i,2),s=e=>{W(e,Ql())};K(o,e=>{V(x)===0&&e(s)}),M(n);var c=z(n,2),l=z(L(c),2),u=L(l);u.value=u.__value=5;var d=z(u);d.value=d.__value=10;var f=z(d);f.value=f.__value=15;var p=z(f);p.value=p.__value=20,M(l),_i(l),M(c),M(t),B(()=>{r=q(n,1,`info-badge svelte-1wibhgs`,null,r,{"badge-zero":V(x)===0}),G(a,`${V(x)??``} contacto${V(x)===1?``:`s`}`)}),vi(l,()=>V(m),e=>I(m,e)),W(e,t)};K(de,e=>{V(u)!==`single`&&e(fe)});var pe=z(de,2),me=L(pe),he=R(me,!0),ge=z(me,2);J(ge);var _e=z(ge,2),j=L(_e),ve=L(j),ye=R(ve,!0),be=z(ve,2);J(be),M(j);var xe=z(j,2),Se=z(L(xe),2),Ce=L(Se);Ce.value=Ce.__value=`none`;var we=z(Ce);we.value=we.__value=`daily`;var Te=z(we);Te.value=Te.__value=`weekly`;var Ee=z(Te);Ee.value=Ee.__value=`monthly`;var De=z(Ee);De.value=De.__value=`yearly`,M(Se),_i(Se),M(xe),M(_e);var Oe=z(_e,2),ke=e=>{var t=tu(),n=z(L(t),2),r=L(n),i=R(r),a=z(r,2),o=e=>{W(e,Fr(`Se ejecutará cada día automáticamente a la hora
-                            seleccionada.`))},s=e=>{W(e,Fr(`Se repetirá cada semana el mismo día de la semana a
-                            la hora seleccionada.`))},c=e=>{var t=eu();N(2),W(e,t)},l=e=>{W(e,Fr(`Se repetirá anualmente en la misma fecha y hora para
-                            felicitaciones o renovaciones de pólizas/planes.`))};K(a,e=>{V(g)===`daily`?e(o):V(g)===`weekly`?e(s,1):V(g)===`monthly`?e(c,2):V(g)===`yearly`&&e(l,3)}),M(n),M(t),B(()=>G(i,`Campaña Recurrente Activada (${V(g)===`daily`?`Diaria`:V(g)===`weekly`?`Semanal`:V(g)===`monthly`?`Mensual`:`Anual`}):`)),W(e,t)};K(Oe,e=>{V(g)!==`none`&&e(ke)});var Ae=z(Oe,2),je=L(Ae),Me=z(L(je),2),Ne=z(L(Me),2);Ne.textContent=`+ {nombre}`;var Pe=z(Ne,2);Pe.textContent=`+ {telefono}`,M(Me),M(je);var Fe=z(je,2);tt(Fe),M(Ae);var Ie=z(Ae,2);Il(z(L(Ie),2),{category:`quick`,get media(){return V(v)},onMediaChange:e=>I(v,e,!0)}),M(Ie);var Le=z(Ie,2),Re=L(Le),ze=z(Re,2),Be=L(ze),Ve=e=>{W(e,Fr(`Guardando...`))},He=e=>{var t=Fr();B(()=>G(t,`Actualizar y Reprogramar (${V(x)??``} contactos)`)),W(e,t)},Ue=e=>{var t=Fr();B(()=>G(t,`Crear Campaña Duplicada (${V(x)??``} contactos)`)),W(e,t)},We=e=>{W(e,Fr(`Programar Envío`))},Ge=e=>{var t=Fr();B(()=>G(t,`Iniciar Campaña (${V(x)??``} contacto${V(x)===1?``:`s`})`)),W(e,t)};K(Be,e=>{V(y)?e(Ve):o()===`edit`?e(He,1):o()===`duplicate`?e(Ue,2):V(u)===`single`?e(We,3):e(Ge,-1)}),M(ze),M(Le),M(pe),M(n),B(()=>{A=q(k,1,`audience-pill svelte-1wibhgs`,null,A,{active:V(u)===`single`}),te=q(ee,1,`audience-pill svelte-1wibhgs`,null,te,{active:V(u)===`tag`}),re=q(ne,1,`audience-pill svelte-1wibhgs`,null,re,{active:V(u)===`group`}),G(he,o()===`edit`?`Nueva Fecha y Hora de Envío`:`Fecha y Hora de Envío`),G(ye,o()===`edit`?`Fecha y Hora de Próximo Envío`:`Fecha y Hora de Primer Envío`),ze.disabled=V(y)||V(u)!==`single`&&V(x)===0}),wr(`submit`,n,O),H(`click`,k,()=>S(`single`)),H(`click`,ee,()=>S(`tag`)),H(`click`,ne,()=>S(`group`)),Y(oe,()=>V(l),e=>I(l,e)),Y(ge,()=>V(h),e=>I(h,e)),Y(be,()=>V(h),e=>I(h,e)),vi(Se,()=>V(g),e=>I(g,e)),H(`click`,Ne,()=>T(`{nombre}`)),H(`click`,Pe,()=>T(`{telefono}`)),Y(Fe,()=>V(_),e=>I(_,e)),H(`click`,Re,w),W(e,n)},$$slots:{default:!0}})}We(),c()}Tr([`click`]);var iu=U(`<div style="display: flex; justify-content: space-between; width: 100%;"><button type="button" class="btn btn-secondary">💬 Responder por Envío Directo</button> <button type="button" class="btn btn-primary">Cerrar</button></div>`),au=U(`<div style="text-align: center; padding: 40px; color: var(--text-dim);">Este cliente no tiene archivos adjuntos recibidos.</div>`),ou=U(`<img loading="lazy"/>`),su=U(`<span class="gallery-file-icon">🎵</span>`),cu=U(`<span class="gallery-file-icon"> </span>`),lu=U(`<div class="gallery-caption"> </div>`),uu=U(`<audio controls="" style="width: 100%; margin: 6px 0; height: 32px;"></audio>`),du=U(`<div class="gallery-card"><div class="gallery-media-preview"><!></div> <div class="gallery-card-body"><span class="gallery-filename"> </span> <!> <!> <div class="gallery-meta-row"><span> </span> <span> </span></div> <a target="_blank" rel="noopener noreferrer" class="gallery-download-btn">⬇️ Descargar / Ver</a></div></div>`),fu=U(`<div class="lead-files-gallery svelte-y3x7ou"></div>`);function pu(e,t){Ue(t,!1);let n=()=>Z(po,`$selectedLead`,i),r=()=>Z(mo,`$isLeadModalOpen`,i),[i,a]=Ui();function o(){mo.set(!1),po.set(null)}function s(){if(!n())return;let e=n().phone;o(),la.set(e),sa.set(`tab-quick-send`)}Pi();{let t=e=>{var t=iu(),n=L(t),r=z(n,2);M(t),H(`click`,n,s),H(`click`,r,o),W(e,t)},i=pt(()=>`Archivos recibidos de ${n()?.name||`Cliente`}`),a=pt(()=>`Número: +${n()?.phone||``} • Total: ${n()?.receivedFiles?.length||0} archivo(s)`);il(e,{get isOpen(){return r()},get title(){return V(i)},get subtitle(){return V(a)},maxWidth:`760px`,onClose:o,actions:t,children:(e,t)=>{var r=Ir(),i=cn(r),a=e=>{W(e,au())},o=e=>{var t=fu();Xr(t,5,()=>n().receivedFiles,Kr,(e,t)=>{let n=pt(()=>(V(t).mimetype||``).startsWith(`image/`)),r=pt(()=>(V(t).mimetype||``).startsWith(`audio/`)||(V(t).mimetype||``).includes(`ogg`));var i=du(),a=L(i),o=L(a),s=e=>{var n=ou();B(()=>{Ti(n,`src`,V(t).url),Ti(n,`alt`,V(t).filename)}),W(e,n)},c=e=>{W(e,su())},l=e=>{var n=cu(),r=R(n,!0);B(e=>G(r,e),[()=>(V(t).mimetype||``).includes(`pdf`)?`📄`:`📁`]),W(e,n)};K(o,e=>{V(n)?e(s):V(r)?e(c,1):e(l,-1)}),M(a);var u=z(a,2),d=L(u),f=R(d,!0),p=z(d,2),m=e=>{var n=lu(),r=R(n);B(()=>G(r,`"${V(t).caption??``}"`)),W(e,n)};K(p,e=>{V(t).caption&&e(m)});var h=z(p,2),g=e=>{var n=uu();B(()=>Ti(n,`src`,V(t).url)),W(e,n)};K(h,e=>{V(r)&&e(g)});var _=z(h,2),v=L(_),y=R(v,!0),b=R(z(v,2),!0);M(_);var x=z(_,2);M(u),M(i),B((e,n)=>{Ti(d,`title`,V(t).filename),G(f,V(t).filename),G(y,e),G(b,n),Ti(x,`href`,V(t).url),Ti(x,`download`,V(t).filename)},[()=>wl(V(t).size||0),()=>Tl(V(t).receivedAt)]),W(e,i)}),M(t),W(e,t)};K(i,e=>{!n()?.receivedFiles||n().receivedFiles.length===0?e(a):e(o,-1)}),W(e,r)},$$slots:{actions:!0,default:!0}})}We(),a()}Tr([`click`]);var mu=U(`<span class="status-pill paused svelte-1midlix">🛑 Bot Pausado (Atención Humana)</span>`),hu=U(`<span class="status-pill active svelte-1midlix">🤖 Bot Activo (Respuesta Automática)</span>`),gu=U(`<span class="status-pill live svelte-1midlix" title="Mensajes sincronizados en tiempo real"><span class="live-dot svelte-1midlix"></span> Tiempo Real Activo</span>`),_u=U(`<span class="status-pill history svelte-1midlix" title="Mostrando historial registrado en la base de datos">📦 Historial Local</span>`),vu=U(`<button type="button" class="btn-mini-toggle svelte-1midlix" title="Alternar entre atención automática del bot y atención humana"> </button>`),yu=U(`<div class="chat-loading-state svelte-1midlix"><div class="chat-spinner svelte-1midlix"></div> <p class="svelte-1midlix">Cargando mensajes de WhatsApp...</p></div>`),bu=U(`<div class="chat-empty-state svelte-1midlix"><div style="font-size: 40px; margin-bottom: 12px;" class="svelte-1midlix">💬</div> <h4 class="svelte-1midlix">No hay mensajes en este chat aún</h4> <p class="svelte-1midlix">Escribe una respuesta en la barra inferior para iniciar la
-                    conversación con este cliente.</p></div>`),xu=U(`<div class="date-separator svelte-1midlix"><span class="svelte-1midlix"> </span></div>`),Su=U(`<audio controls="" class="bubble-audio-player svelte-1midlix"></audio>`),Cu=U(`<div class="media-audio-box svelte-1midlix"><div class="audio-label svelte-1midlix">🎤 Nota de voz / Audio</div> <!></div>`),wu=U(`<div class="media-image-box svelte-1midlix"><a target="_blank" rel="noopener noreferrer" class="svelte-1midlix"><img alt="Adjunto recibido" class="bubble-image svelte-1midlix" loading="lazy"/></a></div>`),Tu=U(`<div class="bubble-text svelte-1midlix"> </div>`),Eu=U(`<div class="bubble-media-placeholder svelte-1midlix">📎 [Archivo adjunto]</div>`),Du=U(`<span class="bubble-ticks svelte-1midlix" title="Entregado">✓✓</span>`),Ou=U(`<!> <div><div><!> <!> <div class="bubble-meta svelte-1midlix"><span class="bubble-time svelte-1midlix"> </span> <!></div></div></div>`,1),ku=U(`<div class="messages-stream svelte-1midlix"></div>`),Au=U(`<span class="send-spinner svelte-1midlix"></span>`),ju=U(`<span class="svelte-1midlix">Enviar</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="svelte-1midlix"><line x1="22" y1="2" x2="11" y2="13" class="svelte-1midlix"></line><polygon points="22 2 15 22 11 13 2 9 22 2" class="svelte-1midlix"></polygon></svg>`,1),Mu=U(`<div class="chat-context-bar svelte-1midlix"><div class="chat-status-info svelte-1midlix"><!> <!></div> <div class="chat-header-actions svelte-1midlix"><!> <button type="button" class="btn-mini-refresh svelte-1midlix" title="Actualizar mensajes desde WhatsApp"><span>🔄</span> <span class="svelte-1midlix">Actualizar</span></button></div></div> <div class="chat-viewport svelte-1midlix"><!></div> <form class="chat-reply-bar svelte-1midlix"><textarea class="chat-input svelte-1midlix" placeholder="Escribe un mensaje para responder al cliente... (Enter para enviar)" rows="1"></textarea> <button type="submit" class="btn-send-chat svelte-1midlix"><!></button></form>`,1);function Nu(e,t){Ue(t,!0);let n=()=>Z(_o,`$isChatModalOpen`,c),r=()=>Z(vo,`$chatMessages`,c),i=()=>Z(go,`$selectedChatLead`,c),a=()=>Z(bo,`$isLiveChat`,c),o=()=>Z(zs,`$hasPermission`,c),s=()=>Z(yo,`$isChatLoading`,c),[c,l]=Ui(),u=F(``),d=F(!1),f=F(null);function p(){Ao(),I(u,``)}async function m(){await fr(),V(f)&&(V(f).scrollTop=V(f).scrollHeight)}bn(()=>{n()&&r().length&&m()});async function h(){i()?.phone&&(await No(i().phone),m())}async function g(e){e?.preventDefault();let t=V(u).trim();if(!t||V(d)||!i()?.phone)return;I(d,!0),I(u,``);let n=await Po(i().phone,t);I(d,!1),n.success?m():I(u,t,!0)}function _(e){e.key===`Enter`&&!e.shiftKey&&(e.preventDefault(),g())}function v(e){if(!e)return``;let t=new Date(e);return isNaN(t.getTime())?``:t.toLocaleTimeString(`es-CO`,{hour:`2-digit`,minute:`2-digit`})}function y(e){if(!e)return``;let t=new Date(e);if(isNaN(t.getTime()))return``;let n=new Date;if(t.toDateString()===n.toDateString())return`Hoy`;let r=new Date;return r.setDate(n.getDate()-1),t.toDateString()===r.toDateString()?`Ayer`:t.toLocaleDateString(`es-CO`,{dateStyle:`medium`})}{let t=P(()=>`💬 Conversación con ${i()?.name||`Cliente`}`),c=P(()=>`+${i()?.phone||``} • Etiqueta: ${i()?.tag||`Nuevo`}`);il(e,{get isOpen(){return n()},get title(){return V(t)},get subtitle(){return V(c)},maxWidth:`760px`,onClose:p,children:(e,t)=>{var n=Mu(),c=cn(n),l=L(c),p=L(l),m=e=>{W(e,mu())},b=e=>{W(e,hu())};K(p,e=>{i()?.humanPaused?e(m):e(b,-1)});var x=z(p,2),S=e=>{W(e,gu())},C=e=>{W(e,_u())};K(x,e=>{a()?e(S):e(C,-1)}),M(l);var w=z(l,2),T=L(w),E=e=>{var t=vu(),n=R(t,!0);B(()=>G(n,i().humanPaused?`Reactivar Bot`:`Pausar Bot`)),H(`click`,t,()=>Do(i().phone)),W(e,t)},D=P(()=>o()(`leads:pause`)&&i()?.phone);K(T,e=>{V(D)&&e(E)});var O=z(T,2),k=L(O);N(2),M(O),M(w),M(c);var A=z(c,2),ee=L(A),te=e=>{W(e,yu())},ne=e=>{W(e,bu())},re=e=>{var t=ku();Xr(t,7,r,(e,t)=>e.id||t,(e,t,n)=>{let i=P(()=>V(n)>0?r()[V(n)-1]:null),a=P(()=>!V(i)||y(V(t).timestamp)!==y(V(i).timestamp)),o=P(()=>V(t).type===`ptt`||V(t).type===`audio`),s=P(()=>V(t).type===`image`||(V(t).mediaMimetype||``).startsWith(`image/`));var c=Ou(),l=cn(c),u=e=>{var n=xu(),r=R(L(n),!0);M(n),B(e=>G(r,e),[()=>y(V(t).timestamp)]),W(e,n)};K(l,e=>{V(a)&&e(u)});var d=z(l,2),f=L(d),p=L(f),m=e=>{var n=Cu(),r=z(L(n),2),i=e=>{var n=Su();B(()=>Ti(n,`src`,V(t).mediaUrl)),W(e,n)};K(r,e=>{V(t).mediaUrl&&e(i)}),M(n),W(e,n)},h=e=>{var n=wu(),r=L(n),i=R(r);M(n),B(()=>{Ti(r,`href`,V(t).mediaUrl),Ti(i,`src`,V(t).mediaUrl)}),W(e,n)};K(p,e=>{V(o)?e(m):V(s)&&V(t).mediaUrl&&e(h,1)});var g=z(p,2),_=e=>{var n=Tu(),r=R(n,!0);B(()=>G(r,V(t).body)),W(e,n)},b=e=>{W(e,Eu())};K(g,e=>{V(t).body&&V(t).body!==`🎤 [Nota de voz]`&&V(t).body!==`📎 [Archivo adjunto]`?e(_):!V(o)&&!V(s)&&V(t).hasMedia&&e(b,1)});var x=z(g,2),S=L(x),C=R(S,!0),w=z(S,2),T=e=>{W(e,Du())};K(w,e=>{V(t).fromMe&&e(T)}),M(x),M(f),M(d),B(e=>{q(d,1,`message-bubble-row ${V(t).fromMe?`outgoing`:`incoming`}`,`svelte-1midlix`),q(f,1,`bubble ${V(t).fromMe?`outgoing`:`incoming`}`,`svelte-1midlix`),G(C,e)},[()=>v(V(t).timestamp)]),W(e,c)}),M(t),W(e,t)};K(ee,e=>{s()&&r().length===0?e(te):r().length===0?e(ne,1):e(re,-1)}),M(A),Ni(A,e=>I(f,e),()=>V(f));var ie=z(A,2),ae=L(ie);tt(ae);var oe=z(ae,2),se=L(oe),ce=e=>{W(e,Au())},le=e=>{var t=ju();N(2),W(e,t)};K(se,e=>{V(d)?e(ce):e(le,-1)}),M(oe),M(ie),B(e=>{O.disabled=s(),q(k,1,oi(s()?`spin`:``),`svelte-1midlix`),ae.disabled=V(d),oe.disabled=e},[()=>!V(u).trim()||V(d)]),H(`click`,O,h),wr(`submit`,ie,g),H(`keydown`,ae,_),Y(ae,()=>V(u),e=>I(u,e)),W(e,n)},$$slots:{default:!0}})}We(),l()}Tr([`click`,`keydown`]);var Pu=U(`<div class="file-stats svelte-jsoxpl"> </div>`),Fu=U(`<div class="file-name-pill svelte-jsoxpl"> </div> <!> <span style="font-size: 0.78rem; color: #38bdf8; margin-top: 6px;">Clic para cambiar de archivo</span>`,1),Iu=U(`<strong>Haz clic para seleccionar tu archivo CSV</strong> <span>Compatible con el archivo exportado desde contactos de Google</span>`,1),Lu=U(`<option> </option>`),Ru=U(`<form class="import-form"><div class="upload-dropzone svelte-jsoxpl"><label for="csv-file-input" class="dropzone-label svelte-jsoxpl"><div style="font-size: 32px; margin-bottom: 8px;">📂</div> <!></label> <input type="file" id="csv-file-input" accept=".csv,text/csv" class="hidden-file-input svelte-jsoxpl"/></div> <div class="form-row svelte-jsoxpl" style="margin-top: 16px;"><div class="form-group flex-1 svelte-jsoxpl"><label for="imp-prefix-input">Código de País por Defecto</label> <input type="text" id="imp-prefix-input" placeholder="57" title="Se agregará si el número telefónico en el CSV no tiene código de país"/> <small class="field-hint svelte-jsoxpl">Ej: 57 para Colombia, 52 para México</small></div> <div class="form-group flex-1 svelte-jsoxpl"><label for="imp-tag-input">Etiqueta a Asignar</label> <input type="text" id="imp-tag-input" list="imp-tag-datalist" placeholder="Ej: Clientes VIP, Google..."/> <datalist id="imp-tag-datalist"></datalist></div></div> <div class="form-group"><label for="imp-group-select">Agregar a un Grupo de Difusión (Opcional)</label> <select id="imp-group-select" class="form-select svelte-jsoxpl"><option>Ninguno (Solo importar a contactos generales)</option><!></select></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`),zu=U(`<form class="import-form"><div class="sync-info-box svelte-jsoxpl"><div style="font-size: 32px; margin-bottom: 8px;">📲</div> <h4 class="svelte-jsoxpl">Sincronización Directa de Agenda</h4> <p class="svelte-jsoxpl">Esta opción lee los contactos que tienes guardados en la agenda del teléfono conectado a WhatsApp Web
-          y los incorpora automáticamente como prospectos en la base de datos de tu empresa.</p></div> <div class="form-row svelte-jsoxpl" style="margin-top: 16px;"><div class="form-group flex-1 svelte-jsoxpl"><label for="sync-tag-input">Etiqueta para los contactos de WhatsApp</label> <input type="text" id="sync-tag-input" placeholder="Agenda WhatsApp"/></div> <div class="form-group flex-1 svelte-jsoxpl"><label for="sync-group-select">Agregar al Grupo (Opcional)</label> <select id="sync-group-select" class="form-select svelte-jsoxpl"><option>Ninguno (Solo importar)</option><!></select></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`),Bu=U(`<div class="import-tabs svelte-jsoxpl"><button type="button">📄 Archivo CSV (Google Contacts)</button> <button type="button">📱 Sincronizar desde WhatsApp</button></div> <!>`,1);function Vu(e,t){Ue(t,!0);let n=()=>Z(fo,`$leads`,a),r=()=>Z(ho,`$isImportModalOpen`,a),i=()=>Z(Za,`$groups`,a),[a,o]=Ui(),s=F(`csv`),c=F(`57`),l=F(`Importado Google`),u=F(``),d=F(!1),f=F(null),p=F(``),m=F(``),h=F(null),g=P(()=>Array.from(new Set(n().map(e=>e.tag||`Nuevo`))).filter(Boolean)),_=!1;bn(()=>{let e=r();e&&!_?(_=!0,hr(()=>{$a(),I(f,null),I(p,``),I(m,``),I(h,null),I(d,!1)})):e||(_=!1)});function v(){ho.set(!1)}function y(e){let t=e.target.files?.[0];if(!t)return;I(p,t.name,!0);let n=new FileReader;n.onload=e=>{I(m,e.target?.result||``,!0);let t=V(m).split(`
-`).filter(e=>e.trim().length>0);I(h,{totalLines:Math.max(0,t.length-1)},!0)},n.readAsText(t)}async function b(e){if(e.preventDefault(),!V(m)){$(`Selecciona un archivo CSV para importar`,`warning`);return}I(d,!0);let t=await lo({csv:V(m),defaultPrefix:V(c),defaultTag:V(l).trim()||`Importado Google`,groupId:V(u)||null});I(d,!1),t.success&&v()}async function x(e){e.preventDefault(),I(d,!0);let t=await uo({defaultTag:V(l).trim()||`Agenda WhatsApp`,groupId:V(u)||null});I(d,!1),t.success&&v()}il(e,{get isOpen(){return r()},title:`📥 Importar Contactos a la Agenda de Difusión`,subtitle:`Importa contactos desde Google Contacts o sincroniza la agenda de WhatsApp para difusiones (no se mezclan con los prospectos del embudo CRM)`,maxWidth:`640px`,onClose:v,children:(e,t)=>{var n=Bu(),r=cn(n),a=L(r),o=z(a,2);M(r);var f=z(r,2),_=e=>{var t=Ru(),n=L(t),r=L(n),a=z(L(r),2),o=e=>{var t=Fu(),n=cn(t),r=R(n),i=z(n,2),a=e=>{var t=Pu(),n=R(t);B(()=>G(n,`Aproximadamente ${V(h).totalLines??``} fila(s) detectadas`)),W(e,t)};K(i,e=>{V(h)&&e(a)}),N(2),B(()=>G(r,`✅ ${V(p)??``}`)),W(e,t)},s=e=>{var t=Iu();N(2),W(e,t)};K(a,e=>{V(p)?e(o):e(s,-1)}),M(r);var f=z(r,2);M(n);var _=z(n,2),x=L(_),S=z(L(x),2);J(S),N(2),M(x);var C=z(x,2),w=z(L(C),2);J(w);var T=z(w,2);Xr(T,21,()=>V(g),Kr,(e,t)=>{var n=Lu(),r=R(n,!0),i={};B(()=>{G(r,V(t)),i!==(i=V(t))&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(T),M(C),M(_);var E=z(_,2),D=z(L(E),2),O=L(D);O.value=O.__value=``,Xr(z(O),1,i,Kr,(e,t)=>{var n=Lu(),r=R(n),i={};B(()=>{G(r,`👥 ${V(t).name??``} (${(V(t).memberCount||0)??``} miembros actuales)`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(D),_i(D),M(E);var k=z(E,2),A=L(k),ee=z(A,2),te=R(ee,!0);M(k),M(t),B(()=>{ee.disabled=V(d)||!V(m),G(te,V(d)?`Importando...`:`Importar Contactos a PostgreSQL`)}),wr(`submit`,t,b),H(`change`,f,y),Y(S,()=>V(c),e=>I(c,e)),Y(w,()=>V(l),e=>I(l,e)),vi(D,()=>V(u),e=>I(u,e)),H(`click`,A,v),W(e,t)},S=e=>{var t=zu(),n=z(L(t),2),r=L(n),a=z(L(r),2);J(a),M(r);var o=z(r,2),s=z(L(o),2),c=L(s);c.value=c.__value=``,Xr(z(c),1,i,Kr,(e,t)=>{var n=Lu(),r=R(n),i={};B(()=>{G(r,`👥 ${V(t).name??``} (${(V(t).memberCount||0)??``} miembros)`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(s),_i(s),M(o),M(n);var f=z(n,2),p=L(f),m=z(p,2),h=R(m,!0);M(f),M(t),B(()=>{m.disabled=V(d),G(h,V(d)?`Sincronizando...`:`Traer Contactos desde WhatsApp`)}),wr(`submit`,t,x),Y(a,()=>V(l),e=>I(l,e)),vi(s,()=>V(u),e=>I(u,e)),H(`click`,p,v),W(e,t)};K(f,e=>{V(s)===`csv`?e(_):e(S,-1)}),B(()=>{q(a,1,`import-tab-btn ${V(s)===`csv`?`active`:``}`,`svelte-jsoxpl`),q(o,1,`import-tab-btn ${V(s)===`whatsapp`?`active`:``}`,`svelte-jsoxpl`)}),H(`click`,a,()=>I(s,`csv`)),H(`click`,o,()=>I(s,`whatsapp`)),W(e,n)},$$slots:{default:!0}}),We(),o()}Tr([`click`,`change`]);var Hu=U(`<button type="button"></button>`),Uu=U(`<form class="create-grp-form svelte-9ftjwt"><div class="form-group"><label for="grp-name-in">Nombre del Grupo</label> <input type="text" id="grp-name-in" placeholder="Ej: Clientes VIP, Lanzamiento..." required=""/></div> <div class="form-group"><label for="grp-desc-in">Descripción (Opcional)</label> <input type="text" id="grp-desc-in" placeholder="Detalles sobre este grupo"/></div> <div class="form-group"><label for="grp-color-in">Color del Grupo</label> <div class="color-picker-row svelte-9ftjwt"></div></div> <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Guardar Grupo</button></form>`),Wu=U(`<div class="empty-groups svelte-9ftjwt"><p>No tienes grupos creados todavía.</p> <button type="button" class="btn btn-primary btn-sm">Crear Primer Grupo</button></div>`),Gu=U(`<p class="group-desc svelte-9ftjwt"> </p>`),Ku=U(`<div role="button" tabindex="0"><div class="group-card-header svelte-9ftjwt"><span class="group-color-dot svelte-9ftjwt"></span> <strong class="group-name svelte-9ftjwt"> </strong></div> <!> <div class="group-card-footer svelte-9ftjwt"><span class="member-count-badge svelte-9ftjwt"> </span> <button type="button" class="btn-delete-grp svelte-9ftjwt" title="Eliminar grupo">🗑️</button></div></div>`),qu=U(`<div class="groups-list svelte-9ftjwt"></div>`),Ju=U(`<div class="search-empty-text svelte-9ftjwt">No se encontraron contactos en tu agenda con esa búsqueda.</div>`),Yu=U(`<span class="badge-tag-mini svelte-9ftjwt"> </span>`),Xu=U(`<span class="badge-in-group svelte-9ftjwt">✓ En el grupo</span>`),Zu=U(`<button type="button" class="btn-add-contact-chip svelte-9ftjwt">+ Añadir</button>`),Qu=U(`<div class="search-item-row svelte-9ftjwt"><div class="search-item-info svelte-9ftjwt"><strong> </strong> <span class="search-item-phone svelte-9ftjwt"> </span> <span class="badge-source-mini svelte-9ftjwt"> </span> <!></div> <!></div>`),$u=U(`<div class="add-pane add-search-pane"><input type="search" class="form-search-input svelte-9ftjwt" placeholder="🔍 Escribe nombre o número para buscar y añadir..."/> <div class="search-results-list svelte-9ftjwt"><!></div></div>`),ed=U(`<option> </option>`),td=U(`<div class="add-pane add-tag-pane"><label for="add-tag-sel" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Añadir todos los contactos registrados con esta etiqueta:</label> <div style="display: flex; gap: 8px;"><select id="add-tag-sel" class="form-select flex-1 svelte-9ftjwt"><option>Selecciona una etiqueta...</option><!></select> <button type="button" class="btn btn-primary btn-sm"> </button></div></div>`),nd=U(`<div class="add-pane add-direct-pane"><label for="add-direct-in" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Ingresa el número con indicativo de país (ej. 573001234567):</label> <div style="display: flex; gap: 8px;"><input type="tel" id="add-direct-in" class="form-search-input flex-1 svelte-9ftjwt" placeholder="ej: 573001234567"/> <button type="button" class="btn btn-primary btn-sm"> </button></div></div>`),rd=U(`<input type="search" class="filter-members-input svelte-9ftjwt" placeholder="Filtrar miembros..."/>`),id=U(`<div style="text-align: center; padding: 30px; color: var(--text-muted);">Cargando miembros...</div>`),ad=U(`<div class="empty-members svelte-9ftjwt"><p>Este grupo no tiene miembros todavía.</p> <span>Usa el buscador de arriba para añadir contactos sin etiqueta, busca por etiqueta o escribe un número directo.</span></div>`),od=U(`<tr><td class="svelte-9ftjwt"><strong> </strong></td><td class="svelte-9ftjwt"> </td><td class="svelte-9ftjwt"><span class="badge-source-mini svelte-9ftjwt"> </span></td><td class="svelte-9ftjwt"><span class="badge-mini-tag svelte-9ftjwt"> </span></td><td style="text-align: right;" class="svelte-9ftjwt"><button type="button" class="btn-remove-member svelte-9ftjwt" title="Quitar del grupo">✕</button></td></tr>`),sd=U(`<div class="members-table-wrap svelte-9ftjwt"><table class="mini-table svelte-9ftjwt"><thead><tr><th class="svelte-9ftjwt">Nombre</th><th class="svelte-9ftjwt">Teléfono</th><th class="svelte-9ftjwt">Origen</th><th class="svelte-9ftjwt">Etiqueta</th><th style="width: 40px; text-align: right;" class="svelte-9ftjwt">Quitar</th></tr></thead><tbody></tbody></table></div>`),cd=U(`<div class="detail-header svelte-9ftjwt"><div><div style="display: flex; align-items: center; gap: 8px;"><span class="group-color-dot large svelte-9ftjwt"></span> <h3 class="svelte-9ftjwt"> </h3></div> <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;"> <strong> </strong></p></div></div> <div class="add-members-box svelte-9ftjwt"><div class="add-modes-nav svelte-9ftjwt"><button type="button">🔍 Buscar Contacto</button> <button type="button">🏷️ Añadir por Etiqueta</button> <button type="button">➕ Número Directo</button></div> <!></div> <div class="members-section-header svelte-9ftjwt"><span style="font-weight: 600; font-size: 0.88rem; color: #fff;"> </span> <!></div> <div class="members-stream svelte-9ftjwt"><!></div>`,1),ld=U(`<div class="no-selection-state svelte-9ftjwt"><div style="font-size: 44px; margin-bottom: 10px;">👥</div> <h4 class="svelte-9ftjwt">Selecciona un grupo</h4> <p>Elige un grupo de la lista de la izquierda para ver y gestionar sus miembros, o crea uno nuevo.</p></div>`),ud=U(`<div class="groups-container svelte-9ftjwt"><div class="groups-sidebar svelte-9ftjwt"><div class="sidebar-header svelte-9ftjwt"><h4 class="svelte-9ftjwt"> </h4> <button type="button" class="btn btn-outline-sm btn-new-grp"> </button></div> <!></div> <div class="group-detail-panel svelte-9ftjwt"><!></div></div>`);function dd(e,t){Ue(t,!0);let n=()=>Z(ao,`$contacts`,o),r=()=>Z(fo,`$leads`,o),i=()=>Z(Qa,`$isGroupsModalOpen`,o),a=()=>Z(Za,`$groups`,o),[o,s]=Ui(),c=F(null),l=F(Xt([])),u=F(!1),d=F(!1),f=F(``),p=F(``),m=F(`#38bdf8`),h=F(`search`),g=F(``),_=F(``),v=F(``),y=F(!1),b=F(``),x=P(()=>{let e=new Map;for(let t of n()||[])t.phone&&e.set(t.phone,{phone:t.phone,name:t.name||t.phone,source:t.source===`whatsapp`?`Agenda WhatsApp`:t.source===`google_csv`?`Google Contacts`:`Agenda`,tag:t.tags||`Sin etiqueta`});for(let t of r()||[])t.phone&&t.phone!==`status@broadcast`&&!t.phone.includes(`@broadcast`)&&(e.has(t.phone)||e.set(t.phone,{phone:t.phone,name:t.name||t.phone,source:`CRM Lead`,tag:t.tag||`Nuevo`}));return Array.from(e.values())}),S=P(()=>{let e=V(g).trim().toLowerCase();if(!e)return V(x).slice(0,10);let t=e.replace(/\D/g,``);return V(x).filter(n=>{let r=n.name.toLowerCase().includes(e),i=n.phone.includes(e)||t&&n.phone.replace(/\D/g,``).includes(t),a=n.tag.toLowerCase().includes(e);return r||i||a}).slice(0,20)}),C=P(()=>new Set(V(l).map(e=>e.phone))),w=P(()=>Array.from(new Set([...r().map(e=>e.tag||`Nuevo`),...n().map(e=>e.tags||``)])).filter(Boolean)),T=P(()=>V(l).filter(e=>{if(!V(b).trim())return!0;let t=V(b).toLowerCase();return(e.name||``).toLowerCase().includes(t)||(e.phone||``).includes(t)}));function E(){Qa.set(!1),I(c,null),I(d,!1),I(g,``),I(v,``)}async function D(e){I(c,e,!0),I(u,!0),I(l,await no(e.id),!0),I(u,!1),I(g,``)}async function O(e){if(e.preventDefault(),!V(f).trim()){$(`Ingresa el nombre del grupo`,`warning`);return}let t=await eo({name:V(f).trim(),description:V(p).trim(),color:V(m)});t.success&&(I(f,``),I(p,``),I(d,!1),t.group&&D(t.group))}async function k(e,t){confirm(`¿Deseas eliminar el grupo de difusión "${t}"? Los contactos no serán eliminados del sistema.`)&&(await to(e),V(c)?.id===e&&(I(c,null),I(l,[],!0)))}async function A(e){V(c)&&e&&(I(y,!0),(await ro(V(c).id,[e])).success&&I(l,await no(V(c).id),!0),I(y,!1))}async function ee(){if(!V(c)||!V(v).trim()){$(`Ingresa el número de WhatsApp`,`warning`);return}let e=V(v).replace(/\D/g,``);!e||e.length<7?$(`Ingresa un número de teléfono válido con código de país`,`warning`):(I(y,!0),(await ro(V(c).id,[e])).success&&(I(l,await no(V(c).id),!0),I(v,``)),I(y,!1))}async function te(){if(!V(c)||!V(_))return;let e=V(_).toLowerCase(),t=r().filter(t=>(t.tag||``).toLowerCase()===e&&t.phone&&t.phone!==`status@broadcast`).map(e=>e.phone),i=n().filter(t=>(t.tags||``).toLowerCase()===e&&t.phone).map(e=>e.phone),a=Array.from(new Set([...t,...i]));a.length===0?$(`No hay contactos con la etiqueta "${V(_)}"`,`info`):(I(y,!0),await ro(V(c).id,a),I(l,await no(V(c).id),!0),I(_,``),I(y,!1))}async function ne(e){V(c)&&(await io(V(c).id,e),I(l,V(l).filter(t=>t.phone!==e),!0))}il(e,{get isOpen(){return i()},title:`👥 Grupos Personalizados de Difusión`,subtitle:`Organiza contactos en listas para programar campañas de contenido segmentadas`,maxWidth:`840px`,onClose:E,children:(e,t)=>{var n=ud(),r=L(n),i=L(r),o=L(i),s=R(o),x=z(o,2),E=R(x,!0);M(i);var re=z(i,2),ie=e=>{var t=Uu(),n=L(t),r=z(L(n),2);J(r),M(n);var i=z(n,2),a=z(L(i),2);J(a),M(i);var o=z(i,2),s=z(L(o),2);Xr(s,20,()=>[`#38bdf8`,`#a855f7`,`#22c55e`,`#f59e0b`,`#ec4899`,`#64748b`],Kr,(e,t)=>{var n=Hu();B(()=>{Ti(n,`aria-label`,`Color ${t??``}`),q(n,1,`color-circle ${V(m)===t?`selected`:``}`,`svelte-9ftjwt`),pi(n,`background-color: ${t??``};`)}),H(`click`,n,()=>I(m,t,!0)),W(e,n)}),M(s),M(o),N(2),M(t),wr(`submit`,t,O),Y(r,()=>V(f),e=>I(f,e)),Y(a,()=>V(p),e=>I(p,e)),W(e,t)},ae=e=>{var t=Wu(),n=z(L(t),2);M(t),H(`click`,n,()=>I(d,!0)),W(e,t)},oe=e=>{var t=qu();Xr(t,5,a,e=>e.id,(e,t)=>{var n=Ku(),r=L(n),i=L(r),a=R(z(i,2),!0);M(r);var o=z(r,2),s=e=>{var n=Gu(),r=R(n,!0);B(()=>G(r,V(t).description)),W(e,n)};K(o,e=>{V(t).description&&e(s)});var l=z(o,2),u=L(l),d=R(u),f=z(u,2);M(l),M(n),B(()=>{q(n,1,`group-card ${V(c)?.id===V(t).id?`active`:``}`,`svelte-9ftjwt`),pi(i,`background-color: ${(V(t).color||`#38bdf8`)??``};`),G(a,V(t).name),G(d,`👤 ${(V(t).memberCount||0)??``} contacto${V(t).memberCount===1?``:`s`}`)}),H(`click`,n,()=>D(V(t))),H(`keydown`,n,e=>{e.key===`Enter`&&D(V(t))}),H(`click`,f,e=>{e.stopPropagation(),k(V(t).id,V(t).name)}),W(e,n)}),M(t),W(e,t)};K(re,e=>{V(d)?e(ie):a().length===0?e(ae,1):e(oe,-1)}),M(r);var se=z(r,2),ce=L(se),le=e=>{var t=cd(),n=cn(t),r=L(n),i=L(r),a=L(i),o=R(z(a,2),!0);M(i);var s=z(i,2),d=L(s),f=R(z(d));M(s),M(r),M(n);var p=z(n,2),m=L(p),x=L(m),E=z(x,2),D=z(E,2);M(m);var O=z(m,2),k=e=>{var t=$u(),n=L(t);J(n);var r=z(n,2),i=L(r),a=e=>{W(e,Ju())},o=e=>{var t=Ir();Xr(cn(t),17,()=>V(S),e=>e.phone,(e,t)=>{let n=P(()=>V(C).has(V(t).phone));var r=Qu(),i=L(r),a=L(i),o=R(a,!0),s=z(a,2),c=R(s),l=z(s,2),u=R(l,!0),d=z(l,2),f=e=>{var n=Yu(),r=R(n);B(()=>G(r,`🏷️ ${V(t).tag??``}`)),W(e,n)};K(d,e=>{V(t).tag&&V(t).tag!==`Sin etiqueta`&&e(f)}),M(i);var p=z(i,2),m=e=>{W(e,Xu())},h=e=>{var n=Zu();B(()=>n.disabled=V(y)),H(`click`,n,()=>A(V(t).phone)),W(e,n)};K(p,e=>{V(n)?e(m):e(h,-1)}),M(r),B(()=>{G(o,V(t).name),G(c,`+${V(t).phone??``}`),G(u,V(t).source)}),W(e,r)}),W(e,t)};K(i,e=>{V(S).length===0?e(a):e(o,-1)}),M(r),M(t),Y(n,()=>V(g),e=>I(g,e)),W(e,t)},re=e=>{var t=td(),n=z(L(t),2),r=L(n),i=L(r);i.value=i.__value=``,Xr(z(i),17,()=>V(w),Kr,(e,t)=>{var n=ed(),r=R(n,!0),i={};B(()=>{G(r,V(t)),i!==(i=V(t))&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(r),_i(r);var a=z(r,2),o=R(a,!0);M(n),M(t),B(()=>{a.disabled=!V(_)||V(y),G(o,V(y)?`Añadiendo...`:`+ Añadir al Grupo`)}),vi(r,()=>V(_),e=>I(_,e)),H(`click`,a,te),W(e,t)},ie=e=>{var t=nd(),n=z(L(t),2),r=L(n);J(r);var i=z(r,2),a=R(i,!0);M(n),M(t),B(e=>{i.disabled=e,G(a,V(y)?`Añadiendo...`:`+ Añadir`)},[()=>!V(v).trim()||V(y)]),Y(r,()=>V(v),e=>I(v,e)),H(`click`,i,ee),W(e,t)};K(O,e=>{V(h)===`search`?e(k):V(h)===`tag`?e(re,1):V(h)===`direct`&&e(ie,2)}),M(p);var ae=z(p,2),oe=L(ae),se=R(oe),ce=z(oe,2),le=e=>{var t=rd();J(t),Y(t,()=>V(b),e=>I(b,e)),W(e,t)};K(ce,e=>{V(l).length>5&&e(le)}),M(ae);var ue=z(ae,2),de=L(ue),fe=e=>{W(e,id())},pe=e=>{W(e,ad())},me=e=>{var t=sd(),n=L(t),r=z(L(n));Xr(r,21,()=>V(T),e=>e.phone,(e,t)=>{var n=od(),r=L(n),i=R(L(r),!0);M(r);var a=z(r),o=R(a),s=z(a),c=R(L(s),!0);M(s);var l=z(s),u=R(L(l),!0);M(l);var d=R(z(l));M(n),B(()=>{G(i,V(t).name||`Cliente`),G(o,`+${V(t).phone??``}`),G(c,V(t).source||`Agenda`),G(u,V(t).tag||`Sin etiqueta`)}),H(`click`,d,()=>ne(V(t).phone)),W(e,n)}),M(r),M(n),M(t),W(e,t)};K(de,e=>{V(u)?e(fe):V(l).length===0?e(pe,1):e(me,-1)}),M(ue),B(()=>{pi(a,`background-color: ${(V(c).color||`#38bdf8`)??``};`),G(o,V(c).name),G(d,`${(V(c).description||`Sin descripción`)??``} • `),G(f,`${V(l).length??``} contactos`),q(x,1,`btn-mode-tab ${V(h)===`search`?`active`:``}`,`svelte-9ftjwt`),q(E,1,`btn-mode-tab ${V(h)===`tag`?`active`:``}`,`svelte-9ftjwt`),q(D,1,`btn-mode-tab ${V(h)===`direct`?`active`:``}`,`svelte-9ftjwt`),G(se,`Miembros Actuales (${V(l).length??``})`)}),H(`click`,x,()=>I(h,`search`)),H(`click`,E,()=>I(h,`tag`)),H(`click`,D,()=>I(h,`direct`)),W(e,t)},ue=e=>{W(e,ld())};K(ce,e=>{V(c)?e(le):e(ue,-1)}),M(se),M(n),B(()=>{G(s,`Tus Grupos (${a().length??``})`),G(E,V(d)?`Ver Lista`:`+ Nuevo`)}),H(`click`,x,()=>{I(d,!V(d)),I(c,null)}),W(e,n)},$$slots:{default:!0}}),We(),s()}Tr([`click`,`keydown`]);var fd=U(`<div role="button" tabindex="0"><input type="file" accept=".docx,.txt,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;"/> <div class="lib-dropzone-icon svelte-ateqcx"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg></div> <div class="lib-dropzone-main svelte-ateqcx"><strong class="svelte-ateqcx">Arrastra tu documento aquí</strong> <span class="svelte-ateqcx">o haz clic para buscar en tu computadora</span></div> <div class="lib-format-badges svelte-ateqcx"><span class="badge-fmt docx svelte-ateqcx">📘 Word (.docx)</span> <span class="badge-fmt md svelte-ateqcx">📑 Markdown (.md)</span> <span class="badge-fmt txt svelte-ateqcx">📄 Texto (.txt)</span></div></div>`),pd=U(`<div class="lib-file-card svelte-ateqcx"><div class="lib-file-left svelte-ateqcx"><span class="lib-file-ext-icon svelte-ateqcx"> </span> <div class="lib-file-meta svelte-ateqcx"><strong class="lib-file-name svelte-ateqcx"> </strong> <div class="lib-file-sub svelte-ateqcx"><span> </span> <span class="lib-file-badge-ready svelte-ateqcx">✓ Listo para aprender</span></div></div></div> <div class="lib-file-actions svelte-ateqcx"><button type="button" class="btn btn-outline-sm btn-change-file svelte-ateqcx">Cambiar</button> <button type="button" class="btn btn-outline-sm btn-remove-file svelte-ateqcx" title="Quitar archivo">&times;</button></div> <input type="file" accept=".docx,.txt,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;"/></div>`),md=U(`<form class="form-body"><div class="form-group"><label for="lib-custom-title">Título o Tema del Documento</label> <input type="text" id="lib-custom-title" placeholder="Ej: Catálogo de Servicios 2026, Preguntas Frecuentes, Políticas de Garantía"/></div> <div class="form-group"><span class="lib-label svelte-ateqcx">Archivo del Documento</span> <!></div> <div class="library-notice svelte-ateqcx"><span>💡 El sistema convertirá automáticamente el archivo en Markdown limpio y estructurado, calculando el número de palabras y añadiéndolo a la memoria de contexto de Gemini.</span></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function hd(e,t){Ue(t,!0);let n=()=>Z($o,`$pendingUploadFile`,i),r=()=>Z(Qo,`$isLibraryUploadModalOpen`,i),[i,a]=Ui(),o=F(``),s=F(null),c=F(!1),l=F(!1),u=F(void 0),d=[`.docx`,`.txt`,`.md`];bn(()=>{n()&&(m(n()),$o.set(null))});function f(){Qo.set(!1),I(o,``),I(s,null),I(c,!1),I(l,!1),V(u)&&(V(u).value=``)}function p(e){if(!e)return!1;let t=e.toLowerCase();return d.some(e=>t.endsWith(e))}function m(e){e&&(p(e.name)?(I(s,e,!0),V(o).trim()||I(o,e.name.replace(/\.[^/.]+$/,``),!0)):$(`Formato no compatible. Por favor sube archivos Word (.docx), Markdown (.md) o Texto (.txt)`,`warning`))}function h(e){let t=e.target.files?.[0];t&&m(t)}function g(e){e.preventDefault(),e.stopPropagation(),I(l,!0)}function _(e){e.preventDefault(),e.stopPropagation(),I(l,!1)}function v(e){e.preventDefault(),e.stopPropagation(),I(l,!1);let t=e.dataTransfer?.files;t&&t.length>0&&m(t[0])}function y(e){e?.stopPropagation(),I(s,null),V(u)&&(V(u).value=``)}async function b(e){if(e.preventDefault(),!V(s))$(`Arrastra o selecciona un archivo (.docx, .txt, .md)`,`warning`);else{I(c,!0);try{let e=await El(V(s));(await ts(V(s).name,e,V(o).trim())).success&&f()}catch(e){$(e.message,`error`)}finally{I(c,!1)}}}il(e,{get isOpen(){return r()},title:`📚 Agregar Documento a la Biblioteca IA`,subtitle:`Sube archivos de Word (.docx), Markdown (.md) o texto (.txt) para entrenar a Gemini`,maxWidth:`540px`,onClose:f,children:(e,t)=>{var n=md(),r=L(n),i=z(L(r),2);J(i),M(r);var a=z(r,2),d=z(L(a),2),p=e=>{var t=fd(),n=L(t);Ni(n,e=>I(u,e),()=>V(u)),N(6),M(t),B(()=>q(t,1,`lib-dropzone ${V(l)?`dragover`:``}`,`svelte-ateqcx`)),wr(`dragover`,t,g),wr(`dragleave`,t,_),wr(`drop`,t,v),H(`click`,t,()=>V(u)?.click()),H(`keydown`,t,e=>{(e.key===`Enter`||e.key===` `)&&V(u)?.click()}),H(`change`,n,h),W(e,t)},m=e=>{var t=pd(),n=L(t),r=L(n),i=R(r,!0),a=z(r,2),o=L(a),c=R(o,!0),l=z(o,2),d=R(L(l),!0);N(2),M(l),M(a),M(n);var f=z(n,2),p=L(f),m=z(p,2);M(f);var g=z(f,2);Ni(g,e=>I(u,e),()=>V(u)),M(t),B((e,t)=>{G(i,e),Ti(o,`title`,V(s).name),G(c,V(s).name),G(d,t)},[()=>V(s).name.endsWith(`.docx`)?`📘`:V(s).name.endsWith(`.md`)?`📑`:`📄`,()=>wl(V(s).size)]),H(`click`,p,()=>V(u)?.click()),H(`click`,m,y),H(`change`,g,h),W(e,t)};K(d,e=>{V(s)?e(m,-1):e(p)}),M(a);var x=z(a,4),S=L(x),C=z(S,2),w=R(C,!0);M(x),M(n),B(()=>{C.disabled=V(c)||!V(s),G(w,V(c)?`Procesando Documento...`:`Subir y Aprender`)}),wr(`submit`,n,b),Y(i,()=>V(o),e=>I(o,e)),H(`click`,S,f),W(e,n)},$$slots:{default:!0}}),We(),a()}Tr([`click`,`keydown`,`change`]);var gd=U(`<button type="submit" class="btn btn-primary"> </button>`),_d=U(`<form class="form-body"><div class="form-group"><label for="lib-edit-textarea">Contenido de Conocimiento para Gemini (Markdown)</label> <textarea id="lib-edit-textarea" rows="16" style="font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5;"></textarea></div> <div class="modal-actions" style="margin-top: 20px;"><button type="button" class="btn btn-secondary">Cerrar</button> <!></div></form>`);function vd(e,t){Ue(t,!0);let n=()=>Z(Zo,`$isLibraryViewModalOpen`,a),r=()=>Z(Xo,`$viewingDoc`,a),i=()=>Z(zs,`$hasPermission`,a),[a,o]=Ui(),s=F(``),c=F(!1);bn(()=>{n()&&r()&&I(s,r().content||``,!0)});function l(){Zo.set(!1),Xo.set(null)}async function u(e){if(e.preventDefault(),!r())return;I(c,!0);let t=await as(r().id,V(s));I(c,!1),t.success&&l()}{let t=P(()=>`Markdown Limpio: ${r()?.name||`Documento`}`),a=P(()=>`Archivo original: ${r()?.originalFilename||``} (${r()?.wordCount||0} palabras convertidas)`);il(e,{get isOpen(){return n()},get title(){return V(t)},get subtitle(){return V(a)},maxWidth:`800px`,onClose:l,children:(e,t)=>{var n=_d(),r=L(n),a=z(L(r),2);tt(a),M(r);var o=z(r,2),d=L(o),f=z(d,2),p=e=>{var t=gd(),n=R(t,!0);B(()=>{t.disabled=V(c),G(n,V(c)?`Guardando...`:`Guardar Cambios de Texto`)}),W(e,t)},m=P(()=>i()(`library:edit`));K(f,e=>{V(m)&&e(p)}),M(o),M(n),wr(`submit`,n,u),Y(a,()=>V(s),e=>I(s,e)),H(`click`,d,l),W(e,n)},$$slots:{default:!0}})}We(),o()}Tr([`click`]);var yd=U(`<option> </option>`),bd=U(`<form class="form-body"><div class="form-group"><label for="inv-fullname">Nombre Completo</label> <input type="text" id="inv-fullname" placeholder="Ej: Andrés Gómez" required=""/></div> <div class="form-row svelte-1aehd1z"><div class="form-group flex-1 svelte-1aehd1z"><label for="inv-email">Correo Electrónico (Para Login)</label> <input type="email" id="inv-email" placeholder="andres@empresa.com" required=""/></div> <div class="form-group flex-1 svelte-1aehd1z"><label for="inv-phone">Teléfono / WhatsApp (Opcional)</label> <input type="tel" id="inv-phone" placeholder="573001234567"/></div></div> <div class="form-group"><label for="inv-role">Rol y Permisos</label> <select id="inv-role" required=""></select></div> <div class="form-group"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="inv-pwd" style="margin-bottom: 0;">Contraseña Temporal de Acceso</label> <button type="button" class="btn btn-outline-sm" style="padding: 2px 8px; font-size: 11px;">🎲 Generar Otra</button></div> <input type="text" id="inv-pwd" style="font-family: var(--font-mono);" required=""/> <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; display: block;">Copia esta contraseña y compártela con el usuario para su primer ingreso.</span></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function xd(e,t){Ue(t,!0);let n=()=>Z(cs,`$isInviteModalOpen`,i),r=()=>Z(ss,`$companyRoles`,i),[i,a]=Ui(),o=F(``),s=F(``),c=F(``),l=F(``),u=F(``),d=F(!1);bn(()=>{n()&&(I(o,``),I(s,``),I(c,``),I(l,r()[0]?.id||``,!0),f())});function f(){let e=``;for(let t=0;t<10;t++)e+=`abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*`.charAt(Math.floor(Math.random()*62));I(u,e,!0)}function p(){cs.set(!1)}async function m(e){if(e.preventDefault(),!V(o).trim()||!V(s).trim()||!V(l)){$(`Por favor completa todos los campos requeridos`,`warning`);return}I(d,!0);let t=await ps({fullName:V(o).trim(),email:V(s).trim(),phone:V(c).trim(),roleId:V(l),password:V(u)});I(d,!1),t.success&&p()}il(e,{get isOpen(){return n()},title:`👤 Agregar Colaborador a la Empresa`,subtitle:`Crea un acceso con rol específico para que tu equipo opere el bot`,maxWidth:`560px`,onClose:p,children:(e,t)=>{var n=bd(),i=L(n),a=z(L(i),2);J(a),M(i);var h=z(i,2),g=L(h),_=z(L(g),2);J(_),M(g);var v=z(g,2),y=z(L(v),2);J(y),M(v),M(h);var b=z(h,2),x=z(L(b),2);Xr(x,5,r,Kr,(e,t)=>{var n=yd(),r=R(n),i={};B(()=>{G(r,`${V(t).name??``} - ${(V(t).description||``)??``}`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(x),_i(x),M(b);var S=z(b,2),C=L(S),w=z(L(C),2);M(C);var T=z(C,2);J(T),N(2),M(S);var E=z(S,2),D=L(E),O=z(D,2),k=R(O,!0);M(E),M(n),B(()=>{O.disabled=V(d),G(k,V(d)?`Agregando...`:`Agregar al Equipo`)}),wr(`submit`,n,m),Y(a,()=>V(o),e=>I(o,e)),Y(_,()=>V(s),e=>I(s,e)),Y(y,()=>V(c),e=>I(c,e)),vi(x,()=>V(l),e=>I(l,e)),H(`click`,w,f),Y(T,()=>V(u),e=>I(u,e)),H(`click`,D,p),W(e,n)},$$slots:{default:!0}}),We(),a()}Tr([`click`]);var Sd=U(`<option> </option>`),Cd=U(`<form class="form-body"><div class="form-group"><label for="edit-role-select">Selecciona el Nuevo Rol</label> <select id="edit-role-select" required=""></select></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function wd(e,t){Ue(t,!0);let n=()=>Z(ls,`$isEditRoleModalOpen`,a),r=()=>Z(ds,`$editingMember`,a),i=()=>Z(ss,`$companyRoles`,a),[a,o]=Ui(),s=F(``),c=F(!1);bn(()=>{n()&&r()&&I(s,r().currentRoleId||i()[0]?.id||``,!0)});function l(){ls.set(!1),ds.set(null)}async function u(e){if(e.preventDefault(),!r()||!V(s))return;I(c,!0);let t=await ms(r().id,V(s));I(c,!1),t.success&&l()}{let t=P(()=>`Asignar nuevo rol a ${r()?.name||`Usuario`}`);il(e,{get isOpen(){return n()},title:`🛡️ Modificar Rol de Colaborador`,get subtitle(){return V(t)},maxWidth:`480px`,onClose:l,children:(e,t)=>{var n=Cd(),r=L(n),a=z(L(r),2);Xr(a,5,i,Kr,(e,t)=>{var n=Sd(),r=R(n),i={};B(()=>{G(r,`${V(t).name??``} - ${(V(t).description||``)??``}`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(a),_i(a),M(r);var o=z(r,2),d=L(o),f=z(d,2),p=R(f,!0);M(o),M(n),B(()=>{f.disabled=V(c),G(p,V(c)?`Actualizando...`:`Actualizar Rol`)}),wr(`submit`,n,u),vi(a,()=>V(s),e=>I(s,e)),H(`click`,d,l),W(e,n)},$$slots:{default:!0}})}We(),o()}Tr([`click`]);var Td=[{key:`rules`,name:`Rutas de Respuesta Automática`,icon:`💬`,description:`Control sobre los mensajes automáticos, palabras clave y respuestas del bot.`},{key:`leads`,name:`CRM, Prospectos y Chats`,icon:`👥`,description:`Acceso a clientes contactados, historial de chats y atención humana.`},{key:`library`,name:`Biblioteca de Conocimiento (IA)`,icon:`📚`,description:`Documentos, manuales y archivos con los que se entrena la inteligencia artificial.`},{key:`schedules`,name:`Programación de Envíos y Campañas`,icon:`⏰`,description:`Difusiones masivas, recordatorios periódicos (mensualidades) y envíos diferidos.`},{key:`simulator`,name:`Pruebas y Simulador`,icon:`⚡`,description:`Herramientas interactivas para probar respuestas antes de enviar a clientes.`},{key:`whatsapp`,name:`Conexión de WhatsApp`,icon:`📱`,description:`Vinculación del teléfono, lectura de código QR y encendido/apagado del bot.`},{key:`settings`,name:`Configuración de la Empresa`,icon:`⚙️`,description:`Ajustes generales, horarios de atención y comportamiento de la IA.`},{key:`team`,name:`Equipo y Roles`,icon:`🛡️`,description:`Gestión de colaboradores, asignación de accesos y roles personalizados.`}],Ed={"rules:view":{key:`rules:view`,categoryKey:`rules`,categoryName:`Rutas de Respuesta`,icon:`👁️`,action:`Ver`,label:`Ver respuestas automáticas`,shortLabel:`Ver respuestas`,description:`Puede consultar las rutas de respuesta automática, palabras clave y mensajes configurados.`},"rules:create":{key:`rules:create`,categoryKey:`rules`,categoryName:`Rutas de Respuesta`,icon:`➕`,action:`Crear`,label:`Crear nuevas respuestas`,shortLabel:`Crear respuestas`,description:`Puede crear nuevas respuestas automáticas con textos, archivos o botones.`},"rules:edit":{key:`rules:edit`,categoryKey:`rules`,categoryName:`Rutas de Respuesta`,icon:`✏️`,action:`Editar`,label:`Modificar respuestas automáticas`,shortLabel:`Editar respuestas`,description:`Puede modificar disparadores, mensajes y condiciones de flujos existentes.`},"rules:delete":{key:`rules:delete`,categoryKey:`rules`,categoryName:`Rutas de Respuesta`,icon:`🗑️`,action:`Eliminar`,label:`Eliminar respuestas automáticas`,shortLabel:`Eliminar respuestas`,description:`Puede borrar permanentemente flujos y reglas del contestador.`},"leads:view":{key:`leads:view`,categoryKey:`leads`,categoryName:`CRM y Prospectos`,icon:`👥`,action:`Ver`,label:`Ver prospectos y conversaciones`,shortLabel:`Ver prospectos y chats`,description:`Puede acceder a la lista de prospectos, agenda de contactos, chats y archivos recibidos.`},"leads:pause":{key:`leads:pause`,categoryKey:`leads`,categoryName:`CRM y Prospectos`,icon:`⏸️`,action:`Operar`,label:`Pausar bot para atención humana`,shortLabel:`Pausar bot para humano`,description:`Puede suspender temporalmente el bot en un chat para que un asesor humano atienda al cliente.`},"leads:delete":{key:`leads:delete`,categoryKey:`leads`,categoryName:`CRM y Prospectos`,icon:`🗑️`,action:`Eliminar`,label:`Eliminar prospectos y contactos`,shortLabel:`Eliminar prospectos`,description:`Puede borrar clientes o contactos del embudo de ventas y agenda.`},"library:view":{key:`library:view`,categoryKey:`library`,categoryName:`Biblioteca IA`,icon:`📚`,action:`Ver`,label:`Consultar biblioteca de conocimiento`,shortLabel:`Ver biblioteca IA`,description:`Puede leer los manuales y documentos que la inteligencia artificial usa para responder.`},"library:upload":{key:`library:upload`,categoryKey:`library`,categoryName:`Biblioteca IA`,icon:`📤`,action:`Crear`,label:`Subir documentos a la IA`,shortLabel:`Subir documentos`,description:`Puede subir archivos PDF, Word o texto para entrenar al asistente de IA.`},"library:edit":{key:`library:edit`,categoryKey:`library`,categoryName:`Biblioteca IA`,icon:`✏️`,action:`Editar`,label:`Editar contenido de documentos`,shortLabel:`Editar documentos`,description:`Puede modificar el texto de los documentos cargados en la base de conocimiento.`},"library:toggle":{key:`library:toggle`,categoryKey:`library`,categoryName:`Biblioteca IA`,icon:`🔄`,action:`Operar`,label:`Activar o pausar documentos`,shortLabel:`Activar/Pausar docs`,description:`Puede activar o deshabilitar qué documentos puede usar la IA en sus respuestas.`},"library:delete":{key:`library:delete`,categoryKey:`library`,categoryName:`Biblioteca IA`,icon:`🗑️`,action:`Eliminar`,label:`Eliminar documentos de la biblioteca`,shortLabel:`Eliminar documentos`,description:`Puede borrar definitivamente archivos de la base de conocimiento de la IA.`},"schedules:view":{key:`schedules:view`,categoryKey:`schedules`,categoryName:`Envíos y Campañas`,icon:`⏰`,action:`Ver`,label:`Ver campañas y envíos programados`,shortLabel:`Ver campañas programadas`,description:`Puede ver los mensajes programados, difusiones y recordatorios periódicos.`},"schedules:create":{key:`schedules:create`,categoryKey:`schedules`,categoryName:`Envíos y Campañas`,icon:`📅`,action:`Crear`,label:`Programar envíos y difusiones masivas`,shortLabel:`Programar campañas masivas`,description:`Puede programar envíos individuales o masivos (por grupo o etiqueta), únicos o periódicos.`},"schedules:delete":{key:`schedules:delete`,categoryKey:`schedules`,categoryName:`Envíos y Campañas`,icon:`🛑`,action:`Eliminar`,label:`Cancelar o eliminar envíos programados`,shortLabel:`Cancelar/Eliminar envíos`,description:`Puede cancelar difusiones en curso o borrar mensajes programados.`},"simulator:use":{key:`simulator:use`,categoryKey:`simulator`,categoryName:`Pruebas y Simulador`,icon:`⚡`,action:`Operar`,label:`Probar en simulador interactivo en vivo`,shortLabel:`Usar simulador en vivo`,description:`Puede interactuar con el simulador en pantalla para verificar respuestas de la IA.`},"quick_send:use":{key:`quick_send:use`,categoryKey:`simulator`,categoryName:`Pruebas y Simulador`,icon:`🚀`,action:`Operar`,label:`Realizar envíos rápidos de prueba`,shortLabel:`Envíos de prueba`,description:`Puede enviar mensajes de prueba directos a números específicos.`},"whatsapp:connect":{key:`whatsapp:connect`,categoryKey:`whatsapp`,categoryName:`Conexión WhatsApp`,icon:`📱`,action:`Operar`,label:`Vincular WhatsApp (Escanear código QR)`,shortLabel:`Conectar / Ver QR`,description:`Puede ver el código QR y conectar el número de WhatsApp de la empresa.`},"whatsapp:disconnect":{key:`whatsapp:disconnect`,categoryKey:`whatsapp`,categoryName:`Conexión WhatsApp`,icon:`🔌`,action:`Operar`,label:`Desconectar sesión de WhatsApp`,shortLabel:`Desconectar WhatsApp`,description:`Puede cerrar la sesión de WhatsApp activa o reiniciar el enlace.`},"whatsapp:toggle":{key:`whatsapp:toggle`,categoryKey:`whatsapp`,categoryName:`Conexión WhatsApp`,icon:`🟢`,action:`Operar`,label:`Encender o apagar el contestador automático`,shortLabel:`Encender/Apagar bot`,description:`Puede encender o pausar el bot automático para todos los clientes de la empresa.`},"settings:view":{key:`settings:view`,categoryKey:`settings`,categoryName:`Configuración`,icon:`⚙️`,action:`Ver`,label:`Ver configuración de la empresa`,shortLabel:`Ver configuración`,description:`Puede consultar los parámetros generales, horarios y opciones del bot.`},"settings:edit":{key:`settings:edit`,categoryKey:`settings`,categoryName:`Configuración`,icon:`🛠️`,action:`Editar`,label:`Modificar configuración y personalidad IA`,shortLabel:`Modificar ajustes`,description:`Puede cambiar las instrucciones del sistema, modelo de IA y horarios de atención.`},"team:view":{key:`team:view`,categoryKey:`team`,categoryName:`Equipo y Roles`,icon:`👥`,action:`Ver`,label:`Ver miembros del equipo`,shortLabel:`Ver colaboradores`,description:`Puede ver quiénes son los colaboradores con acceso a esta empresa.`},"team:manage":{key:`team:manage`,categoryKey:`team`,categoryName:`Equipo y Roles`,icon:`👤`,action:`Administrar`,label:`Invitar y administrar colaboradores`,shortLabel:`Gestionar colaboradores`,description:`Puede invitar nuevos miembros, asignarles rol o removerlos de la empresa.`},"roles:manage":{key:`roles:manage`,categoryKey:`team`,categoryName:`Equipo y Roles`,icon:`🛡️`,action:`Administrar`,label:`Crear y administrar roles personalizados`,shortLabel:`Crear roles a medida`,description:`Puede definir nuevos roles personalizados con combinaciones específicas de permisos.`}};function Dd(e){if(Ed[e])return Ed[e];let t=String(e||``).split(`:`),n=t[0]||`módulo`,r=t[1]||`acceso`,i={view:`Ver`,create:`Crear`,edit:`Modificar`,delete:`Eliminar`,use:`Usar`,manage:`Administrar`,toggle:`Activar/Pausar`,connect:`Conectar`,disconnect:`Desconectar`,upload:`Subir`},a={rules:`respuestas automáticas`,leads:`prospectos`,library:`biblioteca de conocimiento`,schedules:`envíos programados`,settings:`configuración`,team:`equipo de trabajo`,roles:`roles`,whatsapp:`conexión WhatsApp`,simulator:`simulador`,quick_send:`envíos directos`},o=i[r]||r,s=a[n]||n;return{key:e,categoryKey:n,categoryName:s,icon:`🔹`,action:o,label:`${o} ${s}`,shortLabel:`${o} ${s}`,description:`Permiso para ${o.toLowerCase()} ${s}.`}}function Od(e=[]){let t=[],n=new Set(e||[]);for(let e of Td){let r=[];for(let[t,i]of Object.entries(Ed))i.categoryKey===e.key&&n.has(t)&&r.push(i);r.length>0&&t.push({...e,permissions:r})}let r=new Set(Object.keys(Ed)),i=(e||[]).filter(e=>!r.has(e)).map(e=>Dd(e));return i.length>0&&t.push({key:`other`,name:`Otros Permisos Especiales`,icon:`⚙️`,description:`Permisos adicionales configurados en este rol.`,permissions:i}),t}function kd(e){let t=Array.isArray(e)?e:e?.permissions||[];if(t.includes(`*`))return!0;let n=Object.keys(Ed);return t.length>=n.length&&n.every(e=>t.includes(e))}var Ad=U(`<label><input type="checkbox" class="svelte-14deahm"/> <div class="perm-item-content svelte-14deahm"><span class="perm-label-text svelte-14deahm"><span class="perm-action-icon"> </span> </span> <span class="perm-desc-text svelte-14deahm"> </span></div></label>`),jd=U(`<div class="perm-module-block svelte-14deahm"><div class="perm-module-header svelte-14deahm"><div class="perm-module-title-box svelte-14deahm"><span class="module-icon svelte-14deahm"> </span> <div><h4 class="module-title svelte-14deahm"> </h4> <span class="module-sub svelte-14deahm"> </span></div></div> <button type="button" class="btn-toggle-cat svelte-14deahm" title="Marcar o desmarcar todos los permisos de este módulo"> </button></div> <div class="perm-items-grid svelte-14deahm"></div></div>`),Md=U(`<form class="form-body"><div class="form-group"><label for="c-role-name">Nombre del Rol</label> <input type="text" id="c-role-name" placeholder="Ej: Especialista de Envíos Masivos / Asesor Junior" required=""/></div> <div class="form-group"><label for="c-role-desc">Descripción de Responsabilidades</label> <input type="text" id="c-role-desc" placeholder="Ej: Encargado de programar difusiones mensuales y responder dudas frecuentes..."/></div> <div class="presets-toolbar svelte-14deahm"><div class="perm-counter svelte-14deahm">Permisos seleccionados: <strong class="svelte-14deahm"> </strong></div> <div class="presets-buttons svelte-14deahm"><button type="button" class="preset-btn svelte-14deahm">✨ Todos</button> <button type="button" class="preset-btn svelte-14deahm">💼 Perfil Ventas</button> <button type="button" class="preset-btn svelte-14deahm">👀 Solo Ver</button> <button type="button" class="preset-btn svelte-14deahm">🧹 Limpiar</button></div></div> <div class="form-group"><div class="permissions-checklist-container svelte-14deahm"></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`);function Nd(e,t){Ue(t,!0);let n=()=>Z(us,`$isCustomRoleModalOpen`,r),[r,i]=Ui(),a=F(``),o=F(``),s=F(!1),c=F(Xt({}));function l(){I(a,``),I(o,``);let e={};for(let t of Object.keys(Ed))e[t]=t.endsWith(`:view`)||t===`simulator:use`;I(c,e,!0)}bn(()=>{n()&&l()});let u=P(()=>Object.values(V(c)).filter(Boolean).length);function d(){let e={};for(let t of Object.keys(Ed))e[t]=!0;I(c,e,!0)}function f(){let e={};for(let t of Object.keys(Ed))e[t]=t.endsWith(`:view`);I(c,e,!0)}function p(){let e={};for(let t of Object.keys(Ed))e[t]=!1;e[`leads:view`]=!0,e[`leads:pause`]=!0,e[`quick_send:use`]=!0,e[`simulator:use`]=!0,I(c,e,!0)}function m(){let e={};for(let t of Object.keys(Ed))e[t]=!1;I(c,e,!0)}function h(e){let t=Object.values(Ed).filter(t=>t.categoryKey===e),n=t.every(e=>V(c)[e.key]),r={...V(c)};for(let e of t)r[e.key]=!n;I(c,r,!0)}function g(){us.set(!1),l()}async function _(e){if(e.preventDefault(),!V(a).trim()){$(`Ingresa un nombre claro para el rol`,`warning`);return}let t=Object.keys(V(c)).filter(e=>V(c)[e]);if(t.length===0){$(`Selecciona al menos un permiso para el rol`,`warning`);return}I(s,!0);let n=await gs({name:V(a).trim(),description:V(o).trim(),permissions:t});I(s,!1),n.success&&g()}il(e,{get isOpen(){return n()},title:`🛡️ Crear Rol Personalizado`,subtitle:`Define en lenguaje claro exactamente qué podrá ver y hacer este perfil en tu empresa`,maxWidth:`760px`,onClose:g,children:(e,t)=>{var n=Md(),r=L(n),i=z(L(r),2);J(i),M(r);var l=z(r,2),v=z(L(l),2);J(v),M(l);var y=z(l,2),b=L(y),x=R(z(L(b)));M(b);var S=z(b,2),C=L(S),w=z(C,2),T=z(w,2),E=z(T,2);M(S),M(y);var D=z(y,2),O=L(D);Xr(O,21,()=>Td,Kr,(e,t)=>{let n=P(()=>Object.values(Ed).filter(e=>e.categoryKey===V(t).key)),r=P(()=>V(n).filter(e=>V(c)[e.key]).length);var i=jd(),a=L(i),o=L(a),s=L(o),l=R(s,!0),u=z(s,2),d=L(u),f=R(d,!0),p=R(z(d,2),!0);M(u),M(o);var m=z(o,2),g=R(m,!0);M(a);var _=z(a,2);Xr(_,21,()=>V(n),Kr,(e,t)=>{var n=Ad(),r=L(n);J(r);var i=z(r,2),a=L(i),o=L(a),s=R(o,!0),l=z(o);M(a);var u=R(z(a,2),!0);M(i),M(n),B(()=>{q(n,1,`perm-item-box ${V(c)[V(t).key]?`selected`:``}`,`svelte-14deahm`),G(s,V(t).icon),G(l,` ${V(t).label??``}`),G(u,V(t).description)}),ki(r,()=>V(c)[V(t).key],e=>V(c)[V(t).key]=e),W(e,n)}),M(_),M(i),B(()=>{G(l,V(t).icon),G(f,V(t).name),G(p,V(t).description),G(g,V(r)===V(n).length?`Desmarcar módulo`:`Marcar módulo (${V(r)}/${V(n).length})`)}),H(`click`,m,()=>h(V(t).key)),W(e,i)}),M(O),M(D);var k=z(D,2),A=L(k),ee=z(A,2),te=R(ee,!0);M(k),M(n),B(e=>{G(x,`${V(u)??``} de ${e??``}`),ee.disabled=V(s)||V(u)===0,G(te,V(s)?`Guardando...`:`Crear Rol (${V(u)} permisos)`)},[()=>Object.keys(Ed).length]),wr(`submit`,n,_),Y(i,()=>V(a),e=>I(a,e)),Y(v,()=>V(o),e=>I(o,e)),H(`click`,C,d),H(`click`,w,p),H(`click`,T,f),H(`click`,E,m),H(`click`,A,g),W(e,n)},$$slots:{default:!0}}),We(),i()}Tr([`click`]);var Pd=U(`<label class="switch" title="Activar/Desactivar regla"><input type="checkbox"/> <span class="slider round"></span></label>`),Fd=U(`<div class="rule-trigger-badge"> </div>`),Id=U(`<span class="trigger-pill"> </span>`),Ld=U(`<div class="rule-triggers-container"><span class="rule-label">Palabras Clave:</span> <div class="triggers-pills"></div></div>`),Rd=U(`<div class="rule-media-badge">📎 Envía adjunto: <strong> </strong> </div>`),zd=U(`<span class="badge-tag badge-tag-requiereasesor">👤 Pausa para Asesor</span>`),Bd=U(`<span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3);"> </span>`),Vd=U(`<button type="button" class="icon-btn" title="Editar regla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>`),Hd=U(`<button type="button" class="icon-btn delete-btn" title="Eliminar regla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`),Ud=U(`<div><div class="rule-card-header"><div class="rule-title-group"><h3> </h3> <span class="rule-meta-tag"> </span></div> <!></div> <!> <!> <div class="rule-response-container"><span class="rule-label">Respuesta del Bot:</span> <div class="rule-response-preview"> </div> <!></div> <div class="rule-card-footer"><div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;"><span class="badge-tag badge-tag-interesado"> </span> <!> <!></div> <div class="rule-card-actions"><!> <!></div></div></div>`);function Wd(e,t){Ue(t,!0);let n=()=>Z(Wa,`$rules`,i),r=()=>Z(zs,`$hasPermission`,i),[i,a]=Ui(),o={contains_any:`Contiene palabra`,exact:`Coincidencia exacta`,starts_with:`Empieza con`},s={any:`Cualquier archivo`,image:`Foto / Comprobante`,document:`Documento / PDF`,audio:`Audio / Nota de voz`},c=P(()=>t.rule.parentRuleId?n().find(e=>e.id===t.rule.parentRuleId):null);function l(e){Ya(t.rule.id,e.target.checked)}function u(){Ga.set(t.rule),Ka.set(!0)}function d(){confirm(`¿Estás seguro de eliminar la ruta "${t.rule.name}"?`)&&Xa(t.rule.id,t.rule.name)}var f=Ud(),p=L(f),m=L(p),h=L(m),g=R(h,!0),_=R(z(h,2),!0);M(m);var v=z(m,2),y=e=>{var n=Pd(),r=L(n);J(r),N(2),M(n),B(()=>wi(r,t.rule.enabled!==!1)),H(`change`,r,l),W(e,n)},b=P(()=>r()(`rules:edit`));K(v,e=>{V(b)&&e(y)}),M(p);var x=z(p,2),S=e=>{var n=Fd(),r=R(n);B(()=>G(r,`📥 Disparador: Al recibir ${(s[t.rule.mediaTypeFilter]||`archivo`)??``}`)),W(e,n)},C=e=>{var n=Fd(),r=R(n);B(()=>G(r,`🔄 Disparador: Texto O ${(s[t.rule.mediaTypeFilter]||`archivo`)??``}`)),W(e,n)};K(x,e=>{t.rule.triggerType===`media`?e(S):t.rule.triggerType===`both`&&e(C,1)});var w=z(x,2),T=e=>{var n=Ld(),r=z(L(n),2);Xr(r,21,()=>t.rule.triggers,Kr,(e,t)=>{var n=Id(),r=R(n,!0);B(()=>G(r,V(t))),W(e,n)}),M(r),M(n),W(e,n)};K(w,e=>{t.rule.triggers&&t.rule.triggers.length>0&&e(T)});var E=z(w,2),D=z(L(E),2),O=R(D,!0),k=z(D,2),A=e=>{var n=Rd(),r=z(L(n)),i=R(r,!0),a=z(r);M(n),B(e=>{Ti(n,`title`,t.rule.media.filename),G(i,t.rule.media.filename),G(a,` (${e??``})`)},[()=>wl(t.rule.media.size)]),W(e,n)};K(k,e=>{t.rule.media&&t.rule.media.url&&e(A)}),M(E);var ee=z(E,2),te=L(ee),ne=L(te),re=R(ne),ie=z(ne,2),ae=e=>{W(e,zd())};K(ie,e=>{t.rule.pauseBot&&e(ae)});var oe=z(ie,2),se=e=>{var t=Bd(),n=R(t);B(()=>G(n,`↳ Submenú de: ${V(c).name??``}`)),W(e,t)};K(oe,e=>{V(c)&&e(se)}),M(te);var ce=z(te,2),le=L(ce),ue=e=>{var t=Vd();H(`click`,t,u),W(e,t)},de=P(()=>r()(`rules:edit`));K(le,e=>{V(de)&&e(ue)});var fe=z(le,2),pe=e=>{var t=Hd();H(`click`,t,d),W(e,t)},me=P(()=>r()(`rules:delete`));K(fe,e=>{V(me)&&e(pe)}),M(ce),M(ee),M(f),B(()=>{q(f,1,`rule-card ${t.rule.enabled===!1?`disabled`:``}`),G(g,t.rule.name),G(_,t.rule.triggerType===`media`?`Por Archivo`:o[t.rule.matchType]||`Palabra clave`),G(O,t.rule.response||`(Solo envía archivo adjunto)`),G(re,`🏷️ ${(t.rule.leadTag||`Lead`)??``}`)}),W(e,f),We(),a()}Tr([`change`,`click`]);var Gd=U(`<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Nueva Ruta de Venta</button>`),Kd=U(`<button type="button" class="btn btn-primary" style="margin-top: 16px;">Crear Primera Ruta</button>`),qd=U(`<div class="empty-rules-state svelte-141x8yi"><div style="font-size: 40px; margin-bottom: 12px;">💬</div> <h3 class="svelte-141x8yi">No tienes rutas de respuesta configuradas</h3> <p>Crea tu primer flujo de venta automático para responder a tus clientes cuando escriban palabras clave o envíen archivos.</p> <!></div>`),Jd=U(`<div class="cards-grid"></div>`),Yd=U(`<section id="tab-rules" class="tab-content active"><div class="content-toolbar"><div><h2>Rutas de Respuesta Automática</h2> <p class="section-desc">Crea y personaliza respuestas con texto, catálogos en PDF, imágenes y detección de comprobantes.</p></div> <!></div> <!></section>`);function Xd(e,t){Ue(t,!1);let n=()=>Z(zs,`$hasPermission`,i),r=()=>Z(Wa,`$rules`,i),[i,a]=Ui();function o(){Ga.set(null),Ka.set(!0)}Pi();var s=Yd(),c=L(s),l=z(L(c),2),u=e=>{var t=Gd();H(`click`,t,o),W(e,t)},d=P(()=>n()(`rules:create`));K(l,e=>{V(d)&&e(u)}),M(c);var f=z(c,2),p=e=>{var t=qd(),r=z(L(t),6),i=e=>{var t=Kd();H(`click`,t,o),W(e,t)},a=P(()=>n()(`rules:create`));K(r,e=>{V(a)&&e(i)}),M(t),W(e,t)},m=e=>{var t=Jd();Xr(t,5,r,e=>e.id,(e,t)=>{Wd(e,{get rule(){return V(t)}})}),M(t),W(e,t)};K(f,e=>{r().length===0?e(p):e(m,-1)}),M(s),W(e,s),We(),a()}Tr([`click`]);var Zd=U(`<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Programar Envío / Difusión</button>`),Qd=U(`<button type="button" class="btn btn-primary" style="margin-top: 16px;">Programar Primer Envío</button>`),$d=U(`<div class="empty-schedules-state svelte-yh6vpa"><div style="font-size: 40px; margin-bottom: 12px;">⏰</div> <h3 class="svelte-yh6vpa">No hay envíos programados actualmente</h3> <p>Crea un envío individual o una campaña de difusión para promociones, recordatorios o anuncios masivos.</p> <!></div>`),ef=U(`<span class="audience-badge tag svelte-yh6vpa"> </span>`),tf=U(`<span class="audience-badge group svelte-yh6vpa">👥 Grupo de Difusión</span>`),nf=U(`<span class="audience-badge single svelte-yh6vpa">👤 Individual</span>`),rf=U(`<span class="audience-badge recurrence svelte-yh6vpa" title="Campaña periódica recurrente"> </span>`),af=U(`<span class="failed-count svelte-yh6vpa"> </span>`),of=U(`<div class="campaign-progress-box svelte-yh6vpa"><div class="progress-labels svelte-yh6vpa"><span>Progreso de entrega: <strong> </strong> </span> <!></div> <div class="progress-bar-bg svelte-yh6vpa"><div class="progress-bar-fill svelte-yh6vpa"></div></div></div>`),sf=U(`<span class="last-cycle-note svelte-yh6vpa"> </span>`),cf=U(`<span>Próximo ciclo: <strong> </strong> <!></span>`),lf=U(`<span>Completado el: <strong> </strong></span>`),uf=U(`<span>Programado para: <strong> </strong></span>`),df=U(`<div class="rule-media-badge" style="margin-bottom: 6px;"> </div>`),ff=U(`<button type="button" class="btn btn-outline-sm btn-edit-sched svelte-yh6vpa" title="Editar audiencia, mensaje o definir nueva fecha para reactivar esta campaña">✏️ Editar / Reprogramar</button>`),pf=U(`<button type="button" class="btn btn-outline-sm btn-send-now"> </button>`),mf=U(`<button type="button" class="btn btn-outline-sm btn-relaunch-now svelte-yh6vpa" title="Volver a lanzar esta campaña de inmediato"> </button>`),hf=U(`<button type="button" class="btn btn-outline-sm btn-cancel-camp svelte-yh6vpa" title="Detener la campaña de difusión">🛑 Cancelar</button>`),gf=U(`<button type="button" class="icon-btn delete-btn" title="Eliminar registro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`),_f=U(`<div class="sched-item"><div class="sched-header"><div><div class="sched-title-row svelte-yh6vpa"><span class="sched-title"> </span> <!> <!></div> <div class="sched-phone"><!></div></div> <span> </span></div> <!> <div class="sched-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> <!></div> <!> <div class="sched-msg"> </div> <div class="sched-actions"><!> <button type="button" class="btn btn-outline-sm btn-duplicate-sched svelte-yh6vpa" title="Crear una copia de esta campaña como nueva plantilla">📋 Duplicar</button> <!> <!> <!></div></div>`),vf=U(`<div class="schedules-list svelte-yh6vpa"></div>`),yf=U(`<section id="tab-scheduler" class="tab-content active"><div class="content-toolbar"><div><h2>Programación de Envíos & Difusiones de Contenido</h2> <p class="section-desc">Programa mensajes masivos segmentados por etiquetas CRM o grupos personalizados con protección anti-baneo.</p></div> <!></div> <!></section>`);function bf(e,t){Ue(t,!0);let n=()=>Z(Fo,`$schedules`,i),r=()=>Z(zs,`$hasPermission`,i),[i,a]=Ui(),o={pending:`Pendiente`,sending:`Enviando en Proceso...`,sent:`Completado`,failed:`Fallido`,cancelled:`Cancelado`},s={daily:`🔁 Diario`,weekly:`🔁 Semanal`,monthly:`🔁 Mensual`,yearly:`🔁 Anual`},c=Xt(new Set);bn(()=>{if(!n().some(e=>e.status===`sending`))return;let e=setInterval(()=>{Ho()},3500);return()=>clearInterval(e)});async function l(e){c.add(e),await Go(e),c.delete(e)}async function u(e){confirm(`¿Deseas detener y cancelar esta campaña de difusión?`)&&await Ko(e)}function d(e){confirm(`¿Deseas eliminar este registro de envío programado?`)&&qo(e)}var f=yf(),p=L(f),m=z(L(p),2),h=e=>{var t=Zd();H(`click`,t,function(...e){zo?.apply(this,e)}),W(e,t)},g=P(()=>r()(`schedules:create`));K(m,e=>{V(g)&&e(h)}),M(p);var _=z(p,2),v=e=>{var t=$d(),n=z(L(t),6),i=e=>{var t=Qd();H(`click`,t,function(...e){zo?.apply(this,e)}),W(e,t)},a=P(()=>r()(`schedules:create`));K(n,e=>{V(a)&&e(i)}),M(t),W(e,t)},y=e=>{var t=vf();Xr(t,5,n,e=>e.id,(e,t)=>{let n=P(()=>V(t).targetType===`tag`||V(t).targetType===`group`||V(t).totalRecipients>1),i=P(()=>V(t).totalRecipients||1),a=P(()=>V(t).sentRecipients||0),f=P(()=>V(t).failedRecipients||0),p=P(()=>Math.min(100,Math.round((V(a)+V(f))/V(i)*100)));var m=_f(),h=L(m),g=L(h),_=L(g),v=L(_),y=R(v,!0),b=z(v,2),x=e=>{var n=ef(),r=R(n);B(()=>G(r,`🏷️ Etiqueta: ${V(t).targetValue??``}`)),W(e,n)},S=e=>{W(e,tf())},C=e=>{W(e,nf())};K(b,e=>{V(t).targetType===`tag`?e(x):V(t).targetType===`group`?e(S,1):e(C,-1)});var w=z(b,2),T=e=>{var n=rf(),r=R(n,!0);B(()=>G(r,s[V(t).recurrence]||V(t).recurrence)),W(e,n)};K(w,e=>{V(t).recurrence&&V(t).recurrence!==`none`&&e(T)}),M(_);var E=z(_,2),D=L(E),O=e=>{var n=Fr();B(()=>G(n,`Destino: +${V(t).recipient??``}`)),W(e,n)},k=e=>{var n=Fr();B(()=>G(n,`Audiencia: ${V(i)??``} destinatario${V(i)===1?``:`s`} • Pausa: ${(V(t).delaySeconds||10)??``}s`)),W(e,n)};K(D,e=>{V(t).targetType===`single`?e(O):e(k,-1)}),M(E),M(g);var A=z(g,2),ee=R(A,!0);M(h);var te=z(h,2),ne=e=>{var t=of(),n=L(t),r=L(n),o=z(L(r)),s=R(o),c=z(o);M(r);var l=z(r,2),u=e=>{var t=af(),n=R(t);B(()=>G(n,`⚠️ ${V(f)??``} fallido${V(f)===1?``:`s`}`)),W(e,t)};K(l,e=>{V(f)>0&&e(u)}),M(n);var d=R(z(n,2));M(t),B(()=>{G(s,`${V(a)??``} de ${V(i)??``}`),G(c,` (${V(p)??``}%)`),pi(d,`width: ${V(p)??``}%;`)}),W(e,t)};K(te,e=>{V(n)&&e(ne)});var re=z(te,2),ie=z(L(re),2),ae=e=>{var n=cf(),r=z(L(n)),i=R(r,!0),a=z(r,2),o=e=>{var n=sf(),r=R(n);B(e=>G(r,`• Último envío realizado: ${e??``}`),[()=>Tl(V(t).lastSentAt)]),W(e,n)};K(a,e=>{V(t).lastSentAt&&e(o)}),M(n),B(e=>G(i,e),[()=>Tl(V(t).scheduledTime)]),W(e,n)},oe=e=>{var n=lf(),r=R(z(L(n)),!0);M(n),B(e=>G(r,e),[()=>Tl(V(t).sentAt)]),W(e,n)},se=e=>{var n=uf(),r=R(z(L(n)),!0);M(n),B(e=>G(r,e),[()=>Tl(V(t).scheduledTime)]),W(e,n)};K(ie,e=>{V(t).recurrence&&V(t).recurrence!==`none`?e(ae):V(t).status===`sent`&&V(t).sentAt?e(oe,1):e(se,-1)}),M(re);var ce=z(re,2),le=e=>{var n=df(),r=R(n);B(()=>G(r,`📎 Archivo adjunto: ${V(t).media.filename??``}`)),W(e,n)};K(ce,e=>{V(t).media&&e(le)});var ue=z(ce,2),de=R(ue,!0),fe=z(ue,2),pe=L(fe),me=e=>{var n=ff();H(`click`,n,()=>Bo(V(t))),W(e,n)};K(pe,e=>{V(t).status!==`sending`&&e(me)});var he=z(pe,2),ge=z(he,2),_e=e=>{var n=pf(),r=R(n,!0);B((e,t)=>{n.disabled=e,G(r,t)},[()=>c.has(V(t).id),()=>c.has(V(t).id)?`Iniciando...`:`🚀 Enviar Ahora`]),H(`click`,n,()=>l(V(t).id)),W(e,n)},j=e=>{var n=mf(),r=R(n,!0);B((e,t)=>{n.disabled=e,G(r,t)},[()=>c.has(V(t).id),()=>c.has(V(t).id)?`Iniciando...`:`🔄 Relanzar Ahora`]),H(`click`,n,()=>l(V(t).id)),W(e,n)};K(ge,e=>{V(t).status===`pending`?e(_e):(V(t).status===`sent`||V(t).status===`failed`||V(t).status===`cancelled`)&&e(j,1)});var ve=z(ge,2),ye=e=>{var n=hf();H(`click`,n,()=>u(V(t).id)),W(e,n)};K(ve,e=>{(V(t).status===`pending`||V(t).status===`sending`)&&e(ye)});var be=z(ve,2),xe=e=>{var n=gf();H(`click`,n,()=>d(V(t).id)),W(e,n)},N=P(()=>r()(`schedules:delete`));K(be,e=>{V(N)&&e(xe)}),M(fe),M(m),B(()=>{G(y,V(t).name),q(A,1,`sched-badge ${V(t).status??``}`,`svelte-yh6vpa`),G(ee,o[V(t).status]||V(t).status),G(de,V(t).message||`(Solo archivo adjunto)`)}),H(`click`,he,()=>Vo(V(t))),W(e,m)}),M(t),W(e,t)};K(_,e=>{n().length===0?e(v):e(y,-1)}),M(f),W(e,f),We(),a()}Tr([`click`]);var xf=U(`<span class="typing-text svelte-40g3ea">escribiendo...</span>`),Sf=U(`<div class="gemini-tag svelte-40g3ea"><span class="svelte-40g3ea">🤖</span> Gemini Flash Lite</div>`),Cf=U(`<audio controls="" class="sim-audio-player svelte-40g3ea"></audio>`),wf=U(`<div class="sim-bubble-doc svelte-40g3ea"><span class="sim-bubble-doc-icon svelte-40g3ea"> </span> <div class="sim-bubble-doc-info svelte-40g3ea"><span class="sim-bubble-doc-name svelte-40g3ea">[Archivo adjunto simulado]</span></div></div>`),Tf=U(`<div class="sim-bubble-media svelte-40g3ea"><img class="svelte-40g3ea"/></div>`),Ef=U(`<div class="sim-bubble-doc svelte-40g3ea"><span class="sim-bubble-doc-icon svelte-40g3ea">📎</span> <div class="sim-bubble-doc-info svelte-40g3ea"><span class="sim-bubble-doc-name svelte-40g3ea"> </span> <span class="sim-bubble-doc-type svelte-40g3ea">Documento adjunto</span></div></div>`),Df=U(`<div class="bubble-text svelte-40g3ea"></div>`),Of=U(`<span class="check-marks svelte-40g3ea">✓✓</span>`),kf=U(`<div><!> <!> <!> <!> <!> <span class="msg-time svelte-40g3ea"> <!></span></div>`),Af=U(`<div class="msg-bubble bot-bubble typing-bubble svelte-40g3ea"><span class="typing-dot svelte-40g3ea"></span> <span class="typing-dot svelte-40g3ea"></span> <span class="typing-dot svelte-40g3ea"></span> <span style="font-size: 0.72rem; color: #8696a0; margin-left: 6px;" class="svelte-40g3ea"> </span></div>`),jf=U(`<section id="tab-simulator" class="tab-content active svelte-40g3ea"><div class="simulator-container svelte-40g3ea"><div class="simulator-info svelte-40g3ea"><h2 class="svelte-40g3ea">Simulador de Chat en Vivo</h2> <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 6px; line-height: 1.5;" class="svelte-40g3ea">Prueba cómo responde tu bot ante mensajes de texto o cuando un cliente envía un archivo o foto de comprobante.</p> <div class="simulator-tips svelte-40g3ea"><h4 class="svelte-40g3ea">⚡ Atajos de Prueba Rápida:</h4> <div class="quick-test-chips svelte-40g3ea"><button type="button" class="chip-btn svelte-40g3ea">👋 hola</button> <button type="button" class="chip-btn svelte-40g3ea">📖 catálogo</button> <button type="button" class="chip-btn svelte-40g3ea">💰 precios</button> <button type="button" class="chip-btn svelte-40g3ea">💳 pagos</button> <button type="button" class="chip-btn svelte-40g3ea">👤 asesor</button></div> <div class="sim-media-actions svelte-40g3ea" style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px;"><button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">🧾 Simular envío de Comprobante / Foto</button> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">📄 Simular envío de Documento PDF</button> <input type="file" accept="audio/*,.oga,.ogg,.mp3,.m4a,.wav" style="display: none;" class="svelte-40g3ea"/> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea" style="border-color: #3b82f6; color: #3b82f6;">🎤 Subir / Probar Audio Propio (Nota de voz)</button> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">🔄 Reiniciar Conversación</button></div></div></div> <div class="phone-mockup svelte-40g3ea"><div class="phone-top-bar svelte-40g3ea"><div class="camera-hole svelte-40g3ea"></div></div> <div class="phone-chat-header svelte-40g3ea"><div class="avatar-circle svelte-40g3ea">🤖</div> <div class="chat-header-info svelte-40g3ea"><span class="chat-name svelte-40g3ea"> </span> <span class="chat-status svelte-40g3ea"><!></span></div></div> <div class="phone-chat-body svelte-40g3ea"><!> <!></div> <form class="phone-chat-footer svelte-40g3ea"><input type="text" id="phone-chat-input" placeholder="Escribe un mensaje de prueba..." autocomplete="off" class="svelte-40g3ea"/> <button type="button" class="btn-audio-sim svelte-40g3ea" title="Simular o subir nota de voz">🎤</button> <button type="submit" class="btn-send-sim svelte-40g3ea" title="Enviar mensaje"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="svelte-40g3ea"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" class="svelte-40g3ea"></path></svg></button></form></div></div></section>`);function Mf(e,t){Ue(t,!0);let n=()=>Z(ga,`$activeCompany`,r),[r,i]=Ui(),a=F(Xt([{id:1,isUser:!1,text:`¡Hola! Escribe un mensaje o envía un audio para probar la respuesta inteligente de la IA.`,time:new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`}),media:null,isGemini:!1}])),o=F(``),s=F(!1),c=F(`Escribiendo respuesta...`),l=F(void 0),u=F(void 0);function d(e){return e?e.replace(/\*(.*?)\*/g,`<strong>$1</strong>`).replace(/_(.*?)_/g,`<em>$1</em>`).replace(/~(.*?)~/g,`<del>$1</del>`).replace(/\n/g,`<br>`):``}function f(){setTimeout(()=>{V(l)&&(V(l).scrollTop=V(l).scrollHeight)},50)}async function p({text:e=``,hasMedia:t=!1,mediaMimetype:n=``,userIcon:r=null,audio:i=null,audioUrl:o=null}){let l=new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`});V(a).push({id:Date.now(),isUser:!0,text:e,time:l,userIcon:r,audioUrl:o}),f(),I(s,!0),I(c,i?`🎙️ Escuchando y procesando nota de voz con IA...`:`Escribiendo...`,!0);try{let r=await Q.post(`/api/simulate`,{text:e,hasMedia:t,mediaMimetype:n,audio:i});V(a).push({id:Date.now()+1,isUser:!1,text:r.response||``,media:r.media||null,isGemini:!!r.isGemini,time:new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`})})}catch{V(a).push({id:Date.now()+1,isUser:!1,text:`⚠️ Error conectando con el simulador.`,time:new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`})})}finally{I(s,!1),f()}}function m(e){if(e.preventDefault(),!V(o).trim())return;let t=V(o).trim();I(o,``),p({text:t})}async function h(){try{await Q.post(`/api/gemini/reset`,{sessionId:`simulator-session`}),I(a,[{id:Date.now(),isUser:!1,text:`🔄 Conversación reiniciada. ¡Hola! ¿En qué te puedo colaborar hoy?`,time:new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`})}],!0),$(`Conversación de Gemini reiniciada`,`info`)}catch(e){$(e.message,`error`)}}function g(e){let t=e.target.files?.[0];if(!t)return;let n=new FileReader;n.onload=()=>{let e=n.result,r=e.includes(`base64,`)?e.split(`base64,`)[1]:e,i=t.type||`audio/ogg`;p({text:``,hasMedia:!0,mediaMimetype:i,userIcon:`🎤`,audio:{data:r,mimetype:i},audioUrl:URL.createObjectURL(t)})},n.readAsDataURL(t),e.target.value=``}var _=jf(),v=L(_),y=L(v),b=z(L(y),4),x=z(L(b),2),S=L(x),C=z(S,2),w=z(C,2),T=z(w,2),E=z(T,2);M(x);var D=z(x,2),O=L(D),k=z(O,2),A=z(k,2);Ni(A,e=>I(u,e),()=>V(u));var ee=z(A,2),te=z(ee,2);M(D),M(b),M(y);var ne=z(y,2),re=z(L(ne),2),ie=z(L(re),2),ae=L(ie),oe=R(ae,!0),se=z(ae,2),ce=L(se),le=e=>{W(e,xf())},ue=e=>{W(e,Fr(`en línea (Bot con IA)`))};K(ce,e=>{V(s)?e(le):e(ue,-1)}),M(se),M(ie),M(re);var de=z(re,2),fe=L(de);Xr(fe,17,()=>V(a),e=>e.id,(e,t)=>{var n=kf(),r=L(n),i=e=>{W(e,Sf())};K(r,e=>{!V(t).isUser&&V(t).isGemini&&e(i)});var a=z(r,2),o=e=>{var n=Cf();B(()=>Ti(n,`src`,V(t).audioUrl)),W(e,n)};K(a,e=>{V(t).audioUrl&&e(o)});var s=z(a,2),c=e=>{var n=wf(),r=R(L(n),!0);N(2),M(n),B(()=>G(r,V(t).userIcon)),W(e,n)};K(s,e=>{V(t).userIcon&&!V(t).audioUrl&&e(c)});var l=z(s,2),u=e=>{var n=Ir(),r=cn(n),i=e=>{var n=Tf(),r=R(n);B(()=>{Ti(r,`src`,V(t).media.url),Ti(r,`alt`,V(t).media.filename)}),W(e,n)},a=P(()=>(V(t).media.mimetype||``).startsWith(`image/`)),o=e=>{var n=Ef(),r=z(L(n),2),i=R(L(r),!0);N(2),M(r),M(n),B(()=>G(i,V(t).media.filename)),W(e,n)};K(r,e=>{V(a)?e(i):e(o,-1)}),W(e,n)};K(l,e=>{V(t).media&&V(t).media.url&&e(u)});var f=z(l,2),p=e=>{var n=Df();ni(n,()=>d(V(t).text),!0),M(n),W(e,n)};K(f,e=>{V(t).text&&e(p)});var m=z(f,2),h=L(m),g=z(h),_=e=>{W(e,Of())};K(g,e=>{V(t).isUser&&e(_)}),M(m),M(n),B(()=>{q(n,1,`msg-bubble ${V(t).isUser?`user-bubble`:`bot-bubble`}`,`svelte-40g3ea`),G(h,`${V(t).time??``} `)}),W(e,n)});var pe=z(fe,2),me=e=>{var t=Af(),n=R(z(L(t),6),!0);M(t),B(()=>G(n,V(c))),W(e,t)};K(pe,e=>{V(s)&&e(me)}),M(de),Ni(de,e=>I(l,e),()=>V(l));var he=z(de,2),ge=L(he);J(ge);var _e=z(ge,2);N(2),M(he),M(ne),M(v),M(_),B(()=>G(oe,n()?.name||`Mi Tienda Virtual`)),H(`click`,S,()=>p({text:`hola`})),H(`click`,C,()=>p({text:`catalogo`})),H(`click`,w,()=>p({text:`precios`})),H(`click`,T,()=>p({text:`pagos`})),H(`click`,E,()=>p({text:`asesor`})),H(`click`,O,()=>p({text:`Hola, aquí les envío la foto de mi comprobante de pago Nequi`,hasMedia:!0,mediaMimetype:`image/jpeg`,userIcon:`🧾`})),H(`click`,k,()=>p({text:`Adjunto el documento con los detalles del pedido`,hasMedia:!0,mediaMimetype:`application/pdf`,userIcon:`📄`})),H(`change`,A,g),H(`click`,ee,()=>V(u)?.click()),H(`click`,te,h),wr(`submit`,he,m),Y(ge,()=>V(o),e=>I(o,e)),H(`click`,_e,()=>V(u)?.click()),W(e,_),We(),i()}Tr([`click`,`change`]);var Nf=U(`<button type="button" class="preset-chip svelte-gpp9le"> </button>`),Pf=U(`<span class="spinner-sm svelte-gpp9le"></span> <span>Enviando mensaje a WhatsApp...</span>`,1),Ff=U(`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> <span>Enviar Ahora por WhatsApp</span>`,1),If=U(`<div class="result-icon svelte-gpp9le">✓</div> <div class="result-content svelte-gpp9le"><strong>¡Mensaje enviado con éxito!</strong> <span> </span></div>`,1),Lf=U(`<div class="result-icon svelte-gpp9le">✕</div> <div class="result-content svelte-gpp9le"><strong>Error al enviar</strong> <span> </span></div>`,1),Rf=U(`<div><!></div>`),zf=U(`<img class="preview-media-img svelte-gpp9le"/>`),Bf=U(`<div class="preview-doc-card svelte-gpp9le"><span class="preview-doc-icon svelte-gpp9le"> </span> <div class="preview-doc-meta svelte-gpp9le"><span class="preview-doc-name svelte-gpp9le"> </span> <span class="preview-doc-type svelte-gpp9le">Documento adjunto</span></div></div>`),Vf=U(`<div class="preview-media-attachment svelte-gpp9le"><!></div>`),Hf=U(`<div class="preview-text svelte-gpp9le"></div>`),Uf=U(`<div class="preview-placeholder svelte-gpp9le">El texto y archivo que redactes a la izquierda aparecerán aquí tal como los verá tu cliente en su WhatsApp...</div>`),Wf=U('<section id="tab-quick-send" class="tab-content active"><div class="content-toolbar"><div><h2>Envío Directo / Prueba de WhatsApp</h2> <p class="section-desc">Envía mensajes de texto, fotos, audios o catálogos en PDF inmediatamente a cualquier número de WhatsApp.</p></div></div> <div class="quick-send-grid svelte-gpp9le"><div class="composer-card svelte-gpp9le"><div class="composer-header svelte-gpp9le"><div class="composer-badge svelte-gpp9le"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> <span>Redacción Rápida</span></div> <span class="company-badge-name svelte-gpp9le"> </span></div> <form class="composer-form svelte-gpp9le"><div class="form-group"><label for="quick-phone-input">Número de WhatsApp Destinatario</label> <div class="phone-input-group svelte-gpp9le"><span class="phone-prefix svelte-gpp9le">+</span> <input type="tel" id="quick-phone-input" class="phone-field svelte-gpp9le" placeholder="573001234567" required=""/></div> <span class="field-hint svelte-gpp9le">Incluye código de país sin espacios ni símbolos (Ej: 57 para Colombia, 52 para México).</span></div> <div class="form-group"><span class="field-label-small svelte-gpp9le">⚡ Plantillas / Presets Rápidos:</span> <div class="preset-chips svelte-gpp9le"></div></div> <div class="form-group"><div class="message-label-row svelte-gpp9le"><label for="quick-msg-input">Mensaje o Leyenda (Caption)</label> <div class="formatting-toolbar svelte-gpp9le"><button type="button" class="format-btn svelte-gpp9le" title="Negrita (*texto*)">*B*</button> <button type="button" class="format-btn svelte-gpp9le" title="Cursiva (_texto_)">_I_</button> <button type="button" class="format-btn svelte-gpp9le" title="Tachado (~texto~)">~S~</button> <button type="button" class="format-btn svelte-gpp9le" title="Mano">👋</button> <button type="button" class="format-btn svelte-gpp9le" title="Cohete">🚀</button> <button type="button" class="format-btn svelte-gpp9le" title="Dinero">💰</button> <button type="button" class="format-btn svelte-gpp9le" title="Check">✅</button></div></div> <textarea id="quick-msg-input" rows="5" placeholder="Escribe el mensaje que deseas enviar directamente por WhatsApp..."></textarea> <div class="textarea-footer svelte-gpp9le"><span class="char-counter"> </span> <span class="shortcut-hint svelte-gpp9le">Tip: Presiona <kbd class="svelte-gpp9le">Ctrl</kbd> + <kbd class="svelte-gpp9le">Enter</kbd> para enviar</span></div></div> <div class="form-group"><div class="field-label-small svelte-gpp9le">📎 Archivo Adjunto (Foto, PDF, Audio o Documento)</div> <!></div> <div class="submit-action-row svelte-gpp9le"><button type="submit" class="btn btn-primary btn-send-prominent svelte-gpp9le"><!></button></div></form> <!></div> <div class="preview-column svelte-gpp9le"><div class="live-preview-card svelte-gpp9le"><div class="live-preview-header svelte-gpp9le"><div class="preview-contact svelte-gpp9le"><div class="preview-avatar svelte-gpp9le"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg></div> <div><div class="preview-recipient-title svelte-gpp9le"> </div> <span class="preview-sub svelte-gpp9le">Vista previa del mensaje de salida</span></div></div></div> <div class="live-preview-body svelte-gpp9le"><div class="preview-bubble svelte-gpp9le"><!> <!> <div class="preview-meta-row svelte-gpp9le"><span class="preview-time svelte-gpp9le"> </span> <span class="preview-checks svelte-gpp9le">✓✓</span></div></div></div></div> <div class="tips-card svelte-gpp9le"><h4 class="svelte-gpp9le">💡 Recomendaciones de Envío Directo</h4> <ul class="tips-list svelte-gpp9le"><li class="svelte-gpp9le"><strong class="svelte-gpp9le">Formato Internacional:</strong> Ingresa el código del país sin el símbolo `+` (Colombia: `57`, México: `52`, España: `34`).</li> <li class="svelte-gpp9le"><strong class="svelte-gpp9le">Catálogos y Fotos:</strong> Los archivos PDF e imágenes se envían con su compresión nativa para una descarga rápida en celulares.</li> <li class="svelte-gpp9le"><strong class="svelte-gpp9le">Audios y Mensajes de Voz:</strong> Si subes un audio, el destinatario lo reproducirá directamente en su chat.</li></ul></div></div></div></section>');function Gf(e,t){Ue(t,!0);let n=()=>Z(la,`$quickSendInitialPhone`,i),r=()=>Z(ga,`$activeCompany`,i),[i,a]=Ui(),o=F(``),s=F(``),c=F(null),l=F(!1),u=F(null),d=F(void 0),f=[{label:`👋 Hola Mundo`,text:`¡Hola! 🚀 Este es un mensaje de prueba enviado directamente desde mi panel de WhatsApp.`},{label:`✅ Confirmación de Pedido`,text:`¡Hola! 👋 Te contactamos para confirmar que tu pedido ha sido recibido con éxito y está siendo procesado.`},{label:`📖 Catálogo y Promos`,text:`¡Hola! Te compartimos nuestro catálogo actualizado y la lista de ofertas y promociones especiales del mes. 🎁`},{label:`💳 Datos de Pago`,text:`¡Hola! Aquí tienes nuestros canales de pago autorizados (Nequi, Daviplata, Bancolombia). Por favor envíanos tu comprobante cuando realices la transferencia.`}];bn(()=>{n()&&(I(o,n(),!0),la.set(``))});function p(e){I(s,e,!0),V(d)&&V(d).focus()}function m(e){if(!V(d))return;let t=V(d).selectionStart,n=V(d).selectionEnd,r=`${e}${V(s).substring(t,n)||`texto`}${e}`;I(s,V(s).substring(0,t)+r+V(s).substring(n)),V(d).focus()}function h(e){if(!V(d))return;let t=V(d).selectionStart,n=V(d).selectionEnd;I(s,V(s).substring(0,t)+e+V(s).substring(n)),V(d).focus()}function g(e){return e?e.replace(/\*(.*?)\*/g,`<strong>$1</strong>`).replace(/_(.*?)_/g,`<em>$1</em>`).replace(/~(.*?)~/g,`<del>$1</del>`).replace(/\n/g,`<br>`):``}function _(e){(e.ctrlKey||e.metaKey)&&e.key===`Enter`&&(e.preventDefault(),v())}async function v(e){e&&e.preventDefault();let t=V(o).replace(/\D/g,``);if(!t)$(`Ingresa un número de WhatsApp de destino`,`warning`);else if(!V(s).trim()&&!V(c))$(`Ingresa un mensaje o adjunta un archivo para enviar`,`warning`);else{I(l,!0),I(u,null);try{await Q.post(`/api/send`,{phone:t,message:V(s).trim(),media:V(c)}),I(u,{success:!0,phone:t,time:new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`}),hasMedia:!!V(c)},!0),$(`¡Mensaje entregado con éxito a +${t}!`,`success`),I(s,``),I(c,null)}catch(e){I(u,{success:!1,error:e.message},!0),$(e.message,`error`)}finally{I(l,!1)}}}var y=Wf();wr(`keydown`,$t,_);var b=z(L(y),2),x=L(b),S=L(x),C=R(z(L(S),2));M(S);var w=z(S,2),T=L(w),E=z(L(T),2),D=z(L(E),2);J(D),M(E),N(2),M(T);var O=z(T,2),k=z(L(O),2);Xr(k,21,()=>f,Kr,(e,t)=>{var n=Nf(),r=R(n,!0);B(()=>G(r,V(t).label)),H(`click`,n,()=>p(V(t).text)),W(e,n)}),M(k),M(O);var A=z(O,2),ee=L(A),te=z(L(ee),2),ne=L(te),re=z(ne,2),ie=z(re,2),ae=z(ie,2),oe=z(ae,2),se=z(oe,2),ce=z(se,2);M(te),M(ee);var le=z(ee,2);tt(le),Ni(le,e=>I(d,e),()=>V(d));var ue=z(le,2),de=R(L(ue));N(2),M(ue),M(A);var fe=z(A,2);Il(z(L(fe),2),{category:`quick`,get media(){return V(c)},onMediaChange:e=>I(c,e,!0)}),M(fe);var pe=z(fe,2),me=L(pe),he=L(me),ge=e=>{var t=Pf();N(2),W(e,t)},_e=e=>{var t=Ff();N(2),W(e,t)};K(he,e=>{V(l)?e(ge):e(_e,-1)}),M(me),M(pe),M(w);var j=z(w,2),ve=e=>{var t=Rf(),n=L(t),r=e=>{var t=If(),n=z(cn(t),2),r=R(z(L(n),2));M(n),B(()=>G(r,`Entregado al destinatario +${V(u).phone??``} a las ${V(u).time??``}`)),W(e,t)},i=e=>{var t=Lf(),n=z(cn(t),2),r=R(z(L(n),2),!0);M(n),B(()=>G(r,V(u).error||`No se pudo conectar con WhatsApp Web`)),W(e,t)};K(n,e=>{V(u).success?e(r):e(i,-1)}),M(t),B(()=>q(t,1,`result-box ${V(u).success?`success`:`error`}`,`svelte-gpp9le`)),W(e,t)};K(j,e=>{V(u)&&e(ve)}),M(x);var ye=z(x,2),be=L(ye),xe=L(be),Se=L(xe),Ce=z(L(Se),2),we=R(L(Ce),!0);N(2),M(Ce),M(Se),M(xe);var Te=z(xe,2),Ee=L(Te),De=L(Ee),Oe=e=>{var t=Vf(),n=L(t),r=e=>{var t=zf();B(()=>{Ti(t,`src`,V(c).url),Ti(t,`alt`,V(c).filename)}),W(e,t)},i=P(()=>(V(c).mimetype||``).startsWith(`image/`)),a=e=>{var t=Bf(),n=L(t),r=R(n,!0),i=z(n,2),a=R(L(i),!0);N(2),M(i),M(t),B(e=>{G(r,e),G(a,V(c).filename||V(c).originalName)},[()=>(V(c).mimetype||``).includes(`pdf`)?`📄`:`📁`]),W(e,t)};K(n,e=>{V(i)?e(r):e(a,-1)}),M(t),W(e,t)};K(De,e=>{V(c)&&e(Oe)});var ke=z(De,2),Ae=e=>{var t=Hf();ni(t,()=>g(V(s)),!0),M(t),W(e,t)},je=P(()=>V(s).trim()),Me=e=>{W(e,Uf())};K(ke,e=>{V(je)?e(Ae):V(c)||e(Me,1)});var Ne=z(ke,2),Pe=R(L(Ne),!0);N(2),M(Ne),M(Ee),M(Te),M(be),N(2),M(ye),M(b),M(y),B((e,t)=>{G(C,`Bot: ${(r()?.name||`Empresa`)??``}`),G(de,`${V(s).length??``} caracteres`),me.disabled=V(l),G(we,e),G(Pe,t)},[()=>V(o).trim()?`+${V(o).replace(/\D/g,``)}`:`Destinatario`,()=>new Date().toLocaleTimeString([],{hour:`2-digit`,minute:`2-digit`})]),wr(`submit`,w,v),Y(D,()=>V(o),e=>I(o,e)),H(`click`,ne,()=>m(`*`)),H(`click`,re,()=>m(`_`)),H(`click`,ie,()=>m(`~`)),H(`click`,ae,()=>h(`👋 `)),H(`click`,oe,()=>h(`🚀 `)),H(`click`,se,()=>h(`💰 `)),H(`click`,ce,()=>h(`✅ `)),Y(le,()=>V(s),e=>I(s,e)),W(e,y),We(),a()}Tr([`click`]);var Kf=U(`<div class="empty-leads-state svelte-1cc413u"><div style="font-size: 40px; margin-bottom: 12px;">🎯</div> <h3 class="svelte-1cc413u"> </h3> <p>Los clientes que escriban a tu WhatsApp entrarán
+                            conservando la hora fijada.`,
+        1,
+    ),
+    tu = U(
+        `<div class="recurrence-notice svelte-1wibhgs"><span style="font-size: 1.1rem;">🔁</span> <div><strong class="svelte-1wibhgs"> </strong> <!></div></div>`,
+    ),
+    nu = U(
+        `<form class="form-body"><!> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Tipo de Audiencia / Destinatarios</div> <div class="audience-selector svelte-1wibhgs"><button type="button"><span class="pill-icon">👤</span> <span class="pill-title">Cliente Individual</span></button> <button type="button"><span class="pill-icon">🏷️</span> <span class="pill-title">Por Etiqueta CRM</span></button> <button type="button"><span class="pill-icon">👥</span> <span class="pill-title">Por Grupo de Difusión</span></button></div></div> <div class="form-row svelte-1wibhgs"><div class="form-group flex-1 svelte-1wibhgs"><label for="sched-name-input">Nombre de la Campaña / Identificador</label> <input type="text" id="sched-name-input" placeholder="Ej: Promo Fin de Mes, Recordatorio de Pago..." required=""/></div> <!></div> <!> <div class="form-group"><label for="sched-datetime-input"> </label> <input type="datetime-local" id="sched-datetime-input" required=""/> <div class="form-row svelte-1wibhgs"><div class="form-group flex-1 svelte-1wibhgs"><label for="sched-datetime-input"> </label> <input type="datetime-local" id="sched-datetime-input" required=""/></div> <div class="form-group flex-1 svelte-1wibhgs"><label for="sched-recurrence-select">Frecuencia / Repetición Periódica</label> <select id="sched-recurrence-select"><option>Una sola vez (Sin repetición)</option><option>🔁 Diario (Cada 24 horas)</option><option>🔁 Semanal (Mismo día cada semana)</option><option>🔁 Mensual (Cobro mensual, recordatorios)</option><option>🔁 Anual (Renovación anual, aniversarios)</option></select></div></div> <!> <div class="form-group"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="sched-message-input" style="margin-bottom: 0;">Mensaje de Texto</label> <div class="vars-helper svelte-1wibhgs"><span style="font-size: 0.78rem; color: var(--text-dim);">Insertar variable:</span> <button type="button" class="btn-chip svelte-1wibhgs"></button> <button type="button" class="btn-chip svelte-1wibhgs"></button></div></div> <textarea id="sched-message-input" rows="4" placeholder="¡Hola! Escribe aquí el mensaje de tu campaña..."></textarea></div> <div class="form-group"><div style="margin-bottom: 6px; font-weight: 600; font-size: 0.86rem; color: var(--text-muted);">Adjuntar Archivo al Envío Programado (Opcional)</div> <!></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><!></button></div></div></form>`,
+    );
+function ru(e, t) {
+    Ue(t, !0);
+    let n = () => Z(fo, `$leads`, s),
+        r = () => Z(Za, `$groups`, s),
+        i = () => Z(Io, `$isScheduleModalOpen`, s),
+        a = () => Z(Lo, `$selectedSchedule`, s),
+        o = () => Z(Ro, `$modalMode`, s),
+        [s, c] = Ui(),
+        l = F(``),
+        u = F(`single`),
+        d = F(``),
+        f = F(``),
+        p = F(``),
+        m = F(10),
+        h = F(``),
+        g = F(`none`),
+        _ = F(``),
+        v = F(null),
+        y = F(!1),
+        b = P(() => {
+            let e = {};
+            for (let t of n() || [])
+                if (
+                    t.phone &&
+                    t.phone !== `status@broadcast` &&
+                    !t.phone.includes(`@broadcast`)
+                ) {
+                    let n = t.tag || `Nuevo`;
+                    e[n] = (e[n] || 0) + 1;
+                }
+            return Object.entries(e).map(([e, t]) => ({ tag: e, count: t }));
+        }),
+        x = P(() => {
+            if (V(u) === `single`) return +!!V(d).trim();
+            if (V(u) === `tag`) {
+                let e = V(b).find((e) => e.tag === V(f));
+                return e ? e.count : 0;
+            }
+            if (V(u) === `group`) {
+                let e = (r() || []).find((e) => e.id === V(p));
+                return (e && e.memberCount) || 0;
+            }
+            return 0;
+        });
+    function S(e) {
+        (I(u, e, !0),
+            e === `tag`
+                ? !V(f) && V(b).length > 0 && I(f, V(b)[0].tag, !0)
+                : e === `group` &&
+                  !V(p) &&
+                  (r() || []).length > 0 &&
+                  I(p, r()[0].id, !0));
+    }
+    (bn(() => {
+        V(u) === `tag` && !V(f) && V(b).length > 0 && I(f, V(b)[0].tag, !0);
+    }),
+        bn(() => {
+            V(u) === `group` &&
+                !V(p) &&
+                (r() || []).length > 0 &&
+                I(p, r()[0].id, !0);
+        }));
+    let C = !1;
+    bn(() => {
+        let e = i();
+        e && !C
+            ? ((C = !0),
+              hr(() => {
+                  $a();
+                  let e = a(),
+                      t = o();
+                  if (e && (t === `edit` || t === `duplicate`)) {
+                      (I(
+                          l,
+                          t === `duplicate`
+                              ? `${e.name || `Campaña`} (Copia)`
+                              : e.name || ``,
+                          !0,
+                      ),
+                          I(u, e.targetType || `single`, !0),
+                          I(
+                              d,
+                              (e.targetType === `single` &&
+                                  (e.recipient || e.targetValue)) ||
+                                  ``,
+                              !0,
+                          ),
+                          I(
+                              f,
+                              e.targetType === `tag`
+                                  ? e.targetValue || ``
+                                  : V(b)[0]?.tag || ``,
+                              !0,
+                          ),
+                          I(
+                              p,
+                              e.targetType === `group`
+                                  ? e.targetValue || ``
+                                  : (r() || [])[0]?.id || ``,
+                              !0,
+                          ),
+                          I(m, e.delaySeconds || 10, !0),
+                          I(g, e.recurrence || `none`, !0),
+                          I(_, e.message || ``, !0),
+                          I(v, e.media || null, !0));
+                      let n =
+                          e.status === `sent` ||
+                          e.status === `failed` ||
+                          e.status === `cancelled` ||
+                          new Date(e.scheduledTime) <= new Date();
+                      if (t === `duplicate` || n) {
+                          let e = new Date(
+                              Date.now() +
+                                  36e5 -
+                                  new Date().getTimezoneOffset() * 6e4,
+                          );
+                          I(h, e.toISOString().slice(0, 16), !0);
+                      } else
+                          try {
+                              let t = new Date(
+                                  new Date(e.scheduledTime).getTime() -
+                                      new Date().getTimezoneOffset() * 6e4,
+                              );
+                              I(h, t.toISOString().slice(0, 16), !0);
+                          } catch {
+                              let e = new Date(
+                                  Date.now() +
+                                      36e5 -
+                                      new Date().getTimezoneOffset() * 6e4,
+                              );
+                              I(h, e.toISOString().slice(0, 16), !0);
+                          }
+                  } else {
+                      (I(l, ``),
+                          I(u, `single`),
+                          I(d, ``),
+                          I(m, 10),
+                          I(g, `none`),
+                          I(_, ``),
+                          I(v, null),
+                          V(b).length > 0 ? I(f, V(b)[0].tag, !0) : I(f, ``));
+                      let e = r() || [];
+                      e.length > 0 ? I(p, e[0].id, !0) : I(p, ``);
+                      let t = new Date(
+                          Date.now() +
+                              36e5 -
+                              new Date().getTimezoneOffset() * 6e4,
+                      );
+                      I(h, t.toISOString().slice(0, 16), !0);
+                  }
+              }))
+            : e || (C = !1);
+    });
+    function w() {
+        (Io.set(!1), Lo.set(null));
+    }
+    function T(e) {
+        I(_, (V(_) || ``) + e);
+    }
+    function E() {
+        (w(), Qa.set(!0));
+    }
+    function D() {
+        (w(), ho.set(!0));
+    }
+    async function O(e) {
+        e.preventDefault();
+        let t = ``;
+        if (V(u) === `single`) {
+            if (((t = V(d).replace(/\D/g, ``)), !t)) {
+                $(`Ingresa el número de WhatsApp de destino`, `warning`);
+                return;
+            }
+        } else if (V(u) === `tag`) {
+            if (((t = V(f)), !t)) {
+                $(
+                    `Selecciona la etiqueta de clientes para la difusión`,
+                    `warning`,
+                );
+                return;
+            }
+            if (V(x) === 0) {
+                $(
+                    `No hay prospectos registrados con la etiqueta "${t}"`,
+                    `warning`,
+                );
+                return;
+            }
+        } else if (V(u) === `group`) {
+            if (((t = V(p)), !t)) {
+                $(`Selecciona el grupo de difusión`, `warning`);
+                return;
+            }
+            if (V(x) === 0) {
+                $(
+                    `Este grupo no tiene miembros asignados aún. Agrega contactos primero.`,
+                    `warning`,
+                );
+                return;
+            }
+        }
+        if (!V(_).trim() && !V(v)) {
+            $(
+                `Ingresa un mensaje o adjunta un archivo para programar`,
+                `warning`,
+            );
+            return;
+        }
+        if (!V(h)) {
+            $(`Selecciona la fecha y hora de envío`, `warning`);
+            return;
+        }
+        I(y, !0);
+        let n = {
+                name:
+                    V(l).trim() ||
+                    (V(u) === `single`
+                        ? `Envío Individual`
+                        : `Difusión a ${V(u)}: ${t}`),
+                targetType: V(u),
+                targetValue: t,
+                recipient:
+                    V(u) === `single`
+                        ? t
+                        : V(u) === `tag`
+                          ? `[Etiqueta: ${t}]`
+                          : `[Grupo: ${t}]`,
+                delaySeconds: parseInt(V(m), 10) || 10,
+                recurrence: V(g),
+                scheduledTime: V(h),
+                message: V(_).trim(),
+                media: V(v),
+                relaunch: !0,
+            },
+            r;
+        ((r = o() === `edit` && a() ? await Wo(a().id, n) : await Uo(n)),
+            I(y, !1),
+            r.success && w());
+    }
+    {
+        let t = P(() =>
+                o() === `edit`
+                    ? `✏️ Editar y Reprogramar Campaña`
+                    : o() === `duplicate`
+                      ? `📋 Duplicar Campaña de Difusión`
+                      : `⏰ Programar Envío o Difusión`,
+            ),
+            n = P(() =>
+                o() === `edit`
+                    ? `Modifica los destinatarios, ajusta el mensaje o define una nueva fecha/hora para reactivar esta campaña periódica.`
+                    : o() === `duplicate`
+                      ? `Crea una nueva campaña a partir de esta plantilla con fecha actualizada.`
+                      : `Programa mensajes para un contacto individual o difusiones masivas segmentadas por etiqueta o grupo.`,
+            );
+        il(e, {
+            get isOpen() {
+                return i();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(n);
+            },
+            maxWidth: `720px`,
+            onClose: w,
+            children: (e, t) => {
+                var n = nu(),
+                    i = L(n),
+                    s = (e) => {
+                        W(e, Ul());
+                    };
+                K(i, (e) => {
+                    o() === `edit` &&
+                        a() &&
+                        (a().status === `sent` ||
+                            a().status === `failed` ||
+                            a().status === `cancelled`) &&
+                        e(s);
+                });
+                var c = z(i, 2),
+                    C = z(L(c), 2),
+                    k = L(C);
+                let A;
+                var ee = z(k, 2);
+                let te;
+                var ne = z(ee, 2);
+                let re;
+                (M(C), M(c));
+                var ie = z(c, 2),
+                    ae = L(ie),
+                    oe = z(L(ae), 2);
+                (J(oe), M(ae));
+                var se = z(ae, 2),
+                    ce = (e) => {
+                        var t = Wl(),
+                            n = z(L(t), 2);
+                        (J(n),
+                            M(t),
+                            Y(
+                                n,
+                                () => V(d),
+                                (e) => I(d, e),
+                            ),
+                            W(e, t));
+                    },
+                    le = (e) => {
+                        var t = Jl(),
+                            n = L(t),
+                            r = z(L(n), 2);
+                        M(n);
+                        var i = z(n, 2),
+                            a = (e) => {
+                                var t = Gl(),
+                                    n = z(L(t), 2);
+                                (M(t), H(`click`, n, D), W(e, t));
+                            },
+                            o = (e) => {
+                                var t = ql();
+                                (Xr(
+                                    t,
+                                    21,
+                                    () => V(b),
+                                    Kr,
+                                    (e, t) => {
+                                        var n = Kl(),
+                                            r = R(n),
+                                            i = {};
+                                        (B(() => {
+                                            (G(
+                                                r,
+                                                `${V(t).tag ?? ``} (${V(t).count ?? ``} contacto${V(t).count === 1 ? `` : `s`})`,
+                                            ),
+                                                i !== (i = V(t).tag) &&
+                                                    (n.value =
+                                                        (n.__value = i) ?? ``));
+                                        }),
+                                            W(e, n));
+                                    },
+                                ),
+                                    M(t),
+                                    _i(t),
+                                    vi(
+                                        t,
+                                        () => V(f),
+                                        (e) => I(f, e),
+                                    ),
+                                    W(e, t));
+                            };
+                        (K(i, (e) => {
+                            V(b).length === 0 ? e(a) : e(o, -1);
+                        }),
+                            M(t),
+                            H(`click`, r, D),
+                            W(e, t));
+                    },
+                    ue = (e) => {
+                        var t = Zl(),
+                            n = L(t),
+                            i = z(L(n), 2);
+                        M(n);
+                        var a = z(n, 2),
+                            o = (e) => {
+                                var t = Yl(),
+                                    n = z(L(t), 2);
+                                (M(t), H(`click`, n, E), W(e, t));
+                            },
+                            s = (e) => {
+                                var t = Xl();
+                                (Xr(
+                                    t,
+                                    5,
+                                    () => r() || [],
+                                    Kr,
+                                    (e, t) => {
+                                        var n = Kl(),
+                                            r = R(n),
+                                            i = {};
+                                        (B(() => {
+                                            (G(
+                                                r,
+                                                `${V(t).name ?? ``} (${(V(t).memberCount || 0) ?? ``} contacto${V(t).memberCount === 1 ? `` : `s`})`,
+                                            ),
+                                                i !== (i = V(t).id) &&
+                                                    (n.value =
+                                                        (n.__value = i) ?? ``));
+                                        }),
+                                            W(e, n));
+                                    },
+                                ),
+                                    M(t),
+                                    _i(t),
+                                    vi(
+                                        t,
+                                        () => V(p),
+                                        (e) => I(p, e),
+                                    ),
+                                    W(e, t));
+                            };
+                        (K(a, (e) => {
+                            (r() || []).length === 0 ? e(o) : e(s, -1);
+                        }),
+                            M(t),
+                            H(`click`, i, E),
+                            W(e, t));
+                    };
+                (K(se, (e) => {
+                    V(u) === `single`
+                        ? e(ce)
+                        : V(u) === `tag`
+                          ? e(le, 1)
+                          : V(u) === `group` && e(ue, 2);
+                }),
+                    M(ie));
+                var de = z(ie, 2),
+                    fe = (e) => {
+                        var t = $l(),
+                            n = L(t);
+                        let r;
+                        var i = z(L(n)),
+                            a = R(i),
+                            o = z(i, 2),
+                            s = (e) => {
+                                W(e, Ql());
+                            };
+                        (K(o, (e) => {
+                            V(x) === 0 && e(s);
+                        }),
+                            M(n));
+                        var c = z(n, 2),
+                            l = z(L(c), 2),
+                            u = L(l);
+                        u.value = u.__value = 5;
+                        var d = z(u);
+                        d.value = d.__value = 10;
+                        var f = z(d);
+                        f.value = f.__value = 15;
+                        var p = z(f);
+                        ((p.value = p.__value = 20),
+                            M(l),
+                            _i(l),
+                            M(c),
+                            M(t),
+                            B(() => {
+                                ((r = q(
+                                    n,
+                                    1,
+                                    `info-badge svelte-1wibhgs`,
+                                    null,
+                                    r,
+                                    { 'badge-zero': V(x) === 0 },
+                                )),
+                                    G(
+                                        a,
+                                        `${V(x) ?? ``} contacto${V(x) === 1 ? `` : `s`}`,
+                                    ));
+                            }),
+                            vi(
+                                l,
+                                () => V(m),
+                                (e) => I(m, e),
+                            ),
+                            W(e, t));
+                    };
+                K(de, (e) => {
+                    V(u) !== `single` && e(fe);
+                });
+                var pe = z(de, 2),
+                    me = L(pe),
+                    he = R(me, !0),
+                    ge = z(me, 2);
+                J(ge);
+                var _e = z(ge, 2),
+                    j = L(_e),
+                    ve = L(j),
+                    ye = R(ve, !0),
+                    be = z(ve, 2);
+                (J(be), M(j));
+                var xe = z(j, 2),
+                    Se = z(L(xe), 2),
+                    Ce = L(Se);
+                Ce.value = Ce.__value = `none`;
+                var we = z(Ce);
+                we.value = we.__value = `daily`;
+                var Te = z(we);
+                Te.value = Te.__value = `weekly`;
+                var Ee = z(Te);
+                Ee.value = Ee.__value = `monthly`;
+                var De = z(Ee);
+                ((De.value = De.__value = `yearly`),
+                    M(Se),
+                    _i(Se),
+                    M(xe),
+                    M(_e));
+                var Oe = z(_e, 2),
+                    ke = (e) => {
+                        var t = tu(),
+                            n = z(L(t), 2),
+                            r = L(n),
+                            i = R(r),
+                            a = z(r, 2),
+                            o = (e) => {
+                                W(
+                                    e,
+                                    Fr(`Se ejecutará cada día automáticamente a la hora
+                            seleccionada.`),
+                                );
+                            },
+                            s = (e) => {
+                                W(
+                                    e,
+                                    Fr(`Se repetirá cada semana el mismo día de la semana a
+                            la hora seleccionada.`),
+                                );
+                            },
+                            c = (e) => {
+                                var t = eu();
+                                (N(2), W(e, t));
+                            },
+                            l = (e) => {
+                                W(
+                                    e,
+                                    Fr(`Se repetirá anualmente en la misma fecha y hora para
+                            felicitaciones o renovaciones de pólizas/planes.`),
+                                );
+                            };
+                        (K(a, (e) => {
+                            V(g) === `daily`
+                                ? e(o)
+                                : V(g) === `weekly`
+                                  ? e(s, 1)
+                                  : V(g) === `monthly`
+                                    ? e(c, 2)
+                                    : V(g) === `yearly` && e(l, 3);
+                        }),
+                            M(n),
+                            M(t),
+                            B(() =>
+                                G(
+                                    i,
+                                    `Campaña Recurrente Activada (${V(g) === `daily` ? `Diaria` : V(g) === `weekly` ? `Semanal` : V(g) === `monthly` ? `Mensual` : `Anual`}):`,
+                                ),
+                            ),
+                            W(e, t));
+                    };
+                K(Oe, (e) => {
+                    V(g) !== `none` && e(ke);
+                });
+                var Ae = z(Oe, 2),
+                    je = L(Ae),
+                    Me = z(L(je), 2),
+                    Ne = z(L(Me), 2);
+                Ne.textContent = `+ {nombre}`;
+                var Pe = z(Ne, 2);
+                ((Pe.textContent = `+ {telefono}`), M(Me), M(je));
+                var Fe = z(je, 2);
+                (tt(Fe), M(Ae));
+                var Ie = z(Ae, 2);
+                (Il(z(L(Ie), 2), {
+                    category: `quick`,
+                    get media() {
+                        return V(v);
+                    },
+                    onMediaChange: (e) => I(v, e, !0),
+                }),
+                    M(Ie));
+                var Le = z(Ie, 2),
+                    Re = L(Le),
+                    ze = z(Re, 2),
+                    Be = L(ze),
+                    Ve = (e) => {
+                        W(e, Fr(`Guardando...`));
+                    },
+                    He = (e) => {
+                        var t = Fr();
+                        (B(() =>
+                            G(
+                                t,
+                                `Actualizar y Reprogramar (${V(x) ?? ``} contactos)`,
+                            ),
+                        ),
+                            W(e, t));
+                    },
+                    Ue = (e) => {
+                        var t = Fr();
+                        (B(() =>
+                            G(
+                                t,
+                                `Crear Campaña Duplicada (${V(x) ?? ``} contactos)`,
+                            ),
+                        ),
+                            W(e, t));
+                    },
+                    We = (e) => {
+                        W(e, Fr(`Programar Envío`));
+                    },
+                    Ge = (e) => {
+                        var t = Fr();
+                        (B(() =>
+                            G(
+                                t,
+                                `Iniciar Campaña (${V(x) ?? ``} contacto${V(x) === 1 ? `` : `s`})`,
+                            ),
+                        ),
+                            W(e, t));
+                    };
+                (K(Be, (e) => {
+                    V(y)
+                        ? e(Ve)
+                        : o() === `edit`
+                          ? e(He, 1)
+                          : o() === `duplicate`
+                            ? e(Ue, 2)
+                            : V(u) === `single`
+                              ? e(We, 3)
+                              : e(Ge, -1);
+                }),
+                    M(ze),
+                    M(Le),
+                    M(pe),
+                    M(n),
+                    B(() => {
+                        ((A = q(k, 1, `audience-pill svelte-1wibhgs`, null, A, {
+                            active: V(u) === `single`,
+                        })),
+                            (te = q(
+                                ee,
+                                1,
+                                `audience-pill svelte-1wibhgs`,
+                                null,
+                                te,
+                                { active: V(u) === `tag` },
+                            )),
+                            (re = q(
+                                ne,
+                                1,
+                                `audience-pill svelte-1wibhgs`,
+                                null,
+                                re,
+                                { active: V(u) === `group` },
+                            )),
+                            G(
+                                he,
+                                o() === `edit`
+                                    ? `Nueva Fecha y Hora de Envío`
+                                    : `Fecha y Hora de Envío`,
+                            ),
+                            G(
+                                ye,
+                                o() === `edit`
+                                    ? `Fecha y Hora de Próximo Envío`
+                                    : `Fecha y Hora de Primer Envío`,
+                            ),
+                            (ze.disabled =
+                                V(y) || (V(u) !== `single` && V(x) === 0)));
+                    }),
+                    wr(`submit`, n, O),
+                    H(`click`, k, () => S(`single`)),
+                    H(`click`, ee, () => S(`tag`)),
+                    H(`click`, ne, () => S(`group`)),
+                    Y(
+                        oe,
+                        () => V(l),
+                        (e) => I(l, e),
+                    ),
+                    Y(
+                        ge,
+                        () => V(h),
+                        (e) => I(h, e),
+                    ),
+                    Y(
+                        be,
+                        () => V(h),
+                        (e) => I(h, e),
+                    ),
+                    vi(
+                        Se,
+                        () => V(g),
+                        (e) => I(g, e),
+                    ),
+                    H(`click`, Ne, () => T(`{nombre}`)),
+                    H(`click`, Pe, () => T(`{telefono}`)),
+                    Y(
+                        Fe,
+                        () => V(_),
+                        (e) => I(_, e),
+                    ),
+                    H(`click`, Re, w),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), c());
+}
+Tr([`click`]);
+var iu = U(
+        `<div style="display: flex; justify-content: space-between; width: 100%;"><button type="button" class="btn btn-secondary">💬 Responder por Envío Directo</button> <button type="button" class="btn btn-primary">Cerrar</button></div>`,
+    ),
+    au = U(
+        `<div style="text-align: center; padding: 40px; color: var(--text-dim);">Este cliente no tiene archivos adjuntos recibidos.</div>`,
+    ),
+    ou = U(`<img loading="lazy"/>`),
+    su = U(`<span class="gallery-file-icon">🎵</span>`),
+    cu = U(`<span class="gallery-file-icon"> </span>`),
+    lu = U(`<div class="gallery-caption"> </div>`),
+    uu = U(
+        `<audio controls="" style="width: 100%; margin: 6px 0; height: 32px;"></audio>`,
+    ),
+    du = U(
+        `<div class="gallery-card"><div class="gallery-media-preview"><!></div> <div class="gallery-card-body"><span class="gallery-filename"> </span> <!> <!> <div class="gallery-meta-row"><span> </span> <span> </span></div> <a target="_blank" rel="noopener noreferrer" class="gallery-download-btn">⬇️ Descargar / Ver</a></div></div>`,
+    ),
+    fu = U(`<div class="lead-files-gallery svelte-y3x7ou"></div>`);
+function pu(e, t) {
+    Ue(t, !1);
+    let n = () => Z(po, `$selectedLead`, i),
+        r = () => Z(mo, `$isLeadModalOpen`, i),
+        [i, a] = Ui();
+    function o() {
+        (mo.set(!1), po.set(null));
+    }
+    function s() {
+        if (!n()) return;
+        let e = n().phone;
+        (o(), la.set(e), sa.set(`tab-quick-send`));
+    }
+    Pi();
+    {
+        let t = (e) => {
+                var t = iu(),
+                    n = L(t),
+                    r = z(n, 2);
+                (M(t), H(`click`, n, s), H(`click`, r, o), W(e, t));
+            },
+            i = pt(() => `Archivos recibidos de ${n()?.name || `Cliente`}`),
+            a = pt(
+                () =>
+                    `Número: +${n()?.phone || ``} • Total: ${n()?.receivedFiles?.length || 0} archivo(s)`,
+            );
+        il(e, {
+            get isOpen() {
+                return r();
+            },
+            get title() {
+                return V(i);
+            },
+            get subtitle() {
+                return V(a);
+            },
+            maxWidth: `760px`,
+            onClose: o,
+            actions: t,
+            children: (e, t) => {
+                var r = Ir(),
+                    i = cn(r),
+                    a = (e) => {
+                        W(e, au());
+                    },
+                    o = (e) => {
+                        var t = fu();
+                        (Xr(
+                            t,
+                            5,
+                            () => n().receivedFiles,
+                            Kr,
+                            (e, t) => {
+                                let n = pt(() =>
+                                        (V(t).mimetype || ``).startsWith(
+                                            `image/`,
+                                        ),
+                                    ),
+                                    r = pt(
+                                        () =>
+                                            (V(t).mimetype || ``).startsWith(
+                                                `audio/`,
+                                            ) ||
+                                            (V(t).mimetype || ``).includes(
+                                                `ogg`,
+                                            ),
+                                    );
+                                var i = du(),
+                                    a = L(i),
+                                    o = L(a),
+                                    s = (e) => {
+                                        var n = ou();
+                                        (B(() => {
+                                            (Ti(n, `src`, V(t).url),
+                                                Ti(n, `alt`, V(t).filename));
+                                        }),
+                                            W(e, n));
+                                    },
+                                    c = (e) => {
+                                        W(e, su());
+                                    },
+                                    l = (e) => {
+                                        var n = cu(),
+                                            r = R(n, !0);
+                                        (B(
+                                            (e) => G(r, e),
+                                            [
+                                                () =>
+                                                    (
+                                                        V(t).mimetype || ``
+                                                    ).includes(`pdf`)
+                                                        ? `📄`
+                                                        : `📁`,
+                                            ],
+                                        ),
+                                            W(e, n));
+                                    };
+                                (K(o, (e) => {
+                                    V(n) ? e(s) : V(r) ? e(c, 1) : e(l, -1);
+                                }),
+                                    M(a));
+                                var u = z(a, 2),
+                                    d = L(u),
+                                    f = R(d, !0),
+                                    p = z(d, 2),
+                                    m = (e) => {
+                                        var n = lu(),
+                                            r = R(n);
+                                        (B(() =>
+                                            G(r, `"${V(t).caption ?? ``}"`),
+                                        ),
+                                            W(e, n));
+                                    };
+                                K(p, (e) => {
+                                    V(t).caption && e(m);
+                                });
+                                var h = z(p, 2),
+                                    g = (e) => {
+                                        var n = uu();
+                                        (B(() => Ti(n, `src`, V(t).url)),
+                                            W(e, n));
+                                    };
+                                K(h, (e) => {
+                                    V(r) && e(g);
+                                });
+                                var _ = z(h, 2),
+                                    v = L(_),
+                                    y = R(v, !0),
+                                    b = R(z(v, 2), !0);
+                                M(_);
+                                var x = z(_, 2);
+                                (M(u),
+                                    M(i),
+                                    B(
+                                        (e, n) => {
+                                            (Ti(d, `title`, V(t).filename),
+                                                G(f, V(t).filename),
+                                                G(y, e),
+                                                G(b, n),
+                                                Ti(x, `href`, V(t).url),
+                                                Ti(
+                                                    x,
+                                                    `download`,
+                                                    V(t).filename,
+                                                ));
+                                        },
+                                        [
+                                            () => wl(V(t).size || 0),
+                                            () => Tl(V(t).receivedAt),
+                                        ],
+                                    ),
+                                    W(e, i));
+                            },
+                        ),
+                            M(t),
+                            W(e, t));
+                    };
+                (K(i, (e) => {
+                    !n()?.receivedFiles || n().receivedFiles.length === 0
+                        ? e(a)
+                        : e(o, -1);
+                }),
+                    W(e, r));
+            },
+            $$slots: { actions: !0, default: !0 },
+        });
+    }
+    (We(), a());
+}
+Tr([`click`]);
+var mu = U(
+        `<span class="status-pill paused svelte-1midlix">🛑 Bot Pausado (Atención Humana)</span>`,
+    ),
+    hu = U(
+        `<span class="status-pill active svelte-1midlix">🤖 Bot Activo (Respuesta Automática)</span>`,
+    ),
+    gu = U(
+        `<span class="status-pill live svelte-1midlix" title="Mensajes sincronizados en tiempo real"><span class="live-dot svelte-1midlix"></span> Tiempo Real Activo</span>`,
+    ),
+    _u = U(
+        `<span class="status-pill history svelte-1midlix" title="Mostrando historial registrado en la base de datos">📦 Historial Local</span>`,
+    ),
+    vu = U(
+        `<button type="button" class="btn-mini-toggle svelte-1midlix" title="Alternar entre atención automática del bot y atención humana"> </button>`,
+    ),
+    yu = U(
+        `<div class="chat-loading-state svelte-1midlix"><div class="chat-spinner svelte-1midlix"></div> <p class="svelte-1midlix">Cargando mensajes de WhatsApp...</p></div>`,
+    ),
+    bu =
+        U(`<div class="chat-empty-state svelte-1midlix"><div style="font-size: 40px; margin-bottom: 12px;" class="svelte-1midlix">💬</div> <h4 class="svelte-1midlix">No hay mensajes en este chat aún</h4> <p class="svelte-1midlix">Escribe una respuesta en la barra inferior para iniciar la
+                    conversación con este cliente.</p></div>`),
+    xu = U(
+        `<div class="date-separator svelte-1midlix"><span class="svelte-1midlix"> </span></div>`,
+    ),
+    Su = U(
+        `<audio controls="" class="bubble-audio-player svelte-1midlix"></audio>`,
+    ),
+    Cu = U(
+        `<div class="media-audio-box svelte-1midlix"><div class="audio-label svelte-1midlix">🎤 Nota de voz / Audio</div> <!></div>`,
+    ),
+    wu = U(
+        `<div class="media-image-box svelte-1midlix"><a target="_blank" rel="noopener noreferrer" class="svelte-1midlix"><img alt="Adjunto recibido" class="bubble-image svelte-1midlix" loading="lazy"/></a></div>`,
+    ),
+    Tu = U(`<div class="bubble-text svelte-1midlix"> </div>`),
+    Eu = U(
+        `<div class="bubble-media-placeholder svelte-1midlix">📎 [Archivo adjunto]</div>`,
+    ),
+    Du = U(
+        `<span class="bubble-ticks svelte-1midlix" title="Entregado">✓✓</span>`,
+    ),
+    Ou = U(
+        `<!> <div><div><!> <!> <div class="bubble-meta svelte-1midlix"><span class="bubble-time svelte-1midlix"> </span> <!></div></div></div>`,
+        1,
+    ),
+    ku = U(`<div class="messages-stream svelte-1midlix"></div>`),
+    Au = U(`<span class="send-spinner svelte-1midlix"></span>`),
+    ju = U(
+        `<span class="svelte-1midlix">Enviar</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="svelte-1midlix"><line x1="22" y1="2" x2="11" y2="13" class="svelte-1midlix"></line><polygon points="22 2 15 22 11 13 2 9 22 2" class="svelte-1midlix"></polygon></svg>`,
+        1,
+    ),
+    Mu = U(
+        `<div class="chat-context-bar svelte-1midlix"><div class="chat-status-info svelte-1midlix"><!> <!></div> <div class="chat-header-actions svelte-1midlix"><!> <button type="button" class="btn-mini-refresh svelte-1midlix" title="Actualizar mensajes desde WhatsApp"><span>🔄</span> <span class="svelte-1midlix">Actualizar</span></button></div></div> <div class="chat-viewport svelte-1midlix"><!></div> <form class="chat-reply-bar svelte-1midlix"><textarea class="chat-input svelte-1midlix" placeholder="Escribe un mensaje para responder al cliente... (Enter para enviar)" rows="1"></textarea> <button type="submit" class="btn-send-chat svelte-1midlix"><!></button></form>`,
+        1,
+    );
+function Nu(e, t) {
+    Ue(t, !0);
+    let n = () => Z(_o, `$isChatModalOpen`, c),
+        r = () => Z(vo, `$chatMessages`, c),
+        i = () => Z(go, `$selectedChatLead`, c),
+        a = () => Z(bo, `$isLiveChat`, c),
+        o = () => Z(zs, `$hasPermission`, c),
+        s = () => Z(yo, `$isChatLoading`, c),
+        [c, l] = Ui(),
+        u = F(``),
+        d = F(!1),
+        f = F(null);
+    function p() {
+        (Ao(), I(u, ``));
+    }
+    async function m() {
+        (await fr(), V(f) && (V(f).scrollTop = V(f).scrollHeight));
+    }
+    bn(() => {
+        n() && r().length && m();
+    });
+    async function h() {
+        i()?.phone && (await No(i().phone), m());
+    }
+    async function g(e) {
+        e?.preventDefault();
+        let t = V(u).trim();
+        if (!t || V(d) || !i()?.phone) return;
+        (I(d, !0), I(u, ``));
+        let n = await Po(i().phone, t);
+        (I(d, !1), n.success ? m() : I(u, t, !0));
+    }
+    function _(e) {
+        e.key === `Enter` && !e.shiftKey && (e.preventDefault(), g());
+    }
+    function v(e) {
+        if (!e) return ``;
+        let t = new Date(e);
+        return isNaN(t.getTime())
+            ? ``
+            : t.toLocaleTimeString(`es-CO`, {
+                  hour: `2-digit`,
+                  minute: `2-digit`,
+              });
+    }
+    function y(e) {
+        if (!e) return ``;
+        let t = new Date(e);
+        if (isNaN(t.getTime())) return ``;
+        let n = new Date();
+        if (t.toDateString() === n.toDateString()) return `Hoy`;
+        let r = new Date();
+        return (
+            r.setDate(n.getDate() - 1),
+            t.toDateString() === r.toDateString()
+                ? `Ayer`
+                : t.toLocaleDateString(`es-CO`, { dateStyle: `medium` })
+        );
+    }
+    {
+        let t = P(() => `💬 Conversación con ${i()?.name || `Cliente`}`),
+            c = P(
+                () => `+${i()?.phone || ``} • Etiqueta: ${i()?.tag || `Nuevo`}`,
+            );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(c);
+            },
+            maxWidth: `760px`,
+            onClose: p,
+            children: (e, t) => {
+                var n = Mu(),
+                    c = cn(n),
+                    l = L(c),
+                    p = L(l),
+                    m = (e) => {
+                        W(e, mu());
+                    },
+                    b = (e) => {
+                        W(e, hu());
+                    };
+                K(p, (e) => {
+                    i()?.humanPaused ? e(m) : e(b, -1);
+                });
+                var x = z(p, 2),
+                    S = (e) => {
+                        W(e, gu());
+                    },
+                    C = (e) => {
+                        W(e, _u());
+                    };
+                (K(x, (e) => {
+                    a() ? e(S) : e(C, -1);
+                }),
+                    M(l));
+                var w = z(l, 2),
+                    T = L(w),
+                    E = (e) => {
+                        var t = vu(),
+                            n = R(t, !0);
+                        (B(() =>
+                            G(
+                                n,
+                                i().humanPaused
+                                    ? `Reactivar Bot`
+                                    : `Pausar Bot`,
+                            ),
+                        ),
+                            H(`click`, t, () => Do(i().phone)),
+                            W(e, t));
+                    },
+                    D = P(() => o()(`leads:pause`) && i()?.phone);
+                K(T, (e) => {
+                    V(D) && e(E);
+                });
+                var O = z(T, 2),
+                    k = L(O);
+                (N(2), M(O), M(w), M(c));
+                var A = z(c, 2),
+                    ee = L(A),
+                    te = (e) => {
+                        W(e, yu());
+                    },
+                    ne = (e) => {
+                        W(e, bu());
+                    },
+                    re = (e) => {
+                        var t = ku();
+                        (Xr(
+                            t,
+                            7,
+                            r,
+                            (e, t) => e.id || t,
+                            (e, t, n) => {
+                                let i = P(() =>
+                                        V(n) > 0 ? r()[V(n) - 1] : null,
+                                    ),
+                                    a = P(
+                                        () =>
+                                            !V(i) ||
+                                            y(V(t).timestamp) !==
+                                                y(V(i).timestamp),
+                                    ),
+                                    o = P(
+                                        () =>
+                                            V(t).type === `ptt` ||
+                                            V(t).type === `audio`,
+                                    ),
+                                    s = P(
+                                        () =>
+                                            V(t).type === `image` ||
+                                            (
+                                                V(t).mediaMimetype || ``
+                                            ).startsWith(`image/`),
+                                    );
+                                var c = Ou(),
+                                    l = cn(c),
+                                    u = (e) => {
+                                        var n = xu(),
+                                            r = R(L(n), !0);
+                                        (M(n),
+                                            B(
+                                                (e) => G(r, e),
+                                                [() => y(V(t).timestamp)],
+                                            ),
+                                            W(e, n));
+                                    };
+                                K(l, (e) => {
+                                    V(a) && e(u);
+                                });
+                                var d = z(l, 2),
+                                    f = L(d),
+                                    p = L(f),
+                                    m = (e) => {
+                                        var n = Cu(),
+                                            r = z(L(n), 2),
+                                            i = (e) => {
+                                                var n = Su();
+                                                (B(() =>
+                                                    Ti(n, `src`, V(t).mediaUrl),
+                                                ),
+                                                    W(e, n));
+                                            };
+                                        (K(r, (e) => {
+                                            V(t).mediaUrl && e(i);
+                                        }),
+                                            M(n),
+                                            W(e, n));
+                                    },
+                                    h = (e) => {
+                                        var n = wu(),
+                                            r = L(n),
+                                            i = R(r);
+                                        (M(n),
+                                            B(() => {
+                                                (Ti(r, `href`, V(t).mediaUrl),
+                                                    Ti(
+                                                        i,
+                                                        `src`,
+                                                        V(t).mediaUrl,
+                                                    ));
+                                            }),
+                                            W(e, n));
+                                    };
+                                K(p, (e) => {
+                                    V(o)
+                                        ? e(m)
+                                        : V(s) && V(t).mediaUrl && e(h, 1);
+                                });
+                                var g = z(p, 2),
+                                    _ = (e) => {
+                                        var n = Tu(),
+                                            r = R(n, !0);
+                                        (B(() => G(r, V(t).body)), W(e, n));
+                                    },
+                                    b = (e) => {
+                                        W(e, Eu());
+                                    };
+                                K(g, (e) => {
+                                    V(t).body &&
+                                    V(t).body !== `🎤 [Nota de voz]` &&
+                                    V(t).body !== `📎 [Archivo adjunto]`
+                                        ? e(_)
+                                        : !V(o) &&
+                                          !V(s) &&
+                                          V(t).hasMedia &&
+                                          e(b, 1);
+                                });
+                                var x = z(g, 2),
+                                    S = L(x),
+                                    C = R(S, !0),
+                                    w = z(S, 2),
+                                    T = (e) => {
+                                        W(e, Du());
+                                    };
+                                (K(w, (e) => {
+                                    V(t).fromMe && e(T);
+                                }),
+                                    M(x),
+                                    M(f),
+                                    M(d),
+                                    B(
+                                        (e) => {
+                                            (q(
+                                                d,
+                                                1,
+                                                `message-bubble-row ${V(t).fromMe ? `outgoing` : `incoming`}`,
+                                                `svelte-1midlix`,
+                                            ),
+                                                q(
+                                                    f,
+                                                    1,
+                                                    `bubble ${V(t).fromMe ? `outgoing` : `incoming`}`,
+                                                    `svelte-1midlix`,
+                                                ),
+                                                G(C, e));
+                                        },
+                                        [() => v(V(t).timestamp)],
+                                    ),
+                                    W(e, c));
+                            },
+                        ),
+                            M(t),
+                            W(e, t));
+                    };
+                (K(ee, (e) => {
+                    s() && r().length === 0
+                        ? e(te)
+                        : r().length === 0
+                          ? e(ne, 1)
+                          : e(re, -1);
+                }),
+                    M(A),
+                    Ni(
+                        A,
+                        (e) => I(f, e),
+                        () => V(f),
+                    ));
+                var ie = z(A, 2),
+                    ae = L(ie);
+                tt(ae);
+                var oe = z(ae, 2),
+                    se = L(oe),
+                    ce = (e) => {
+                        W(e, Au());
+                    },
+                    le = (e) => {
+                        var t = ju();
+                        (N(2), W(e, t));
+                    };
+                (K(se, (e) => {
+                    V(d) ? e(ce) : e(le, -1);
+                }),
+                    M(oe),
+                    M(ie),
+                    B(
+                        (e) => {
+                            ((O.disabled = s()),
+                                q(
+                                    k,
+                                    1,
+                                    oi(s() ? `spin` : ``),
+                                    `svelte-1midlix`,
+                                ),
+                                (ae.disabled = V(d)),
+                                (oe.disabled = e));
+                        },
+                        [() => !V(u).trim() || V(d)],
+                    ),
+                    H(`click`, O, h),
+                    wr(`submit`, ie, g),
+                    H(`keydown`, ae, _),
+                    Y(
+                        ae,
+                        () => V(u),
+                        (e) => I(u, e),
+                    ),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), l());
+}
+Tr([`click`, `keydown`]);
+var Pu = U(`<div class="file-stats svelte-jsoxpl"> </div>`),
+    Fu = U(
+        `<div class="file-name-pill svelte-jsoxpl"> </div> <!> <span style="font-size: 0.78rem; color: #38bdf8; margin-top: 6px;">Clic para cambiar de archivo</span>`,
+        1,
+    ),
+    Iu = U(
+        `<strong>Haz clic para seleccionar tu archivo CSV</strong> <span>Compatible con el archivo exportado desde contactos de Google</span>`,
+        1,
+    ),
+    Lu = U(`<option> </option>`),
+    Ru = U(
+        `<form class="import-form"><div class="upload-dropzone svelte-jsoxpl"><label for="csv-file-input" class="dropzone-label svelte-jsoxpl"><div style="font-size: 32px; margin-bottom: 8px;">📂</div> <!></label> <input type="file" id="csv-file-input" accept=".csv,text/csv" class="hidden-file-input svelte-jsoxpl"/></div> <div class="form-row svelte-jsoxpl" style="margin-top: 16px;"><div class="form-group flex-1 svelte-jsoxpl"><label for="imp-prefix-input">Código de País por Defecto</label> <input type="text" id="imp-prefix-input" placeholder="57" title="Se agregará si el número telefónico en el CSV no tiene código de país"/> <small class="field-hint svelte-jsoxpl">Ej: 57 para Colombia, 52 para México</small></div> <div class="form-group flex-1 svelte-jsoxpl"><label for="imp-tag-input">Etiqueta a Asignar</label> <input type="text" id="imp-tag-input" list="imp-tag-datalist" placeholder="Ej: Clientes VIP, Google..."/> <datalist id="imp-tag-datalist"></datalist></div></div> <div class="form-group"><label for="imp-group-select">Agregar a un Grupo de Difusión (Opcional)</label> <select id="imp-group-select" class="form-select svelte-jsoxpl"><option>Ninguno (Solo importar a contactos generales)</option><!></select></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    ),
+    zu =
+        U(`<form class="import-form"><div class="sync-info-box svelte-jsoxpl"><div style="font-size: 32px; margin-bottom: 8px;">📲</div> <h4 class="svelte-jsoxpl">Sincronización Directa de Agenda</h4> <p class="svelte-jsoxpl">Esta opción lee los contactos que tienes guardados en la agenda del teléfono conectado a WhatsApp Web
+          y los incorpora automáticamente como prospectos en la base de datos de tu empresa.</p></div> <div class="form-row svelte-jsoxpl" style="margin-top: 16px;"><div class="form-group flex-1 svelte-jsoxpl"><label for="sync-tag-input">Etiqueta para los contactos de WhatsApp</label> <input type="text" id="sync-tag-input" placeholder="Agenda WhatsApp"/></div> <div class="form-group flex-1 svelte-jsoxpl"><label for="sync-group-select">Agregar al Grupo (Opcional)</label> <select id="sync-group-select" class="form-select svelte-jsoxpl"><option>Ninguno (Solo importar)</option><!></select></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`),
+    Bu = U(
+        `<div class="import-tabs svelte-jsoxpl"><button type="button">📄 Archivo CSV (Google Contacts)</button> <button type="button">📱 Sincronizar desde WhatsApp</button></div> <!>`,
+        1,
+    );
+function Vu(e, t) {
+    Ue(t, !0);
+    let n = () => Z(fo, `$leads`, a),
+        r = () => Z(ho, `$isImportModalOpen`, a),
+        i = () => Z(Za, `$groups`, a),
+        [a, o] = Ui(),
+        s = F(`csv`),
+        c = F(`57`),
+        l = F(`Importado Google`),
+        u = F(``),
+        d = F(!1),
+        f = F(null),
+        p = F(``),
+        m = F(``),
+        h = F(null),
+        g = P(() =>
+            Array.from(new Set(n().map((e) => e.tag || `Nuevo`))).filter(
+                Boolean,
+            ),
+        ),
+        _ = !1;
+    bn(() => {
+        let e = r();
+        e && !_
+            ? ((_ = !0),
+              hr(() => {
+                  ($a(), I(f, null), I(p, ``), I(m, ``), I(h, null), I(d, !1));
+              }))
+            : e || (_ = !1);
+    });
+    function v() {
+        ho.set(!1);
+    }
+    function y(e) {
+        let t = e.target.files?.[0];
+        if (!t) return;
+        I(p, t.name, !0);
+        let n = new FileReader();
+        ((n.onload = (e) => {
+            I(m, e.target?.result || ``, !0);
+            let t = V(m)
+                .split(
+                    `
+`,
+                )
+                .filter((e) => e.trim().length > 0);
+            I(h, { totalLines: Math.max(0, t.length - 1) }, !0);
+        }),
+            n.readAsText(t));
+    }
+    async function b(e) {
+        if ((e.preventDefault(), !V(m))) {
+            $(`Selecciona un archivo CSV para importar`, `warning`);
+            return;
+        }
+        I(d, !0);
+        let t = await lo({
+            csv: V(m),
+            defaultPrefix: V(c),
+            defaultTag: V(l).trim() || `Importado Google`,
+            groupId: V(u) || null,
+        });
+        (I(d, !1), t.success && v());
+    }
+    async function x(e) {
+        (e.preventDefault(), I(d, !0));
+        let t = await uo({
+            defaultTag: V(l).trim() || `Agenda WhatsApp`,
+            groupId: V(u) || null,
+        });
+        (I(d, !1), t.success && v());
+    }
+    (il(e, {
+        get isOpen() {
+            return r();
+        },
+        title: `📥 Importar Contactos a la Agenda de Difusión`,
+        subtitle: `Importa contactos desde Google Contacts o sincroniza la agenda de WhatsApp para difusiones (no se mezclan con los prospectos del embudo CRM)`,
+        maxWidth: `640px`,
+        onClose: v,
+        children: (e, t) => {
+            var n = Bu(),
+                r = cn(n),
+                a = L(r),
+                o = z(a, 2);
+            M(r);
+            var f = z(r, 2),
+                _ = (e) => {
+                    var t = Ru(),
+                        n = L(t),
+                        r = L(n),
+                        a = z(L(r), 2),
+                        o = (e) => {
+                            var t = Fu(),
+                                n = cn(t),
+                                r = R(n),
+                                i = z(n, 2),
+                                a = (e) => {
+                                    var t = Pu(),
+                                        n = R(t);
+                                    (B(() =>
+                                        G(
+                                            n,
+                                            `Aproximadamente ${V(h).totalLines ?? ``} fila(s) detectadas`,
+                                        ),
+                                    ),
+                                        W(e, t));
+                                };
+                            (K(i, (e) => {
+                                V(h) && e(a);
+                            }),
+                                N(2),
+                                B(() => G(r, `✅ ${V(p) ?? ``}`)),
+                                W(e, t));
+                        },
+                        s = (e) => {
+                            var t = Iu();
+                            (N(2), W(e, t));
+                        };
+                    (K(a, (e) => {
+                        V(p) ? e(o) : e(s, -1);
+                    }),
+                        M(r));
+                    var f = z(r, 2);
+                    M(n);
+                    var _ = z(n, 2),
+                        x = L(_),
+                        S = z(L(x), 2);
+                    (J(S), N(2), M(x));
+                    var C = z(x, 2),
+                        w = z(L(C), 2);
+                    J(w);
+                    var T = z(w, 2);
+                    (Xr(
+                        T,
+                        21,
+                        () => V(g),
+                        Kr,
+                        (e, t) => {
+                            var n = Lu(),
+                                r = R(n, !0),
+                                i = {};
+                            (B(() => {
+                                (G(r, V(t)),
+                                    i !== (i = V(t)) &&
+                                        (n.value = (n.__value = i) ?? ``));
+                            }),
+                                W(e, n));
+                        },
+                    ),
+                        M(T),
+                        M(C),
+                        M(_));
+                    var E = z(_, 2),
+                        D = z(L(E), 2),
+                        O = L(D);
+                    ((O.value = O.__value = ``),
+                        Xr(z(O), 1, i, Kr, (e, t) => {
+                            var n = Lu(),
+                                r = R(n),
+                                i = {};
+                            (B(() => {
+                                (G(
+                                    r,
+                                    `👥 ${V(t).name ?? ``} (${(V(t).memberCount || 0) ?? ``} miembros actuales)`,
+                                ),
+                                    i !== (i = V(t).id) &&
+                                        (n.value = (n.__value = i) ?? ``));
+                            }),
+                                W(e, n));
+                        }),
+                        M(D),
+                        _i(D),
+                        M(E));
+                    var k = z(E, 2),
+                        A = L(k),
+                        ee = z(A, 2),
+                        te = R(ee, !0);
+                    (M(k),
+                        M(t),
+                        B(() => {
+                            ((ee.disabled = V(d) || !V(m)),
+                                G(
+                                    te,
+                                    V(d)
+                                        ? `Importando...`
+                                        : `Importar Contactos a PostgreSQL`,
+                                ));
+                        }),
+                        wr(`submit`, t, b),
+                        H(`change`, f, y),
+                        Y(
+                            S,
+                            () => V(c),
+                            (e) => I(c, e),
+                        ),
+                        Y(
+                            w,
+                            () => V(l),
+                            (e) => I(l, e),
+                        ),
+                        vi(
+                            D,
+                            () => V(u),
+                            (e) => I(u, e),
+                        ),
+                        H(`click`, A, v),
+                        W(e, t));
+                },
+                S = (e) => {
+                    var t = zu(),
+                        n = z(L(t), 2),
+                        r = L(n),
+                        a = z(L(r), 2);
+                    (J(a), M(r));
+                    var o = z(r, 2),
+                        s = z(L(o), 2),
+                        c = L(s);
+                    ((c.value = c.__value = ``),
+                        Xr(z(c), 1, i, Kr, (e, t) => {
+                            var n = Lu(),
+                                r = R(n),
+                                i = {};
+                            (B(() => {
+                                (G(
+                                    r,
+                                    `👥 ${V(t).name ?? ``} (${(V(t).memberCount || 0) ?? ``} miembros)`,
+                                ),
+                                    i !== (i = V(t).id) &&
+                                        (n.value = (n.__value = i) ?? ``));
+                            }),
+                                W(e, n));
+                        }),
+                        M(s),
+                        _i(s),
+                        M(o),
+                        M(n));
+                    var f = z(n, 2),
+                        p = L(f),
+                        m = z(p, 2),
+                        h = R(m, !0);
+                    (M(f),
+                        M(t),
+                        B(() => {
+                            ((m.disabled = V(d)),
+                                G(
+                                    h,
+                                    V(d)
+                                        ? `Sincronizando...`
+                                        : `Traer Contactos desde WhatsApp`,
+                                ));
+                        }),
+                        wr(`submit`, t, x),
+                        Y(
+                            a,
+                            () => V(l),
+                            (e) => I(l, e),
+                        ),
+                        vi(
+                            s,
+                            () => V(u),
+                            (e) => I(u, e),
+                        ),
+                        H(`click`, p, v),
+                        W(e, t));
+                };
+            (K(f, (e) => {
+                V(s) === `csv` ? e(_) : e(S, -1);
+            }),
+                B(() => {
+                    (q(
+                        a,
+                        1,
+                        `import-tab-btn ${V(s) === `csv` ? `active` : ``}`,
+                        `svelte-jsoxpl`,
+                    ),
+                        q(
+                            o,
+                            1,
+                            `import-tab-btn ${V(s) === `whatsapp` ? `active` : ``}`,
+                            `svelte-jsoxpl`,
+                        ));
+                }),
+                H(`click`, a, () => I(s, `csv`)),
+                H(`click`, o, () => I(s, `whatsapp`)),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        o());
+}
+Tr([`click`, `change`]);
+var Hu = U(`<button type="button"></button>`),
+    Uu = U(
+        `<form class="create-grp-form svelte-9ftjwt"><div class="form-group"><label for="grp-name-in">Nombre del Grupo</label> <input type="text" id="grp-name-in" placeholder="Ej: Clientes VIP, Lanzamiento..." required=""/></div> <div class="form-group"><label for="grp-desc-in">Descripción (Opcional)</label> <input type="text" id="grp-desc-in" placeholder="Detalles sobre este grupo"/></div> <div class="form-group"><label for="grp-color-in">Color del Grupo</label> <div class="color-picker-row svelte-9ftjwt"></div></div> <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Guardar Grupo</button></form>`,
+    ),
+    Wu = U(
+        `<div class="empty-groups svelte-9ftjwt"><p>No tienes grupos creados todavía.</p> <button type="button" class="btn btn-primary btn-sm">Crear Primer Grupo</button></div>`,
+    ),
+    Gu = U(`<p class="group-desc svelte-9ftjwt"> </p>`),
+    Ku = U(
+        `<div role="button" tabindex="0"><div class="group-card-header svelte-9ftjwt"><span class="group-color-dot svelte-9ftjwt"></span> <strong class="group-name svelte-9ftjwt"> </strong></div> <!> <div class="group-card-footer svelte-9ftjwt"><span class="member-count-badge svelte-9ftjwt"> </span> <button type="button" class="btn-delete-grp svelte-9ftjwt" title="Eliminar grupo">🗑️</button></div></div>`,
+    ),
+    qu = U(`<div class="groups-list svelte-9ftjwt"></div>`),
+    Ju = U(
+        `<div class="search-empty-text svelte-9ftjwt">No se encontraron contactos en tu agenda con esa búsqueda.</div>`,
+    ),
+    Yu = U(`<span class="badge-tag-mini svelte-9ftjwt"> </span>`),
+    Xu = U(`<span class="badge-in-group svelte-9ftjwt">✓ En el grupo</span>`),
+    Zu = U(
+        `<button type="button" class="btn-add-contact-chip svelte-9ftjwt">+ Añadir</button>`,
+    ),
+    Qu = U(
+        `<div class="search-item-row svelte-9ftjwt"><div class="search-item-info svelte-9ftjwt"><strong> </strong> <span class="search-item-phone svelte-9ftjwt"> </span> <span class="badge-source-mini svelte-9ftjwt"> </span> <!></div> <!></div>`,
+    ),
+    $u = U(
+        `<div class="add-pane add-search-pane"><input type="search" class="form-search-input svelte-9ftjwt" placeholder="🔍 Escribe nombre o número para buscar y añadir..."/> <div class="search-results-list svelte-9ftjwt"><!></div></div>`,
+    ),
+    ed = U(`<option> </option>`),
+    td = U(
+        `<div class="add-pane add-tag-pane"><label for="add-tag-sel" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Añadir todos los contactos registrados con esta etiqueta:</label> <div style="display: flex; gap: 8px;"><select id="add-tag-sel" class="form-select flex-1 svelte-9ftjwt"><option>Selecciona una etiqueta...</option><!></select> <button type="button" class="btn btn-primary btn-sm"> </button></div></div>`,
+    ),
+    nd = U(
+        `<div class="add-pane add-direct-pane"><label for="add-direct-in" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Ingresa el número con indicativo de país (ej. 573001234567):</label> <div style="display: flex; gap: 8px;"><input type="tel" id="add-direct-in" class="form-search-input flex-1 svelte-9ftjwt" placeholder="ej: 573001234567"/> <button type="button" class="btn btn-primary btn-sm"> </button></div></div>`,
+    ),
+    rd = U(
+        `<input type="search" class="filter-members-input svelte-9ftjwt" placeholder="Filtrar miembros..."/>`,
+    ),
+    id = U(
+        `<div style="text-align: center; padding: 30px; color: var(--text-muted);">Cargando miembros...</div>`,
+    ),
+    ad = U(
+        `<div class="empty-members svelte-9ftjwt"><p>Este grupo no tiene miembros todavía.</p> <span>Usa el buscador de arriba para añadir contactos sin etiqueta, busca por etiqueta o escribe un número directo.</span></div>`,
+    ),
+    od = U(
+        `<tr><td class="svelte-9ftjwt"><strong> </strong></td><td class="svelte-9ftjwt"> </td><td class="svelte-9ftjwt"><span class="badge-source-mini svelte-9ftjwt"> </span></td><td class="svelte-9ftjwt"><span class="badge-mini-tag svelte-9ftjwt"> </span></td><td style="text-align: right;" class="svelte-9ftjwt"><button type="button" class="btn-remove-member svelte-9ftjwt" title="Quitar del grupo">✕</button></td></tr>`,
+    ),
+    sd = U(
+        `<div class="members-table-wrap svelte-9ftjwt"><table class="mini-table svelte-9ftjwt"><thead><tr><th class="svelte-9ftjwt">Nombre</th><th class="svelte-9ftjwt">Teléfono</th><th class="svelte-9ftjwt">Origen</th><th class="svelte-9ftjwt">Etiqueta</th><th style="width: 40px; text-align: right;" class="svelte-9ftjwt">Quitar</th></tr></thead><tbody></tbody></table></div>`,
+    ),
+    cd = U(
+        `<div class="detail-header svelte-9ftjwt"><div><div style="display: flex; align-items: center; gap: 8px;"><span class="group-color-dot large svelte-9ftjwt"></span> <h3 class="svelte-9ftjwt"> </h3></div> <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;"> <strong> </strong></p></div></div> <div class="add-members-box svelte-9ftjwt"><div class="add-modes-nav svelte-9ftjwt"><button type="button">🔍 Buscar Contacto</button> <button type="button">🏷️ Añadir por Etiqueta</button> <button type="button">➕ Número Directo</button></div> <!></div> <div class="members-section-header svelte-9ftjwt"><span style="font-weight: 600; font-size: 0.88rem; color: #fff;"> </span> <!></div> <div class="members-stream svelte-9ftjwt"><!></div>`,
+        1,
+    ),
+    ld = U(
+        `<div class="no-selection-state svelte-9ftjwt"><div style="font-size: 44px; margin-bottom: 10px;">👥</div> <h4 class="svelte-9ftjwt">Selecciona un grupo</h4> <p>Elige un grupo de la lista de la izquierda para ver y gestionar sus miembros, o crea uno nuevo.</p></div>`,
+    ),
+    ud = U(
+        `<div class="groups-container svelte-9ftjwt"><div class="groups-sidebar svelte-9ftjwt"><div class="sidebar-header svelte-9ftjwt"><h4 class="svelte-9ftjwt"> </h4> <button type="button" class="btn btn-outline-sm btn-new-grp"> </button></div> <!></div> <div class="group-detail-panel svelte-9ftjwt"><!></div></div>`,
+    );
+function dd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(ao, `$contacts`, o),
+        r = () => Z(fo, `$leads`, o),
+        i = () => Z(Qa, `$isGroupsModalOpen`, o),
+        a = () => Z(Za, `$groups`, o),
+        [o, s] = Ui(),
+        c = F(null),
+        l = F(Xt([])),
+        u = F(!1),
+        d = F(!1),
+        f = F(``),
+        p = F(``),
+        m = F(`#38bdf8`),
+        h = F(`search`),
+        g = F(``),
+        _ = F(``),
+        v = F(``),
+        y = F(!1),
+        b = F(``),
+        x = P(() => {
+            let e = new Map();
+            for (let t of n() || [])
+                t.phone &&
+                    e.set(t.phone, {
+                        phone: t.phone,
+                        name: t.name || t.phone,
+                        source:
+                            t.source === `whatsapp`
+                                ? `Agenda WhatsApp`
+                                : t.source === `google_csv`
+                                  ? `Google Contacts`
+                                  : `Agenda`,
+                        tag: t.tags || `Sin etiqueta`,
+                    });
+            for (let t of r() || [])
+                t.phone &&
+                    t.phone !== `status@broadcast` &&
+                    !t.phone.includes(`@broadcast`) &&
+                    (e.has(t.phone) ||
+                        e.set(t.phone, {
+                            phone: t.phone,
+                            name: t.name || t.phone,
+                            source: `CRM Lead`,
+                            tag: t.tag || `Nuevo`,
+                        }));
+            return Array.from(e.values());
+        }),
+        S = P(() => {
+            let e = V(g).trim().toLowerCase();
+            if (!e) return V(x).slice(0, 10);
+            let t = e.replace(/\D/g, ``);
+            return V(x)
+                .filter((n) => {
+                    let r = n.name.toLowerCase().includes(e),
+                        i =
+                            n.phone.includes(e) ||
+                            (t && n.phone.replace(/\D/g, ``).includes(t)),
+                        a = n.tag.toLowerCase().includes(e);
+                    return r || i || a;
+                })
+                .slice(0, 20);
+        }),
+        C = P(() => new Set(V(l).map((e) => e.phone))),
+        w = P(() =>
+            Array.from(
+                new Set([
+                    ...r().map((e) => e.tag || `Nuevo`),
+                    ...n().map((e) => e.tags || ``),
+                ]),
+            ).filter(Boolean),
+        ),
+        T = P(() =>
+            V(l).filter((e) => {
+                if (!V(b).trim()) return !0;
+                let t = V(b).toLowerCase();
+                return (
+                    (e.name || ``).toLowerCase().includes(t) ||
+                    (e.phone || ``).includes(t)
+                );
+            }),
+        );
+    function E() {
+        (Qa.set(!1), I(c, null), I(d, !1), I(g, ``), I(v, ``));
+    }
+    async function D(e) {
+        (I(c, e, !0), I(u, !0), I(l, await no(e.id), !0), I(u, !1), I(g, ``));
+    }
+    async function O(e) {
+        if ((e.preventDefault(), !V(f).trim())) {
+            $(`Ingresa el nombre del grupo`, `warning`);
+            return;
+        }
+        let t = await eo({
+            name: V(f).trim(),
+            description: V(p).trim(),
+            color: V(m),
+        });
+        t.success && (I(f, ``), I(p, ``), I(d, !1), t.group && D(t.group));
+    }
+    async function k(e, t) {
+        confirm(
+            `¿Deseas eliminar el grupo de difusión "${t}"? Los contactos no serán eliminados del sistema.`,
+        ) && (await to(e), V(c)?.id === e && (I(c, null), I(l, [], !0)));
+    }
+    async function A(e) {
+        V(c) &&
+            e &&
+            (I(y, !0),
+            (await ro(V(c).id, [e])).success && I(l, await no(V(c).id), !0),
+            I(y, !1));
+    }
+    async function ee() {
+        if (!V(c) || !V(v).trim()) {
+            $(`Ingresa el número de WhatsApp`, `warning`);
+            return;
+        }
+        let e = V(v).replace(/\D/g, ``);
+        !e || e.length < 7
+            ? $(
+                  `Ingresa un número de teléfono válido con código de país`,
+                  `warning`,
+              )
+            : (I(y, !0),
+              (await ro(V(c).id, [e])).success &&
+                  (I(l, await no(V(c).id), !0), I(v, ``)),
+              I(y, !1));
+    }
+    async function te() {
+        if (!V(c) || !V(_)) return;
+        let e = V(_).toLowerCase(),
+            t = r()
+                .filter(
+                    (t) =>
+                        (t.tag || ``).toLowerCase() === e &&
+                        t.phone &&
+                        t.phone !== `status@broadcast`,
+                )
+                .map((e) => e.phone),
+            i = n()
+                .filter((t) => (t.tags || ``).toLowerCase() === e && t.phone)
+                .map((e) => e.phone),
+            a = Array.from(new Set([...t, ...i]));
+        a.length === 0
+            ? $(`No hay contactos con la etiqueta "${V(_)}"`, `info`)
+            : (I(y, !0),
+              await ro(V(c).id, a),
+              I(l, await no(V(c).id), !0),
+              I(_, ``),
+              I(y, !1));
+    }
+    async function ne(e) {
+        V(c) &&
+            (await io(V(c).id, e),
+            I(
+                l,
+                V(l).filter((t) => t.phone !== e),
+                !0,
+            ));
+    }
+    (il(e, {
+        get isOpen() {
+            return i();
+        },
+        title: `👥 Grupos Personalizados de Difusión`,
+        subtitle: `Organiza contactos en listas para programar campañas de contenido segmentadas`,
+        maxWidth: `840px`,
+        onClose: E,
+        children: (e, t) => {
+            var n = ud(),
+                r = L(n),
+                i = L(r),
+                o = L(i),
+                s = R(o),
+                x = z(o, 2),
+                E = R(x, !0);
+            M(i);
+            var re = z(i, 2),
+                ie = (e) => {
+                    var t = Uu(),
+                        n = L(t),
+                        r = z(L(n), 2);
+                    (J(r), M(n));
+                    var i = z(n, 2),
+                        a = z(L(i), 2);
+                    (J(a), M(i));
+                    var o = z(i, 2),
+                        s = z(L(o), 2);
+                    (Xr(
+                        s,
+                        20,
+                        () => [
+                            `#38bdf8`,
+                            `#a855f7`,
+                            `#22c55e`,
+                            `#f59e0b`,
+                            `#ec4899`,
+                            `#64748b`,
+                        ],
+                        Kr,
+                        (e, t) => {
+                            var n = Hu();
+                            (B(() => {
+                                (Ti(n, `aria-label`, `Color ${t ?? ``}`),
+                                    q(
+                                        n,
+                                        1,
+                                        `color-circle ${V(m) === t ? `selected` : ``}`,
+                                        `svelte-9ftjwt`,
+                                    ),
+                                    pi(n, `background-color: ${t ?? ``};`));
+                            }),
+                                H(`click`, n, () => I(m, t, !0)),
+                                W(e, n));
+                        },
+                    ),
+                        M(s),
+                        M(o),
+                        N(2),
+                        M(t),
+                        wr(`submit`, t, O),
+                        Y(
+                            r,
+                            () => V(f),
+                            (e) => I(f, e),
+                        ),
+                        Y(
+                            a,
+                            () => V(p),
+                            (e) => I(p, e),
+                        ),
+                        W(e, t));
+                },
+                ae = (e) => {
+                    var t = Wu(),
+                        n = z(L(t), 2);
+                    (M(t), H(`click`, n, () => I(d, !0)), W(e, t));
+                },
+                oe = (e) => {
+                    var t = qu();
+                    (Xr(
+                        t,
+                        5,
+                        a,
+                        (e) => e.id,
+                        (e, t) => {
+                            var n = Ku(),
+                                r = L(n),
+                                i = L(r),
+                                a = R(z(i, 2), !0);
+                            M(r);
+                            var o = z(r, 2),
+                                s = (e) => {
+                                    var n = Gu(),
+                                        r = R(n, !0);
+                                    (B(() => G(r, V(t).description)), W(e, n));
+                                };
+                            K(o, (e) => {
+                                V(t).description && e(s);
+                            });
+                            var l = z(o, 2),
+                                u = L(l),
+                                d = R(u),
+                                f = z(u, 2);
+                            (M(l),
+                                M(n),
+                                B(() => {
+                                    (q(
+                                        n,
+                                        1,
+                                        `group-card ${V(c)?.id === V(t).id ? `active` : ``}`,
+                                        `svelte-9ftjwt`,
+                                    ),
+                                        pi(
+                                            i,
+                                            `background-color: ${(V(t).color || `#38bdf8`) ?? ``};`,
+                                        ),
+                                        G(a, V(t).name),
+                                        G(
+                                            d,
+                                            `👤 ${(V(t).memberCount || 0) ?? ``} contacto${V(t).memberCount === 1 ? `` : `s`}`,
+                                        ));
+                                }),
+                                H(`click`, n, () => D(V(t))),
+                                H(`keydown`, n, (e) => {
+                                    e.key === `Enter` && D(V(t));
+                                }),
+                                H(`click`, f, (e) => {
+                                    (e.stopPropagation(),
+                                        k(V(t).id, V(t).name));
+                                }),
+                                W(e, n));
+                        },
+                    ),
+                        M(t),
+                        W(e, t));
+                };
+            (K(re, (e) => {
+                V(d) ? e(ie) : a().length === 0 ? e(ae, 1) : e(oe, -1);
+            }),
+                M(r));
+            var se = z(r, 2),
+                ce = L(se),
+                le = (e) => {
+                    var t = cd(),
+                        n = cn(t),
+                        r = L(n),
+                        i = L(r),
+                        a = L(i),
+                        o = R(z(a, 2), !0);
+                    M(i);
+                    var s = z(i, 2),
+                        d = L(s),
+                        f = R(z(d));
+                    (M(s), M(r), M(n));
+                    var p = z(n, 2),
+                        m = L(p),
+                        x = L(m),
+                        E = z(x, 2),
+                        D = z(E, 2);
+                    M(m);
+                    var O = z(m, 2),
+                        k = (e) => {
+                            var t = $u(),
+                                n = L(t);
+                            J(n);
+                            var r = z(n, 2),
+                                i = L(r),
+                                a = (e) => {
+                                    W(e, Ju());
+                                },
+                                o = (e) => {
+                                    var t = Ir();
+                                    (Xr(
+                                        cn(t),
+                                        17,
+                                        () => V(S),
+                                        (e) => e.phone,
+                                        (e, t) => {
+                                            let n = P(() =>
+                                                V(C).has(V(t).phone),
+                                            );
+                                            var r = Qu(),
+                                                i = L(r),
+                                                a = L(i),
+                                                o = R(a, !0),
+                                                s = z(a, 2),
+                                                c = R(s),
+                                                l = z(s, 2),
+                                                u = R(l, !0),
+                                                d = z(l, 2),
+                                                f = (e) => {
+                                                    var n = Yu(),
+                                                        r = R(n);
+                                                    (B(() =>
+                                                        G(
+                                                            r,
+                                                            `🏷️ ${V(t).tag ?? ``}`,
+                                                        ),
+                                                    ),
+                                                        W(e, n));
+                                                };
+                                            (K(d, (e) => {
+                                                V(t).tag &&
+                                                    V(t).tag !==
+                                                        `Sin etiqueta` &&
+                                                    e(f);
+                                            }),
+                                                M(i));
+                                            var p = z(i, 2),
+                                                m = (e) => {
+                                                    W(e, Xu());
+                                                },
+                                                h = (e) => {
+                                                    var n = Zu();
+                                                    (B(
+                                                        () =>
+                                                            (n.disabled = V(y)),
+                                                    ),
+                                                        H(`click`, n, () =>
+                                                            A(V(t).phone),
+                                                        ),
+                                                        W(e, n));
+                                                };
+                                            (K(p, (e) => {
+                                                V(n) ? e(m) : e(h, -1);
+                                            }),
+                                                M(r),
+                                                B(() => {
+                                                    (G(o, V(t).name),
+                                                        G(
+                                                            c,
+                                                            `+${V(t).phone ?? ``}`,
+                                                        ),
+                                                        G(u, V(t).source));
+                                                }),
+                                                W(e, r));
+                                        },
+                                    ),
+                                        W(e, t));
+                                };
+                            (K(i, (e) => {
+                                V(S).length === 0 ? e(a) : e(o, -1);
+                            }),
+                                M(r),
+                                M(t),
+                                Y(
+                                    n,
+                                    () => V(g),
+                                    (e) => I(g, e),
+                                ),
+                                W(e, t));
+                        },
+                        re = (e) => {
+                            var t = td(),
+                                n = z(L(t), 2),
+                                r = L(n),
+                                i = L(r);
+                            ((i.value = i.__value = ``),
+                                Xr(
+                                    z(i),
+                                    17,
+                                    () => V(w),
+                                    Kr,
+                                    (e, t) => {
+                                        var n = ed(),
+                                            r = R(n, !0),
+                                            i = {};
+                                        (B(() => {
+                                            (G(r, V(t)),
+                                                i !== (i = V(t)) &&
+                                                    (n.value =
+                                                        (n.__value = i) ?? ``));
+                                        }),
+                                            W(e, n));
+                                    },
+                                ),
+                                M(r),
+                                _i(r));
+                            var a = z(r, 2),
+                                o = R(a, !0);
+                            (M(n),
+                                M(t),
+                                B(() => {
+                                    ((a.disabled = !V(_) || V(y)),
+                                        G(
+                                            o,
+                                            V(y)
+                                                ? `Añadiendo...`
+                                                : `+ Añadir al Grupo`,
+                                        ));
+                                }),
+                                vi(
+                                    r,
+                                    () => V(_),
+                                    (e) => I(_, e),
+                                ),
+                                H(`click`, a, te),
+                                W(e, t));
+                        },
+                        ie = (e) => {
+                            var t = nd(),
+                                n = z(L(t), 2),
+                                r = L(n);
+                            J(r);
+                            var i = z(r, 2),
+                                a = R(i, !0);
+                            (M(n),
+                                M(t),
+                                B(
+                                    (e) => {
+                                        ((i.disabled = e),
+                                            G(
+                                                a,
+                                                V(y)
+                                                    ? `Añadiendo...`
+                                                    : `+ Añadir`,
+                                            ));
+                                    },
+                                    [() => !V(v).trim() || V(y)],
+                                ),
+                                Y(
+                                    r,
+                                    () => V(v),
+                                    (e) => I(v, e),
+                                ),
+                                H(`click`, i, ee),
+                                W(e, t));
+                        };
+                    (K(O, (e) => {
+                        V(h) === `search`
+                            ? e(k)
+                            : V(h) === `tag`
+                              ? e(re, 1)
+                              : V(h) === `direct` && e(ie, 2);
+                    }),
+                        M(p));
+                    var ae = z(p, 2),
+                        oe = L(ae),
+                        se = R(oe),
+                        ce = z(oe, 2),
+                        le = (e) => {
+                            var t = rd();
+                            (J(t),
+                                Y(
+                                    t,
+                                    () => V(b),
+                                    (e) => I(b, e),
+                                ),
+                                W(e, t));
+                        };
+                    (K(ce, (e) => {
+                        V(l).length > 5 && e(le);
+                    }),
+                        M(ae));
+                    var ue = z(ae, 2),
+                        de = L(ue),
+                        fe = (e) => {
+                            W(e, id());
+                        },
+                        pe = (e) => {
+                            W(e, ad());
+                        },
+                        me = (e) => {
+                            var t = sd(),
+                                n = L(t),
+                                r = z(L(n));
+                            (Xr(
+                                r,
+                                21,
+                                () => V(T),
+                                (e) => e.phone,
+                                (e, t) => {
+                                    var n = od(),
+                                        r = L(n),
+                                        i = R(L(r), !0);
+                                    M(r);
+                                    var a = z(r),
+                                        o = R(a),
+                                        s = z(a),
+                                        c = R(L(s), !0);
+                                    M(s);
+                                    var l = z(s),
+                                        u = R(L(l), !0);
+                                    M(l);
+                                    var d = R(z(l));
+                                    (M(n),
+                                        B(() => {
+                                            (G(i, V(t).name || `Cliente`),
+                                                G(o, `+${V(t).phone ?? ``}`),
+                                                G(c, V(t).source || `Agenda`),
+                                                G(
+                                                    u,
+                                                    V(t).tag || `Sin etiqueta`,
+                                                ));
+                                        }),
+                                        H(`click`, d, () => ne(V(t).phone)),
+                                        W(e, n));
+                                },
+                            ),
+                                M(r),
+                                M(n),
+                                M(t),
+                                W(e, t));
+                        };
+                    (K(de, (e) => {
+                        V(u) ? e(fe) : V(l).length === 0 ? e(pe, 1) : e(me, -1);
+                    }),
+                        M(ue),
+                        B(() => {
+                            (pi(
+                                a,
+                                `background-color: ${(V(c).color || `#38bdf8`) ?? ``};`,
+                            ),
+                                G(o, V(c).name),
+                                G(
+                                    d,
+                                    `${(V(c).description || `Sin descripción`) ?? ``} • `,
+                                ),
+                                G(f, `${V(l).length ?? ``} contactos`),
+                                q(
+                                    x,
+                                    1,
+                                    `btn-mode-tab ${V(h) === `search` ? `active` : ``}`,
+                                    `svelte-9ftjwt`,
+                                ),
+                                q(
+                                    E,
+                                    1,
+                                    `btn-mode-tab ${V(h) === `tag` ? `active` : ``}`,
+                                    `svelte-9ftjwt`,
+                                ),
+                                q(
+                                    D,
+                                    1,
+                                    `btn-mode-tab ${V(h) === `direct` ? `active` : ``}`,
+                                    `svelte-9ftjwt`,
+                                ),
+                                G(
+                                    se,
+                                    `Miembros Actuales (${V(l).length ?? ``})`,
+                                ));
+                        }),
+                        H(`click`, x, () => I(h, `search`)),
+                        H(`click`, E, () => I(h, `tag`)),
+                        H(`click`, D, () => I(h, `direct`)),
+                        W(e, t));
+                },
+                ue = (e) => {
+                    W(e, ld());
+                };
+            (K(ce, (e) => {
+                V(c) ? e(le) : e(ue, -1);
+            }),
+                M(se),
+                M(n),
+                B(() => {
+                    (G(s, `Tus Grupos (${a().length ?? ``})`),
+                        G(E, V(d) ? `Ver Lista` : `+ Nuevo`));
+                }),
+                H(`click`, x, () => {
+                    (I(d, !V(d)), I(c, null));
+                }),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        s());
+}
+Tr([`click`, `keydown`]);
+var fd = U(
+        `<div role="button" tabindex="0"><input type="file" accept=".docx,.txt,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;"/> <div class="lib-dropzone-icon svelte-ateqcx"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg></div> <div class="lib-dropzone-main svelte-ateqcx"><strong class="svelte-ateqcx">Arrastra tu documento aquí</strong> <span class="svelte-ateqcx">o haz clic para buscar en tu computadora</span></div> <div class="lib-format-badges svelte-ateqcx"><span class="badge-fmt docx svelte-ateqcx">📘 Word (.docx)</span> <span class="badge-fmt md svelte-ateqcx">📑 Markdown (.md)</span> <span class="badge-fmt txt svelte-ateqcx">📄 Texto (.txt)</span></div></div>`,
+    ),
+    pd = U(
+        `<div class="lib-file-card svelte-ateqcx"><div class="lib-file-left svelte-ateqcx"><span class="lib-file-ext-icon svelte-ateqcx"> </span> <div class="lib-file-meta svelte-ateqcx"><strong class="lib-file-name svelte-ateqcx"> </strong> <div class="lib-file-sub svelte-ateqcx"><span> </span> <span class="lib-file-badge-ready svelte-ateqcx">✓ Listo para aprender</span></div></div></div> <div class="lib-file-actions svelte-ateqcx"><button type="button" class="btn btn-outline-sm btn-change-file svelte-ateqcx">Cambiar</button> <button type="button" class="btn btn-outline-sm btn-remove-file svelte-ateqcx" title="Quitar archivo">&times;</button></div> <input type="file" accept=".docx,.txt,.md,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;"/></div>`,
+    ),
+    md = U(
+        `<form class="form-body"><div class="form-group"><label for="lib-custom-title">Título o Tema del Documento</label> <input type="text" id="lib-custom-title" placeholder="Ej: Catálogo de Servicios 2026, Preguntas Frecuentes, Políticas de Garantía"/></div> <div class="form-group"><span class="lib-label svelte-ateqcx">Archivo del Documento</span> <!></div> <div class="library-notice svelte-ateqcx"><span>💡 El sistema convertirá automáticamente el archivo en Markdown limpio y estructurado, calculando el número de palabras y añadiéndolo a la memoria de contexto de Gemini.</span></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function hd(e, t) {
+    Ue(t, !0);
+    let n = () => Z($o, `$pendingUploadFile`, i),
+        r = () => Z(Qo, `$isLibraryUploadModalOpen`, i),
+        [i, a] = Ui(),
+        o = F(``),
+        s = F(null),
+        c = F(!1),
+        l = F(!1),
+        u = F(void 0),
+        d = [`.docx`, `.txt`, `.md`];
+    bn(() => {
+        n() && (m(n()), $o.set(null));
+    });
+    function f() {
+        (Qo.set(!1),
+            I(o, ``),
+            I(s, null),
+            I(c, !1),
+            I(l, !1),
+            V(u) && (V(u).value = ``));
+    }
+    function p(e) {
+        if (!e) return !1;
+        let t = e.toLowerCase();
+        return d.some((e) => t.endsWith(e));
+    }
+    function m(e) {
+        e &&
+            (p(e.name)
+                ? (I(s, e, !0),
+                  V(o).trim() || I(o, e.name.replace(/\.[^/.]+$/, ``), !0))
+                : $(
+                      `Formato no compatible. Por favor sube archivos Word (.docx), Markdown (.md) o Texto (.txt)`,
+                      `warning`,
+                  ));
+    }
+    function h(e) {
+        let t = e.target.files?.[0];
+        t && m(t);
+    }
+    function g(e) {
+        (e.preventDefault(), e.stopPropagation(), I(l, !0));
+    }
+    function _(e) {
+        (e.preventDefault(), e.stopPropagation(), I(l, !1));
+    }
+    function v(e) {
+        (e.preventDefault(), e.stopPropagation(), I(l, !1));
+        let t = e.dataTransfer?.files;
+        t && t.length > 0 && m(t[0]);
+    }
+    function y(e) {
+        (e?.stopPropagation(), I(s, null), V(u) && (V(u).value = ``));
+    }
+    async function b(e) {
+        if ((e.preventDefault(), !V(s)))
+            $(`Arrastra o selecciona un archivo (.docx, .txt, .md)`, `warning`);
+        else {
+            I(c, !0);
+            try {
+                let e = await El(V(s));
+                (await ts(V(s).name, e, V(o).trim())).success && f();
+            } catch (e) {
+                $(e.message, `error`);
+            } finally {
+                I(c, !1);
+            }
+        }
+    }
+    (il(e, {
+        get isOpen() {
+            return r();
+        },
+        title: `📚 Agregar Documento a la Biblioteca IA`,
+        subtitle: `Sube archivos de Word (.docx), Markdown (.md) o texto (.txt) para entrenar a Gemini`,
+        maxWidth: `540px`,
+        onClose: f,
+        children: (e, t) => {
+            var n = md(),
+                r = L(n),
+                i = z(L(r), 2);
+            (J(i), M(r));
+            var a = z(r, 2),
+                d = z(L(a), 2),
+                p = (e) => {
+                    var t = fd(),
+                        n = L(t);
+                    (Ni(
+                        n,
+                        (e) => I(u, e),
+                        () => V(u),
+                    ),
+                        N(6),
+                        M(t),
+                        B(() =>
+                            q(
+                                t,
+                                1,
+                                `lib-dropzone ${V(l) ? `dragover` : ``}`,
+                                `svelte-ateqcx`,
+                            ),
+                        ),
+                        wr(`dragover`, t, g),
+                        wr(`dragleave`, t, _),
+                        wr(`drop`, t, v),
+                        H(`click`, t, () => V(u)?.click()),
+                        H(`keydown`, t, (e) => {
+                            (e.key === `Enter` || e.key === ` `) &&
+                                V(u)?.click();
+                        }),
+                        H(`change`, n, h),
+                        W(e, t));
+                },
+                m = (e) => {
+                    var t = pd(),
+                        n = L(t),
+                        r = L(n),
+                        i = R(r, !0),
+                        a = z(r, 2),
+                        o = L(a),
+                        c = R(o, !0),
+                        l = z(o, 2),
+                        d = R(L(l), !0);
+                    (N(2), M(l), M(a), M(n));
+                    var f = z(n, 2),
+                        p = L(f),
+                        m = z(p, 2);
+                    M(f);
+                    var g = z(f, 2);
+                    (Ni(
+                        g,
+                        (e) => I(u, e),
+                        () => V(u),
+                    ),
+                        M(t),
+                        B(
+                            (e, t) => {
+                                (G(i, e),
+                                    Ti(o, `title`, V(s).name),
+                                    G(c, V(s).name),
+                                    G(d, t));
+                            },
+                            [
+                                () =>
+                                    V(s).name.endsWith(`.docx`)
+                                        ? `📘`
+                                        : V(s).name.endsWith(`.md`)
+                                          ? `📑`
+                                          : `📄`,
+                                () => wl(V(s).size),
+                            ],
+                        ),
+                        H(`click`, p, () => V(u)?.click()),
+                        H(`click`, m, y),
+                        H(`change`, g, h),
+                        W(e, t));
+                };
+            (K(d, (e) => {
+                V(s) ? e(m, -1) : e(p);
+            }),
+                M(a));
+            var x = z(a, 4),
+                S = L(x),
+                C = z(S, 2),
+                w = R(C, !0);
+            (M(x),
+                M(n),
+                B(() => {
+                    ((C.disabled = V(c) || !V(s)),
+                        G(
+                            w,
+                            V(c)
+                                ? `Procesando Documento...`
+                                : `Subir y Aprender`,
+                        ));
+                }),
+                wr(`submit`, n, b),
+                Y(
+                    i,
+                    () => V(o),
+                    (e) => I(o, e),
+                ),
+                H(`click`, S, f),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        a());
+}
+Tr([`click`, `keydown`, `change`]);
+var gd = U(`<button type="submit" class="btn btn-primary"> </button>`),
+    _d = U(
+        `<form class="form-body"><div class="form-group"><label for="lib-edit-textarea">Contenido de Conocimiento para Gemini (Markdown)</label> <textarea id="lib-edit-textarea" rows="16" style="font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5;"></textarea></div> <div class="modal-actions" style="margin-top: 20px;"><button type="button" class="btn btn-secondary">Cerrar</button> <!></div></form>`,
+    );
+function vd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Zo, `$isLibraryViewModalOpen`, a),
+        r = () => Z(Xo, `$viewingDoc`, a),
+        i = () => Z(zs, `$hasPermission`, a),
+        [a, o] = Ui(),
+        s = F(``),
+        c = F(!1);
+    bn(() => {
+        n() && r() && I(s, r().content || ``, !0);
+    });
+    function l() {
+        (Zo.set(!1), Xo.set(null));
+    }
+    async function u(e) {
+        if ((e.preventDefault(), !r())) return;
+        I(c, !0);
+        let t = await as(r().id, V(s));
+        (I(c, !1), t.success && l());
+    }
+    {
+        let t = P(() => `Markdown Limpio: ${r()?.name || `Documento`}`),
+            a = P(
+                () =>
+                    `Archivo original: ${r()?.originalFilename || ``} (${r()?.wordCount || 0} palabras convertidas)`,
+            );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(a);
+            },
+            maxWidth: `800px`,
+            onClose: l,
+            children: (e, t) => {
+                var n = _d(),
+                    r = L(n),
+                    a = z(L(r), 2);
+                (tt(a), M(r));
+                var o = z(r, 2),
+                    d = L(o),
+                    f = z(d, 2),
+                    p = (e) => {
+                        var t = gd(),
+                            n = R(t, !0);
+                        (B(() => {
+                            ((t.disabled = V(c)),
+                                G(
+                                    n,
+                                    V(c)
+                                        ? `Guardando...`
+                                        : `Guardar Cambios de Texto`,
+                                ));
+                        }),
+                            W(e, t));
+                    },
+                    m = P(() => i()(`library:edit`));
+                (K(f, (e) => {
+                    V(m) && e(p);
+                }),
+                    M(o),
+                    M(n),
+                    wr(`submit`, n, u),
+                    Y(
+                        a,
+                        () => V(s),
+                        (e) => I(s, e),
+                    ),
+                    H(`click`, d, l),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), o());
+}
+Tr([`click`]);
+var yd = U(`<option> </option>`),
+    bd = U(
+        `<form class="form-body"><div class="form-group"><label for="inv-fullname">Nombre Completo</label> <input type="text" id="inv-fullname" placeholder="Ej: Andrés Gómez" required=""/></div> <div class="form-row svelte-1aehd1z"><div class="form-group flex-1 svelte-1aehd1z"><label for="inv-email">Correo Electrónico (Para Login)</label> <input type="email" id="inv-email" placeholder="andres@empresa.com" required=""/></div> <div class="form-group flex-1 svelte-1aehd1z"><label for="inv-phone">Teléfono / WhatsApp (Opcional)</label> <input type="tel" id="inv-phone" placeholder="573001234567"/></div></div> <div class="form-group"><label for="inv-role">Rol y Permisos</label> <select id="inv-role" required=""></select></div> <div class="form-group"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"><label for="inv-pwd" style="margin-bottom: 0;">Contraseña Temporal de Acceso</label> <button type="button" class="btn btn-outline-sm" style="padding: 2px 8px; font-size: 11px;">🎲 Generar Otra</button></div> <input type="text" id="inv-pwd" style="font-family: var(--font-mono);" required=""/> <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; display: block;">Copia esta contraseña y compártela con el usuario para su primer ingreso.</span></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function xd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(cs, `$isInviteModalOpen`, i),
+        r = () => Z(ss, `$companyRoles`, i),
+        [i, a] = Ui(),
+        o = F(``),
+        s = F(``),
+        c = F(``),
+        l = F(``),
+        u = F(``),
+        d = F(!1);
+    bn(() => {
+        n() && (I(o, ``), I(s, ``), I(c, ``), I(l, r()[0]?.id || ``, !0), f());
+    });
+    function f() {
+        let e = ``;
+        for (let t = 0; t < 10; t++)
+            e +=
+                `abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*`.charAt(
+                    Math.floor(Math.random() * 62),
+                );
+        I(u, e, !0);
+    }
+    function p() {
+        cs.set(!1);
+    }
+    async function m(e) {
+        if ((e.preventDefault(), !V(o).trim() || !V(s).trim() || !V(l))) {
+            $(`Por favor completa todos los campos requeridos`, `warning`);
+            return;
+        }
+        I(d, !0);
+        let t = await ps({
+            fullName: V(o).trim(),
+            email: V(s).trim(),
+            phone: V(c).trim(),
+            roleId: V(l),
+            password: V(u),
+        });
+        (I(d, !1), t.success && p());
+    }
+    (il(e, {
+        get isOpen() {
+            return n();
+        },
+        title: `👤 Agregar Colaborador a la Empresa`,
+        subtitle: `Crea un acceso con rol específico para que tu equipo opere el bot`,
+        maxWidth: `560px`,
+        onClose: p,
+        children: (e, t) => {
+            var n = bd(),
+                i = L(n),
+                a = z(L(i), 2);
+            (J(a), M(i));
+            var h = z(i, 2),
+                g = L(h),
+                _ = z(L(g), 2);
+            (J(_), M(g));
+            var v = z(g, 2),
+                y = z(L(v), 2);
+            (J(y), M(v), M(h));
+            var b = z(h, 2),
+                x = z(L(b), 2);
+            (Xr(x, 5, r, Kr, (e, t) => {
+                var n = yd(),
+                    r = R(n),
+                    i = {};
+                (B(() => {
+                    (G(
+                        r,
+                        `${V(t).name ?? ``} - ${(V(t).description || ``) ?? ``}`,
+                    ),
+                        i !== (i = V(t).id) &&
+                            (n.value = (n.__value = i) ?? ``));
+                }),
+                    W(e, n));
+            }),
+                M(x),
+                _i(x),
+                M(b));
+            var S = z(b, 2),
+                C = L(S),
+                w = z(L(C), 2);
+            M(C);
+            var T = z(C, 2);
+            (J(T), N(2), M(S));
+            var E = z(S, 2),
+                D = L(E),
+                O = z(D, 2),
+                k = R(O, !0);
+            (M(E),
+                M(n),
+                B(() => {
+                    ((O.disabled = V(d)),
+                        G(k, V(d) ? `Agregando...` : `Agregar al Equipo`));
+                }),
+                wr(`submit`, n, m),
+                Y(
+                    a,
+                    () => V(o),
+                    (e) => I(o, e),
+                ),
+                Y(
+                    _,
+                    () => V(s),
+                    (e) => I(s, e),
+                ),
+                Y(
+                    y,
+                    () => V(c),
+                    (e) => I(c, e),
+                ),
+                vi(
+                    x,
+                    () => V(l),
+                    (e) => I(l, e),
+                ),
+                H(`click`, w, f),
+                Y(
+                    T,
+                    () => V(u),
+                    (e) => I(u, e),
+                ),
+                H(`click`, D, p),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        a());
+}
+Tr([`click`]);
+var Sd = U(`<option> </option>`),
+    Cd = U(
+        `<form class="form-body"><div class="form-group"><label for="edit-role-select">Selecciona el Nuevo Rol</label> <select id="edit-role-select" required=""></select></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function wd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(ls, `$isEditRoleModalOpen`, a),
+        r = () => Z(ds, `$editingMember`, a),
+        i = () => Z(ss, `$companyRoles`, a),
+        [a, o] = Ui(),
+        s = F(``),
+        c = F(!1);
+    bn(() => {
+        n() && r() && I(s, r().currentRoleId || i()[0]?.id || ``, !0);
+    });
+    function l() {
+        (ls.set(!1), ds.set(null));
+    }
+    async function u(e) {
+        if ((e.preventDefault(), !r() || !V(s))) return;
+        I(c, !0);
+        let t = await ms(r().id, V(s));
+        (I(c, !1), t.success && l());
+    }
+    {
+        let t = P(() => `Asignar nuevo rol a ${r()?.name || `Usuario`}`);
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            title: `🛡️ Modificar Rol de Colaborador`,
+            get subtitle() {
+                return V(t);
+            },
+            maxWidth: `480px`,
+            onClose: l,
+            children: (e, t) => {
+                var n = Cd(),
+                    r = L(n),
+                    a = z(L(r), 2);
+                (Xr(a, 5, i, Kr, (e, t) => {
+                    var n = Sd(),
+                        r = R(n),
+                        i = {};
+                    (B(() => {
+                        (G(
+                            r,
+                            `${V(t).name ?? ``} - ${(V(t).description || ``) ?? ``}`,
+                        ),
+                            i !== (i = V(t).id) &&
+                                (n.value = (n.__value = i) ?? ``));
+                    }),
+                        W(e, n));
+                }),
+                    M(a),
+                    _i(a),
+                    M(r));
+                var o = z(r, 2),
+                    d = L(o),
+                    f = z(d, 2),
+                    p = R(f, !0);
+                (M(o),
+                    M(n),
+                    B(() => {
+                        ((f.disabled = V(c)),
+                            G(p, V(c) ? `Actualizando...` : `Actualizar Rol`));
+                    }),
+                    wr(`submit`, n, u),
+                    vi(
+                        a,
+                        () => V(s),
+                        (e) => I(s, e),
+                    ),
+                    H(`click`, d, l),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), o());
+}
+Tr([`click`]);
+var Td = [
+        {
+            key: `rules`,
+            name: `Rutas de Respuesta Automática`,
+            icon: `💬`,
+            description: `Control sobre los mensajes automáticos, palabras clave y respuestas del bot.`,
+        },
+        {
+            key: `leads`,
+            name: `CRM, Prospectos y Chats`,
+            icon: `👥`,
+            description: `Acceso a clientes contactados, historial de chats y atención humana.`,
+        },
+        {
+            key: `library`,
+            name: `Biblioteca de Conocimiento (IA)`,
+            icon: `📚`,
+            description: `Documentos, manuales y archivos con los que se entrena la inteligencia artificial.`,
+        },
+        {
+            key: `schedules`,
+            name: `Programación de Envíos y Campañas`,
+            icon: `⏰`,
+            description: `Difusiones masivas, recordatorios periódicos (mensualidades) y envíos diferidos.`,
+        },
+        {
+            key: `simulator`,
+            name: `Pruebas y Simulador`,
+            icon: `⚡`,
+            description: `Herramientas interactivas para probar respuestas antes de enviar a clientes.`,
+        },
+        {
+            key: `whatsapp`,
+            name: `Conexión de WhatsApp`,
+            icon: `📱`,
+            description: `Vinculación del teléfono, lectura de código QR y encendido/apagado del bot.`,
+        },
+        {
+            key: `settings`,
+            name: `Configuración de la Empresa`,
+            icon: `⚙️`,
+            description: `Ajustes generales, horarios de atención y comportamiento de la IA.`,
+        },
+        {
+            key: `team`,
+            name: `Equipo y Roles`,
+            icon: `🛡️`,
+            description: `Gestión de colaboradores, asignación de accesos y roles personalizados.`,
+        },
+    ],
+    Ed = {
+        'rules:view': {
+            key: `rules:view`,
+            categoryKey: `rules`,
+            categoryName: `Rutas de Respuesta`,
+            icon: `👁️`,
+            action: `Ver`,
+            label: `Ver respuestas automáticas`,
+            shortLabel: `Ver respuestas`,
+            description: `Puede consultar las rutas de respuesta automática, palabras clave y mensajes configurados.`,
+        },
+        'rules:create': {
+            key: `rules:create`,
+            categoryKey: `rules`,
+            categoryName: `Rutas de Respuesta`,
+            icon: `➕`,
+            action: `Crear`,
+            label: `Crear nuevas respuestas`,
+            shortLabel: `Crear respuestas`,
+            description: `Puede crear nuevas respuestas automáticas con textos, archivos o botones.`,
+        },
+        'rules:edit': {
+            key: `rules:edit`,
+            categoryKey: `rules`,
+            categoryName: `Rutas de Respuesta`,
+            icon: `✏️`,
+            action: `Editar`,
+            label: `Modificar respuestas automáticas`,
+            shortLabel: `Editar respuestas`,
+            description: `Puede modificar disparadores, mensajes y condiciones de flujos existentes.`,
+        },
+        'rules:delete': {
+            key: `rules:delete`,
+            categoryKey: `rules`,
+            categoryName: `Rutas de Respuesta`,
+            icon: `🗑️`,
+            action: `Eliminar`,
+            label: `Eliminar respuestas automáticas`,
+            shortLabel: `Eliminar respuestas`,
+            description: `Puede borrar permanentemente flujos y reglas del contestador.`,
+        },
+        'leads:view': {
+            key: `leads:view`,
+            categoryKey: `leads`,
+            categoryName: `CRM y Prospectos`,
+            icon: `👥`,
+            action: `Ver`,
+            label: `Ver prospectos y conversaciones`,
+            shortLabel: `Ver prospectos y chats`,
+            description: `Puede acceder a la lista de prospectos, agenda de contactos, chats y archivos recibidos.`,
+        },
+        'leads:pause': {
+            key: `leads:pause`,
+            categoryKey: `leads`,
+            categoryName: `CRM y Prospectos`,
+            icon: `⏸️`,
+            action: `Operar`,
+            label: `Pausar bot para atención humana`,
+            shortLabel: `Pausar bot para humano`,
+            description: `Puede suspender temporalmente el bot en un chat para que un asesor humano atienda al cliente.`,
+        },
+        'leads:delete': {
+            key: `leads:delete`,
+            categoryKey: `leads`,
+            categoryName: `CRM y Prospectos`,
+            icon: `🗑️`,
+            action: `Eliminar`,
+            label: `Eliminar prospectos y contactos`,
+            shortLabel: `Eliminar prospectos`,
+            description: `Puede borrar clientes o contactos del embudo de ventas y agenda.`,
+        },
+        'library:view': {
+            key: `library:view`,
+            categoryKey: `library`,
+            categoryName: `Biblioteca IA`,
+            icon: `📚`,
+            action: `Ver`,
+            label: `Consultar biblioteca de conocimiento`,
+            shortLabel: `Ver biblioteca IA`,
+            description: `Puede leer los manuales y documentos que la inteligencia artificial usa para responder.`,
+        },
+        'library:upload': {
+            key: `library:upload`,
+            categoryKey: `library`,
+            categoryName: `Biblioteca IA`,
+            icon: `📤`,
+            action: `Crear`,
+            label: `Subir documentos a la IA`,
+            shortLabel: `Subir documentos`,
+            description: `Puede subir archivos PDF, Word o texto para entrenar al asistente de IA.`,
+        },
+        'library:edit': {
+            key: `library:edit`,
+            categoryKey: `library`,
+            categoryName: `Biblioteca IA`,
+            icon: `✏️`,
+            action: `Editar`,
+            label: `Editar contenido de documentos`,
+            shortLabel: `Editar documentos`,
+            description: `Puede modificar el texto de los documentos cargados en la base de conocimiento.`,
+        },
+        'library:toggle': {
+            key: `library:toggle`,
+            categoryKey: `library`,
+            categoryName: `Biblioteca IA`,
+            icon: `🔄`,
+            action: `Operar`,
+            label: `Activar o pausar documentos`,
+            shortLabel: `Activar/Pausar docs`,
+            description: `Puede activar o deshabilitar qué documentos puede usar la IA en sus respuestas.`,
+        },
+        'library:delete': {
+            key: `library:delete`,
+            categoryKey: `library`,
+            categoryName: `Biblioteca IA`,
+            icon: `🗑️`,
+            action: `Eliminar`,
+            label: `Eliminar documentos de la biblioteca`,
+            shortLabel: `Eliminar documentos`,
+            description: `Puede borrar definitivamente archivos de la base de conocimiento de la IA.`,
+        },
+        'schedules:view': {
+            key: `schedules:view`,
+            categoryKey: `schedules`,
+            categoryName: `Envíos y Campañas`,
+            icon: `⏰`,
+            action: `Ver`,
+            label: `Ver campañas y envíos programados`,
+            shortLabel: `Ver campañas programadas`,
+            description: `Puede ver los mensajes programados, difusiones y recordatorios periódicos.`,
+        },
+        'schedules:create': {
+            key: `schedules:create`,
+            categoryKey: `schedules`,
+            categoryName: `Envíos y Campañas`,
+            icon: `📅`,
+            action: `Crear`,
+            label: `Programar envíos y difusiones masivas`,
+            shortLabel: `Programar campañas masivas`,
+            description: `Puede programar envíos individuales o masivos (por grupo o etiqueta), únicos o periódicos.`,
+        },
+        'schedules:delete': {
+            key: `schedules:delete`,
+            categoryKey: `schedules`,
+            categoryName: `Envíos y Campañas`,
+            icon: `🛑`,
+            action: `Eliminar`,
+            label: `Cancelar o eliminar envíos programados`,
+            shortLabel: `Cancelar/Eliminar envíos`,
+            description: `Puede cancelar difusiones en curso o borrar mensajes programados.`,
+        },
+        'simulator:use': {
+            key: `simulator:use`,
+            categoryKey: `simulator`,
+            categoryName: `Pruebas y Simulador`,
+            icon: `⚡`,
+            action: `Operar`,
+            label: `Probar en simulador interactivo en vivo`,
+            shortLabel: `Usar simulador en vivo`,
+            description: `Puede interactuar con el simulador en pantalla para verificar respuestas de la IA.`,
+        },
+        'quick_send:use': {
+            key: `quick_send:use`,
+            categoryKey: `simulator`,
+            categoryName: `Pruebas y Simulador`,
+            icon: `🚀`,
+            action: `Operar`,
+            label: `Realizar envíos rápidos de prueba`,
+            shortLabel: `Envíos de prueba`,
+            description: `Puede enviar mensajes de prueba directos a números específicos.`,
+        },
+        'whatsapp:connect': {
+            key: `whatsapp:connect`,
+            categoryKey: `whatsapp`,
+            categoryName: `Conexión WhatsApp`,
+            icon: `📱`,
+            action: `Operar`,
+            label: `Vincular WhatsApp (Escanear código QR)`,
+            shortLabel: `Conectar / Ver QR`,
+            description: `Puede ver el código QR y conectar el número de WhatsApp de la empresa.`,
+        },
+        'whatsapp:disconnect': {
+            key: `whatsapp:disconnect`,
+            categoryKey: `whatsapp`,
+            categoryName: `Conexión WhatsApp`,
+            icon: `🔌`,
+            action: `Operar`,
+            label: `Desconectar sesión de WhatsApp`,
+            shortLabel: `Desconectar WhatsApp`,
+            description: `Puede cerrar la sesión de WhatsApp activa o reiniciar el enlace.`,
+        },
+        'whatsapp:toggle': {
+            key: `whatsapp:toggle`,
+            categoryKey: `whatsapp`,
+            categoryName: `Conexión WhatsApp`,
+            icon: `🟢`,
+            action: `Operar`,
+            label: `Encender o apagar el contestador automático`,
+            shortLabel: `Encender/Apagar bot`,
+            description: `Puede encender o pausar el bot automático para todos los clientes de la empresa.`,
+        },
+        'settings:view': {
+            key: `settings:view`,
+            categoryKey: `settings`,
+            categoryName: `Configuración`,
+            icon: `⚙️`,
+            action: `Ver`,
+            label: `Ver configuración de la empresa`,
+            shortLabel: `Ver configuración`,
+            description: `Puede consultar los parámetros generales, horarios y opciones del bot.`,
+        },
+        'settings:edit': {
+            key: `settings:edit`,
+            categoryKey: `settings`,
+            categoryName: `Configuración`,
+            icon: `🛠️`,
+            action: `Editar`,
+            label: `Modificar configuración y personalidad IA`,
+            shortLabel: `Modificar ajustes`,
+            description: `Puede cambiar las instrucciones del sistema, modelo de IA y horarios de atención.`,
+        },
+        'team:view': {
+            key: `team:view`,
+            categoryKey: `team`,
+            categoryName: `Equipo y Roles`,
+            icon: `👥`,
+            action: `Ver`,
+            label: `Ver miembros del equipo`,
+            shortLabel: `Ver colaboradores`,
+            description: `Puede ver quiénes son los colaboradores con acceso a esta empresa.`,
+        },
+        'team:manage': {
+            key: `team:manage`,
+            categoryKey: `team`,
+            categoryName: `Equipo y Roles`,
+            icon: `👤`,
+            action: `Administrar`,
+            label: `Invitar y administrar colaboradores`,
+            shortLabel: `Gestionar colaboradores`,
+            description: `Puede invitar nuevos miembros, asignarles rol o removerlos de la empresa.`,
+        },
+        'roles:manage': {
+            key: `roles:manage`,
+            categoryKey: `team`,
+            categoryName: `Equipo y Roles`,
+            icon: `🛡️`,
+            action: `Administrar`,
+            label: `Crear y administrar roles personalizados`,
+            shortLabel: `Crear roles a medida`,
+            description: `Puede definir nuevos roles personalizados con combinaciones específicas de permisos.`,
+        },
+    };
+function Dd(e) {
+    if (Ed[e]) return Ed[e];
+    let t = String(e || ``).split(`:`),
+        n = t[0] || `módulo`,
+        r = t[1] || `acceso`,
+        i = {
+            view: `Ver`,
+            create: `Crear`,
+            edit: `Modificar`,
+            delete: `Eliminar`,
+            use: `Usar`,
+            manage: `Administrar`,
+            toggle: `Activar/Pausar`,
+            connect: `Conectar`,
+            disconnect: `Desconectar`,
+            upload: `Subir`,
+        },
+        a = {
+            rules: `respuestas automáticas`,
+            leads: `prospectos`,
+            library: `biblioteca de conocimiento`,
+            schedules: `envíos programados`,
+            settings: `configuración`,
+            team: `equipo de trabajo`,
+            roles: `roles`,
+            whatsapp: `conexión WhatsApp`,
+            simulator: `simulador`,
+            quick_send: `envíos directos`,
+        },
+        o = i[r] || r,
+        s = a[n] || n;
+    return {
+        key: e,
+        categoryKey: n,
+        categoryName: s,
+        icon: `🔹`,
+        action: o,
+        label: `${o} ${s}`,
+        shortLabel: `${o} ${s}`,
+        description: `Permiso para ${o.toLowerCase()} ${s}.`,
+    };
+}
+function Od(e = []) {
+    let t = [],
+        n = new Set(e || []);
+    for (let e of Td) {
+        let r = [];
+        for (let [t, i] of Object.entries(Ed))
+            i.categoryKey === e.key && n.has(t) && r.push(i);
+        r.length > 0 && t.push({ ...e, permissions: r });
+    }
+    let r = new Set(Object.keys(Ed)),
+        i = (e || []).filter((e) => !r.has(e)).map((e) => Dd(e));
+    return (
+        i.length > 0 &&
+            t.push({
+                key: `other`,
+                name: `Otros Permisos Especiales`,
+                icon: `⚙️`,
+                description: `Permisos adicionales configurados en este rol.`,
+                permissions: i,
+            }),
+        t
+    );
+}
+function kd(e) {
+    let t = Array.isArray(e) ? e : e?.permissions || [];
+    if (t.includes(`*`)) return !0;
+    let n = Object.keys(Ed);
+    return t.length >= n.length && n.every((e) => t.includes(e));
+}
+var Ad = U(
+        `<label><input type="checkbox" class="svelte-14deahm"/> <div class="perm-item-content svelte-14deahm"><span class="perm-label-text svelte-14deahm"><span class="perm-action-icon"> </span> </span> <span class="perm-desc-text svelte-14deahm"> </span></div></label>`,
+    ),
+    jd = U(
+        `<div class="perm-module-block svelte-14deahm"><div class="perm-module-header svelte-14deahm"><div class="perm-module-title-box svelte-14deahm"><span class="module-icon svelte-14deahm"> </span> <div><h4 class="module-title svelte-14deahm"> </h4> <span class="module-sub svelte-14deahm"> </span></div></div> <button type="button" class="btn-toggle-cat svelte-14deahm" title="Marcar o desmarcar todos los permisos de este módulo"> </button></div> <div class="perm-items-grid svelte-14deahm"></div></div>`,
+    ),
+    Md = U(
+        `<form class="form-body"><div class="form-group"><label for="c-role-name">Nombre del Rol</label> <input type="text" id="c-role-name" placeholder="Ej: Especialista de Envíos Masivos / Asesor Junior" required=""/></div> <div class="form-group"><label for="c-role-desc">Descripción de Responsabilidades</label> <input type="text" id="c-role-desc" placeholder="Ej: Encargado de programar difusiones mensuales y responder dudas frecuentes..."/></div> <div class="presets-toolbar svelte-14deahm"><div class="perm-counter svelte-14deahm">Permisos seleccionados: <strong class="svelte-14deahm"> </strong></div> <div class="presets-buttons svelte-14deahm"><button type="button" class="preset-btn svelte-14deahm">✨ Todos</button> <button type="button" class="preset-btn svelte-14deahm">💼 Perfil Ventas</button> <button type="button" class="preset-btn svelte-14deahm">👀 Solo Ver</button> <button type="button" class="preset-btn svelte-14deahm">🧹 Limpiar</button></div></div> <div class="form-group"><div class="permissions-checklist-container svelte-14deahm"></div></div> <div class="modal-actions" style="margin-top: 24px;"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"> </button></div></form>`,
+    );
+function Nd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(us, `$isCustomRoleModalOpen`, r),
+        [r, i] = Ui(),
+        a = F(``),
+        o = F(``),
+        s = F(!1),
+        c = F(Xt({}));
+    function l() {
+        (I(a, ``), I(o, ``));
+        let e = {};
+        for (let t of Object.keys(Ed))
+            e[t] = t.endsWith(`:view`) || t === `simulator:use`;
+        I(c, e, !0);
+    }
+    bn(() => {
+        n() && l();
+    });
+    let u = P(() => Object.values(V(c)).filter(Boolean).length);
+    function d() {
+        let e = {};
+        for (let t of Object.keys(Ed)) e[t] = !0;
+        I(c, e, !0);
+    }
+    function f() {
+        let e = {};
+        for (let t of Object.keys(Ed)) e[t] = t.endsWith(`:view`);
+        I(c, e, !0);
+    }
+    function p() {
+        let e = {};
+        for (let t of Object.keys(Ed)) e[t] = !1;
+        ((e[`leads:view`] = !0),
+            (e[`leads:pause`] = !0),
+            (e[`quick_send:use`] = !0),
+            (e[`simulator:use`] = !0),
+            I(c, e, !0));
+    }
+    function m() {
+        let e = {};
+        for (let t of Object.keys(Ed)) e[t] = !1;
+        I(c, e, !0);
+    }
+    function h(e) {
+        let t = Object.values(Ed).filter((t) => t.categoryKey === e),
+            n = t.every((e) => V(c)[e.key]),
+            r = { ...V(c) };
+        for (let e of t) r[e.key] = !n;
+        I(c, r, !0);
+    }
+    function g() {
+        (us.set(!1), l());
+    }
+    async function _(e) {
+        if ((e.preventDefault(), !V(a).trim())) {
+            $(`Ingresa un nombre claro para el rol`, `warning`);
+            return;
+        }
+        let t = Object.keys(V(c)).filter((e) => V(c)[e]);
+        if (t.length === 0) {
+            $(`Selecciona al menos un permiso para el rol`, `warning`);
+            return;
+        }
+        I(s, !0);
+        let n = await gs({
+            name: V(a).trim(),
+            description: V(o).trim(),
+            permissions: t,
+        });
+        (I(s, !1), n.success && g());
+    }
+    (il(e, {
+        get isOpen() {
+            return n();
+        },
+        title: `🛡️ Crear Rol Personalizado`,
+        subtitle: `Define en lenguaje claro exactamente qué podrá ver y hacer este perfil en tu empresa`,
+        maxWidth: `760px`,
+        onClose: g,
+        children: (e, t) => {
+            var n = Md(),
+                r = L(n),
+                i = z(L(r), 2);
+            (J(i), M(r));
+            var l = z(r, 2),
+                v = z(L(l), 2);
+            (J(v), M(l));
+            var y = z(l, 2),
+                b = L(y),
+                x = R(z(L(b)));
+            M(b);
+            var S = z(b, 2),
+                C = L(S),
+                w = z(C, 2),
+                T = z(w, 2),
+                E = z(T, 2);
+            (M(S), M(y));
+            var D = z(y, 2),
+                O = L(D);
+            (Xr(
+                O,
+                21,
+                () => Td,
+                Kr,
+                (e, t) => {
+                    let n = P(() =>
+                            Object.values(Ed).filter(
+                                (e) => e.categoryKey === V(t).key,
+                            ),
+                        ),
+                        r = P(() => V(n).filter((e) => V(c)[e.key]).length);
+                    var i = jd(),
+                        a = L(i),
+                        o = L(a),
+                        s = L(o),
+                        l = R(s, !0),
+                        u = z(s, 2),
+                        d = L(u),
+                        f = R(d, !0),
+                        p = R(z(d, 2), !0);
+                    (M(u), M(o));
+                    var m = z(o, 2),
+                        g = R(m, !0);
+                    M(a);
+                    var _ = z(a, 2);
+                    (Xr(
+                        _,
+                        21,
+                        () => V(n),
+                        Kr,
+                        (e, t) => {
+                            var n = Ad(),
+                                r = L(n);
+                            J(r);
+                            var i = z(r, 2),
+                                a = L(i),
+                                o = L(a),
+                                s = R(o, !0),
+                                l = z(o);
+                            M(a);
+                            var u = R(z(a, 2), !0);
+                            (M(i),
+                                M(n),
+                                B(() => {
+                                    (q(
+                                        n,
+                                        1,
+                                        `perm-item-box ${V(c)[V(t).key] ? `selected` : ``}`,
+                                        `svelte-14deahm`,
+                                    ),
+                                        G(s, V(t).icon),
+                                        G(l, ` ${V(t).label ?? ``}`),
+                                        G(u, V(t).description));
+                                }),
+                                ki(
+                                    r,
+                                    () => V(c)[V(t).key],
+                                    (e) => (V(c)[V(t).key] = e),
+                                ),
+                                W(e, n));
+                        },
+                    ),
+                        M(_),
+                        M(i),
+                        B(() => {
+                            (G(l, V(t).icon),
+                                G(f, V(t).name),
+                                G(p, V(t).description),
+                                G(
+                                    g,
+                                    V(r) === V(n).length
+                                        ? `Desmarcar módulo`
+                                        : `Marcar módulo (${V(r)}/${V(n).length})`,
+                                ));
+                        }),
+                        H(`click`, m, () => h(V(t).key)),
+                        W(e, i));
+                },
+            ),
+                M(O),
+                M(D));
+            var k = z(D, 2),
+                A = L(k),
+                ee = z(A, 2),
+                te = R(ee, !0);
+            (M(k),
+                M(n),
+                B(
+                    (e) => {
+                        (G(x, `${V(u) ?? ``} de ${e ?? ``}`),
+                            (ee.disabled = V(s) || V(u) === 0),
+                            G(
+                                te,
+                                V(s)
+                                    ? `Guardando...`
+                                    : `Crear Rol (${V(u)} permisos)`,
+                            ));
+                    },
+                    [() => Object.keys(Ed).length],
+                ),
+                wr(`submit`, n, _),
+                Y(
+                    i,
+                    () => V(a),
+                    (e) => I(a, e),
+                ),
+                Y(
+                    v,
+                    () => V(o),
+                    (e) => I(o, e),
+                ),
+                H(`click`, C, d),
+                H(`click`, w, p),
+                H(`click`, T, f),
+                H(`click`, E, m),
+                H(`click`, A, g),
+                W(e, n));
+        },
+        $$slots: { default: !0 },
+    }),
+        We(),
+        i());
+}
+Tr([`click`]);
+var Pd = U(
+        `<label class="switch" title="Activar/Desactivar regla"><input type="checkbox"/> <span class="slider round"></span></label>`,
+    ),
+    Fd = U(`<div class="rule-trigger-badge"> </div>`),
+    Id = U(`<span class="trigger-pill"> </span>`),
+    Ld = U(
+        `<div class="rule-triggers-container"><span class="rule-label">Palabras Clave:</span> <div class="triggers-pills"></div></div>`,
+    ),
+    Rd = U(
+        `<div class="rule-media-badge">📎 Envía adjunto: <strong> </strong> </div>`,
+    ),
+    zd = U(
+        `<span class="badge-tag badge-tag-requiereasesor">👤 Pausa para Asesor</span>`,
+    ),
+    Bd = U(
+        `<span class="badge-tag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3);"> </span>`,
+    ),
+    Vd = U(
+        `<button type="button" class="icon-btn" title="Editar regla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>`,
+    ),
+    Hd = U(
+        `<button type="button" class="icon-btn delete-btn" title="Eliminar regla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`,
+    ),
+    Ud = U(
+        `<div><div class="rule-card-header"><div class="rule-title-group"><h3> </h3> <span class="rule-meta-tag"> </span></div> <!></div> <!> <!> <div class="rule-response-container"><span class="rule-label">Respuesta del Bot:</span> <div class="rule-response-preview"> </div> <!></div> <div class="rule-card-footer"><div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;"><span class="badge-tag badge-tag-interesado"> </span> <!> <!></div> <div class="rule-card-actions"><!> <!></div></div></div>`,
+    );
+function Wd(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Wa, `$rules`, i),
+        r = () => Z(zs, `$hasPermission`, i),
+        [i, a] = Ui(),
+        o = {
+            contains_any: `Contiene palabra`,
+            exact: `Coincidencia exacta`,
+            starts_with: `Empieza con`,
+        },
+        s = {
+            any: `Cualquier archivo`,
+            image: `Foto / Comprobante`,
+            document: `Documento / PDF`,
+            audio: `Audio / Nota de voz`,
+        },
+        c = P(() =>
+            t.rule.parentRuleId
+                ? n().find((e) => e.id === t.rule.parentRuleId)
+                : null,
+        );
+    function l(e) {
+        Ya(t.rule.id, e.target.checked);
+    }
+    function u() {
+        (Ga.set(t.rule), Ka.set(!0));
+    }
+    function d() {
+        confirm(`¿Estás seguro de eliminar la ruta "${t.rule.name}"?`) &&
+            Xa(t.rule.id, t.rule.name);
+    }
+    var f = Ud(),
+        p = L(f),
+        m = L(p),
+        h = L(m),
+        g = R(h, !0),
+        _ = R(z(h, 2), !0);
+    M(m);
+    var v = z(m, 2),
+        y = (e) => {
+            var n = Pd(),
+                r = L(n);
+            (J(r),
+                N(2),
+                M(n),
+                B(() => wi(r, t.rule.enabled !== !1)),
+                H(`change`, r, l),
+                W(e, n));
+        },
+        b = P(() => r()(`rules:edit`));
+    (K(v, (e) => {
+        V(b) && e(y);
+    }),
+        M(p));
+    var x = z(p, 2),
+        S = (e) => {
+            var n = Fd(),
+                r = R(n);
+            (B(() =>
+                G(
+                    r,
+                    `📥 Disparador: Al recibir ${(s[t.rule.mediaTypeFilter] || `archivo`) ?? ``}`,
+                ),
+            ),
+                W(e, n));
+        },
+        C = (e) => {
+            var n = Fd(),
+                r = R(n);
+            (B(() =>
+                G(
+                    r,
+                    `🔄 Disparador: Texto O ${(s[t.rule.mediaTypeFilter] || `archivo`) ?? ``}`,
+                ),
+            ),
+                W(e, n));
+        };
+    K(x, (e) => {
+        t.rule.triggerType === `media`
+            ? e(S)
+            : t.rule.triggerType === `both` && e(C, 1);
+    });
+    var w = z(x, 2),
+        T = (e) => {
+            var n = Ld(),
+                r = z(L(n), 2);
+            (Xr(
+                r,
+                21,
+                () => t.rule.triggers,
+                Kr,
+                (e, t) => {
+                    var n = Id(),
+                        r = R(n, !0);
+                    (B(() => G(r, V(t))), W(e, n));
+                },
+            ),
+                M(r),
+                M(n),
+                W(e, n));
+        };
+    K(w, (e) => {
+        t.rule.triggers && t.rule.triggers.length > 0 && e(T);
+    });
+    var E = z(w, 2),
+        D = z(L(E), 2),
+        O = R(D, !0),
+        k = z(D, 2),
+        A = (e) => {
+            var n = Rd(),
+                r = z(L(n)),
+                i = R(r, !0),
+                a = z(r);
+            (M(n),
+                B(
+                    (e) => {
+                        (Ti(n, `title`, t.rule.media.filename),
+                            G(i, t.rule.media.filename),
+                            G(a, ` (${e ?? ``})`));
+                    },
+                    [() => wl(t.rule.media.size)],
+                ),
+                W(e, n));
+        };
+    (K(k, (e) => {
+        t.rule.media && t.rule.media.url && e(A);
+    }),
+        M(E));
+    var ee = z(E, 2),
+        te = L(ee),
+        ne = L(te),
+        re = R(ne),
+        ie = z(ne, 2),
+        ae = (e) => {
+            W(e, zd());
+        };
+    K(ie, (e) => {
+        t.rule.pauseBot && e(ae);
+    });
+    var oe = z(ie, 2),
+        se = (e) => {
+            var t = Bd(),
+                n = R(t);
+            (B(() => G(n, `↳ Submenú de: ${V(c).name ?? ``}`)), W(e, t));
+        };
+    (K(oe, (e) => {
+        V(c) && e(se);
+    }),
+        M(te));
+    var ce = z(te, 2),
+        le = L(ce),
+        ue = (e) => {
+            var t = Vd();
+            (H(`click`, t, u), W(e, t));
+        },
+        de = P(() => r()(`rules:edit`));
+    K(le, (e) => {
+        V(de) && e(ue);
+    });
+    var fe = z(le, 2),
+        pe = (e) => {
+            var t = Hd();
+            (H(`click`, t, d), W(e, t));
+        },
+        me = P(() => r()(`rules:delete`));
+    (K(fe, (e) => {
+        V(me) && e(pe);
+    }),
+        M(ce),
+        M(ee),
+        M(f),
+        B(() => {
+            (q(f, 1, `rule-card ${t.rule.enabled === !1 ? `disabled` : ``}`),
+                G(g, t.rule.name),
+                G(
+                    _,
+                    t.rule.triggerType === `media`
+                        ? `Por Archivo`
+                        : o[t.rule.matchType] || `Palabra clave`,
+                ),
+                G(O, t.rule.response || `(Solo envía archivo adjunto)`),
+                G(re, `🏷️ ${(t.rule.leadTag || `Lead`) ?? ``}`));
+        }),
+        W(e, f),
+        We(),
+        a());
+}
+Tr([`change`, `click`]);
+var Gd = U(
+        `<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Nueva Ruta de Venta</button>`,
+    ),
+    Kd = U(
+        `<button type="button" class="btn btn-primary" style="margin-top: 16px;">Crear Primera Ruta</button>`,
+    ),
+    qd = U(
+        `<div class="empty-rules-state svelte-141x8yi"><div style="font-size: 40px; margin-bottom: 12px;">💬</div> <h3 class="svelte-141x8yi">No tienes rutas de respuesta configuradas</h3> <p>Crea tu primer flujo de venta automático para responder a tus clientes cuando escriban palabras clave o envíen archivos.</p> <!></div>`,
+    ),
+    Jd = U(`<div class="cards-grid"></div>`),
+    Yd = U(
+        `<section id="tab-rules" class="tab-content active"><div class="content-toolbar"><div><h2>Rutas de Respuesta Automática</h2> <p class="section-desc">Crea y personaliza respuestas con texto, catálogos en PDF, imágenes y detección de comprobantes.</p></div> <!></div> <!></section>`,
+    );
+function Xd(e, t) {
+    Ue(t, !1);
+    let n = () => Z(zs, `$hasPermission`, i),
+        r = () => Z(Wa, `$rules`, i),
+        [i, a] = Ui();
+    function o() {
+        (Ga.set(null), Ka.set(!0));
+    }
+    Pi();
+    var s = Yd(),
+        c = L(s),
+        l = z(L(c), 2),
+        u = (e) => {
+            var t = Gd();
+            (H(`click`, t, o), W(e, t));
+        },
+        d = P(() => n()(`rules:create`));
+    (K(l, (e) => {
+        V(d) && e(u);
+    }),
+        M(c));
+    var f = z(c, 2),
+        p = (e) => {
+            var t = qd(),
+                r = z(L(t), 6),
+                i = (e) => {
+                    var t = Kd();
+                    (H(`click`, t, o), W(e, t));
+                },
+                a = P(() => n()(`rules:create`));
+            (K(r, (e) => {
+                V(a) && e(i);
+            }),
+                M(t),
+                W(e, t));
+        },
+        m = (e) => {
+            var t = Jd();
+            (Xr(
+                t,
+                5,
+                r,
+                (e) => e.id,
+                (e, t) => {
+                    Wd(e, {
+                        get rule() {
+                            return V(t);
+                        },
+                    });
+                },
+            ),
+                M(t),
+                W(e, t));
+        };
+    (K(f, (e) => {
+        r().length === 0 ? e(p) : e(m, -1);
+    }),
+        M(s),
+        W(e, s),
+        We(),
+        a());
+}
+Tr([`click`]);
+var Zd = U(
+        `<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Programar Envío / Difusión</button>`,
+    ),
+    Qd = U(
+        `<button type="button" class="btn btn-primary" style="margin-top: 16px;">Programar Primer Envío</button>`,
+    ),
+    $d = U(
+        `<div class="empty-schedules-state svelte-yh6vpa"><div style="font-size: 40px; margin-bottom: 12px;">⏰</div> <h3 class="svelte-yh6vpa">No hay envíos programados actualmente</h3> <p>Crea un envío individual o una campaña de difusión para promociones, recordatorios o anuncios masivos.</p> <!></div>`,
+    ),
+    ef = U(`<span class="audience-badge tag svelte-yh6vpa"> </span>`),
+    tf = U(
+        `<span class="audience-badge group svelte-yh6vpa">👥 Grupo de Difusión</span>`,
+    ),
+    nf = U(
+        `<span class="audience-badge single svelte-yh6vpa">👤 Individual</span>`,
+    ),
+    rf = U(
+        `<span class="audience-badge recurrence svelte-yh6vpa" title="Campaña periódica recurrente"> </span>`,
+    ),
+    af = U(`<span class="failed-count svelte-yh6vpa"> </span>`),
+    of = U(
+        `<div class="campaign-progress-box svelte-yh6vpa"><div class="progress-labels svelte-yh6vpa"><span>Progreso de entrega: <strong> </strong> </span> <!></div> <div class="progress-bar-bg svelte-yh6vpa"><div class="progress-bar-fill svelte-yh6vpa"></div></div></div>`,
+    ),
+    sf = U(`<span class="last-cycle-note svelte-yh6vpa"> </span>`),
+    cf = U(`<span>Próximo ciclo: <strong> </strong> <!></span>`),
+    lf = U(`<span>Completado el: <strong> </strong></span>`),
+    uf = U(`<span>Programado para: <strong> </strong></span>`),
+    df = U(`<div class="rule-media-badge" style="margin-bottom: 6px;"> </div>`),
+    ff = U(
+        `<button type="button" class="btn btn-outline-sm btn-edit-sched svelte-yh6vpa" title="Editar audiencia, mensaje o definir nueva fecha para reactivar esta campaña">✏️ Editar / Reprogramar</button>`,
+    ),
+    pf = U(
+        `<button type="button" class="btn btn-outline-sm btn-send-now"> </button>`,
+    ),
+    mf = U(
+        `<button type="button" class="btn btn-outline-sm btn-relaunch-now svelte-yh6vpa" title="Volver a lanzar esta campaña de inmediato"> </button>`,
+    ),
+    hf = U(
+        `<button type="button" class="btn btn-outline-sm btn-cancel-camp svelte-yh6vpa" title="Detener la campaña de difusión">🛑 Cancelar</button>`,
+    ),
+    gf = U(
+        `<button type="button" class="icon-btn delete-btn" title="Eliminar registro"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`,
+    ),
+    _f = U(
+        `<div class="sched-item"><div class="sched-header"><div><div class="sched-title-row svelte-yh6vpa"><span class="sched-title"> </span> <!> <!></div> <div class="sched-phone"><!></div></div> <span> </span></div> <!> <div class="sched-time"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> <!></div> <!> <div class="sched-msg"> </div> <div class="sched-actions"><!> <button type="button" class="btn btn-outline-sm btn-duplicate-sched svelte-yh6vpa" title="Crear una copia de esta campaña como nueva plantilla">📋 Duplicar</button> <!> <!> <!></div></div>`,
+    ),
+    vf = U(`<div class="schedules-list svelte-yh6vpa"></div>`),
+    yf = U(
+        `<section id="tab-scheduler" class="tab-content active"><div class="content-toolbar"><div><h2>Programación de Envíos & Difusiones de Contenido</h2> <p class="section-desc">Programa mensajes masivos segmentados por etiquetas CRM o grupos personalizados con protección anti-baneo.</p></div> <!></div> <!></section>`,
+    );
+function bf(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Fo, `$schedules`, i),
+        r = () => Z(zs, `$hasPermission`, i),
+        [i, a] = Ui(),
+        o = {
+            pending: `Pendiente`,
+            sending: `Enviando en Proceso...`,
+            sent: `Completado`,
+            failed: `Fallido`,
+            cancelled: `Cancelado`,
+        },
+        s = {
+            daily: `🔁 Diario`,
+            weekly: `🔁 Semanal`,
+            monthly: `🔁 Mensual`,
+            yearly: `🔁 Anual`,
+        },
+        c = Xt(new Set());
+    bn(() => {
+        if (!n().some((e) => e.status === `sending`)) return;
+        let e = setInterval(() => {
+            Ho();
+        }, 3500);
+        return () => clearInterval(e);
+    });
+    async function l(e) {
+        (c.add(e), await Go(e), c.delete(e));
+    }
+    async function u(e) {
+        confirm(`¿Deseas detener y cancelar esta campaña de difusión?`) &&
+            (await Ko(e));
+    }
+    function d(e) {
+        confirm(`¿Deseas eliminar este registro de envío programado?`) && qo(e);
+    }
+    var f = yf(),
+        p = L(f),
+        m = z(L(p), 2),
+        h = (e) => {
+            var t = Zd();
+            (H(`click`, t, function (...e) {
+                zo?.apply(this, e);
+            }),
+                W(e, t));
+        },
+        g = P(() => r()(`schedules:create`));
+    (K(m, (e) => {
+        V(g) && e(h);
+    }),
+        M(p));
+    var _ = z(p, 2),
+        v = (e) => {
+            var t = $d(),
+                n = z(L(t), 6),
+                i = (e) => {
+                    var t = Qd();
+                    (H(`click`, t, function (...e) {
+                        zo?.apply(this, e);
+                    }),
+                        W(e, t));
+                },
+                a = P(() => r()(`schedules:create`));
+            (K(n, (e) => {
+                V(a) && e(i);
+            }),
+                M(t),
+                W(e, t));
+        },
+        y = (e) => {
+            var t = vf();
+            (Xr(
+                t,
+                5,
+                n,
+                (e) => e.id,
+                (e, t) => {
+                    let n = P(
+                            () =>
+                                V(t).targetType === `tag` ||
+                                V(t).targetType === `group` ||
+                                V(t).totalRecipients > 1,
+                        ),
+                        i = P(() => V(t).totalRecipients || 1),
+                        a = P(() => V(t).sentRecipients || 0),
+                        f = P(() => V(t).failedRecipients || 0),
+                        p = P(() =>
+                            Math.min(
+                                100,
+                                Math.round(((V(a) + V(f)) / V(i)) * 100),
+                            ),
+                        );
+                    var m = _f(),
+                        h = L(m),
+                        g = L(h),
+                        _ = L(g),
+                        v = L(_),
+                        y = R(v, !0),
+                        b = z(v, 2),
+                        x = (e) => {
+                            var n = ef(),
+                                r = R(n);
+                            (B(() =>
+                                G(r, `🏷️ Etiqueta: ${V(t).targetValue ?? ``}`),
+                            ),
+                                W(e, n));
+                        },
+                        S = (e) => {
+                            W(e, tf());
+                        },
+                        C = (e) => {
+                            W(e, nf());
+                        };
+                    K(b, (e) => {
+                        V(t).targetType === `tag`
+                            ? e(x)
+                            : V(t).targetType === `group`
+                              ? e(S, 1)
+                              : e(C, -1);
+                    });
+                    var w = z(b, 2),
+                        T = (e) => {
+                            var n = rf(),
+                                r = R(n, !0);
+                            (B(() =>
+                                G(r, s[V(t).recurrence] || V(t).recurrence),
+                            ),
+                                W(e, n));
+                        };
+                    (K(w, (e) => {
+                        V(t).recurrence && V(t).recurrence !== `none` && e(T);
+                    }),
+                        M(_));
+                    var E = z(_, 2),
+                        D = L(E),
+                        O = (e) => {
+                            var n = Fr();
+                            (B(() => G(n, `Destino: +${V(t).recipient ?? ``}`)),
+                                W(e, n));
+                        },
+                        k = (e) => {
+                            var n = Fr();
+                            (B(() =>
+                                G(
+                                    n,
+                                    `Audiencia: ${V(i) ?? ``} destinatario${V(i) === 1 ? `` : `s`} • Pausa: ${(V(t).delaySeconds || 10) ?? ``}s`,
+                                ),
+                            ),
+                                W(e, n));
+                        };
+                    (K(D, (e) => {
+                        V(t).targetType === `single` ? e(O) : e(k, -1);
+                    }),
+                        M(E),
+                        M(g));
+                    var A = z(g, 2),
+                        ee = R(A, !0);
+                    M(h);
+                    var te = z(h, 2),
+                        ne = (e) => {
+                            var t = of(),
+                                n = L(t),
+                                r = L(n),
+                                o = z(L(r)),
+                                s = R(o),
+                                c = z(o);
+                            M(r);
+                            var l = z(r, 2),
+                                u = (e) => {
+                                    var t = af(),
+                                        n = R(t);
+                                    (B(() =>
+                                        G(
+                                            n,
+                                            `⚠️ ${V(f) ?? ``} fallido${V(f) === 1 ? `` : `s`}`,
+                                        ),
+                                    ),
+                                        W(e, t));
+                                };
+                            (K(l, (e) => {
+                                V(f) > 0 && e(u);
+                            }),
+                                M(n));
+                            var d = R(z(n, 2));
+                            (M(t),
+                                B(() => {
+                                    (G(s, `${V(a) ?? ``} de ${V(i) ?? ``}`),
+                                        G(c, ` (${V(p) ?? ``}%)`),
+                                        pi(d, `width: ${V(p) ?? ``}%;`));
+                                }),
+                                W(e, t));
+                        };
+                    K(te, (e) => {
+                        V(n) && e(ne);
+                    });
+                    var re = z(te, 2),
+                        ie = z(L(re), 2),
+                        ae = (e) => {
+                            var n = cf(),
+                                r = z(L(n)),
+                                i = R(r, !0),
+                                a = z(r, 2),
+                                o = (e) => {
+                                    var n = sf(),
+                                        r = R(n);
+                                    (B(
+                                        (e) =>
+                                            G(
+                                                r,
+                                                `• Último envío realizado: ${e ?? ``}`,
+                                            ),
+                                        [() => Tl(V(t).lastSentAt)],
+                                    ),
+                                        W(e, n));
+                                };
+                            (K(a, (e) => {
+                                V(t).lastSentAt && e(o);
+                            }),
+                                M(n),
+                                B(
+                                    (e) => G(i, e),
+                                    [() => Tl(V(t).scheduledTime)],
+                                ),
+                                W(e, n));
+                        },
+                        oe = (e) => {
+                            var n = lf(),
+                                r = R(z(L(n)), !0);
+                            (M(n),
+                                B((e) => G(r, e), [() => Tl(V(t).sentAt)]),
+                                W(e, n));
+                        },
+                        se = (e) => {
+                            var n = uf(),
+                                r = R(z(L(n)), !0);
+                            (M(n),
+                                B(
+                                    (e) => G(r, e),
+                                    [() => Tl(V(t).scheduledTime)],
+                                ),
+                                W(e, n));
+                        };
+                    (K(ie, (e) => {
+                        V(t).recurrence && V(t).recurrence !== `none`
+                            ? e(ae)
+                            : V(t).status === `sent` && V(t).sentAt
+                              ? e(oe, 1)
+                              : e(se, -1);
+                    }),
+                        M(re));
+                    var ce = z(re, 2),
+                        le = (e) => {
+                            var n = df(),
+                                r = R(n);
+                            (B(() =>
+                                G(
+                                    r,
+                                    `📎 Archivo adjunto: ${V(t).media.filename ?? ``}`,
+                                ),
+                            ),
+                                W(e, n));
+                        };
+                    K(ce, (e) => {
+                        V(t).media && e(le);
+                    });
+                    var ue = z(ce, 2),
+                        de = R(ue, !0),
+                        fe = z(ue, 2),
+                        pe = L(fe),
+                        me = (e) => {
+                            var n = ff();
+                            (H(`click`, n, () => Bo(V(t))), W(e, n));
+                        };
+                    K(pe, (e) => {
+                        V(t).status !== `sending` && e(me);
+                    });
+                    var he = z(pe, 2),
+                        ge = z(he, 2),
+                        _e = (e) => {
+                            var n = pf(),
+                                r = R(n, !0);
+                            (B(
+                                (e, t) => {
+                                    ((n.disabled = e), G(r, t));
+                                },
+                                [
+                                    () => c.has(V(t).id),
+                                    () =>
+                                        c.has(V(t).id)
+                                            ? `Iniciando...`
+                                            : `🚀 Enviar Ahora`,
+                                ],
+                            ),
+                                H(`click`, n, () => l(V(t).id)),
+                                W(e, n));
+                        },
+                        j = (e) => {
+                            var n = mf(),
+                                r = R(n, !0);
+                            (B(
+                                (e, t) => {
+                                    ((n.disabled = e), G(r, t));
+                                },
+                                [
+                                    () => c.has(V(t).id),
+                                    () =>
+                                        c.has(V(t).id)
+                                            ? `Iniciando...`
+                                            : `🔄 Relanzar Ahora`,
+                                ],
+                            ),
+                                H(`click`, n, () => l(V(t).id)),
+                                W(e, n));
+                        };
+                    K(ge, (e) => {
+                        V(t).status === `pending`
+                            ? e(_e)
+                            : (V(t).status === `sent` ||
+                                  V(t).status === `failed` ||
+                                  V(t).status === `cancelled`) &&
+                              e(j, 1);
+                    });
+                    var ve = z(ge, 2),
+                        ye = (e) => {
+                            var n = hf();
+                            (H(`click`, n, () => u(V(t).id)), W(e, n));
+                        };
+                    K(ve, (e) => {
+                        (V(t).status === `pending` ||
+                            V(t).status === `sending`) &&
+                            e(ye);
+                    });
+                    var be = z(ve, 2),
+                        xe = (e) => {
+                            var n = gf();
+                            (H(`click`, n, () => d(V(t).id)), W(e, n));
+                        },
+                        N = P(() => r()(`schedules:delete`));
+                    (K(be, (e) => {
+                        V(N) && e(xe);
+                    }),
+                        M(fe),
+                        M(m),
+                        B(() => {
+                            (G(y, V(t).name),
+                                q(
+                                    A,
+                                    1,
+                                    `sched-badge ${V(t).status ?? ``}`,
+                                    `svelte-yh6vpa`,
+                                ),
+                                G(ee, o[V(t).status] || V(t).status),
+                                G(
+                                    de,
+                                    V(t).message || `(Solo archivo adjunto)`,
+                                ));
+                        }),
+                        H(`click`, he, () => Vo(V(t))),
+                        W(e, m));
+                },
+            ),
+                M(t),
+                W(e, t));
+        };
+    (K(_, (e) => {
+        n().length === 0 ? e(v) : e(y, -1);
+    }),
+        M(f),
+        W(e, f),
+        We(),
+        a());
+}
+Tr([`click`]);
+var xf = U(`<span class="typing-text svelte-40g3ea">escribiendo...</span>`),
+    Sf = U(
+        `<div class="gemini-tag svelte-40g3ea"><span class="svelte-40g3ea">🤖</span> Gemini Flash Lite</div>`,
+    ),
+    Cf = U(
+        `<audio controls="" class="sim-audio-player svelte-40g3ea"></audio>`,
+    ),
+    wf = U(
+        `<div class="sim-bubble-doc svelte-40g3ea"><span class="sim-bubble-doc-icon svelte-40g3ea"> </span> <div class="sim-bubble-doc-info svelte-40g3ea"><span class="sim-bubble-doc-name svelte-40g3ea">[Archivo adjunto simulado]</span></div></div>`,
+    ),
+    Tf = U(
+        `<div class="sim-bubble-media svelte-40g3ea"><img class="svelte-40g3ea"/></div>`,
+    ),
+    Ef = U(
+        `<div class="sim-bubble-doc svelte-40g3ea"><span class="sim-bubble-doc-icon svelte-40g3ea">📎</span> <div class="sim-bubble-doc-info svelte-40g3ea"><span class="sim-bubble-doc-name svelte-40g3ea"> </span> <span class="sim-bubble-doc-type svelte-40g3ea">Documento adjunto</span></div></div>`,
+    ),
+    Df = U(`<div class="bubble-text svelte-40g3ea"></div>`),
+    Of = U(`<span class="check-marks svelte-40g3ea">✓✓</span>`),
+    kf = U(
+        `<div><!> <!> <!> <!> <!> <span class="msg-time svelte-40g3ea"> <!></span></div>`,
+    ),
+    Af = U(
+        `<div class="msg-bubble bot-bubble typing-bubble svelte-40g3ea"><span class="typing-dot svelte-40g3ea"></span> <span class="typing-dot svelte-40g3ea"></span> <span class="typing-dot svelte-40g3ea"></span> <span style="font-size: 0.72rem; color: #8696a0; margin-left: 6px;" class="svelte-40g3ea"> </span></div>`,
+    ),
+    jf = U(
+        `<section id="tab-simulator" class="tab-content active svelte-40g3ea"><div class="simulator-container svelte-40g3ea"><div class="simulator-info svelte-40g3ea"><h2 class="svelte-40g3ea">Simulador de Chat en Vivo</h2> <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 6px; line-height: 1.5;" class="svelte-40g3ea">Prueba cómo responde tu bot ante mensajes de texto o cuando un cliente envía un archivo o foto de comprobante.</p> <div class="simulator-tips svelte-40g3ea"><h4 class="svelte-40g3ea">⚡ Atajos de Prueba Rápida:</h4> <div class="quick-test-chips svelte-40g3ea"><button type="button" class="chip-btn svelte-40g3ea">👋 hola</button> <button type="button" class="chip-btn svelte-40g3ea">📖 catálogo</button> <button type="button" class="chip-btn svelte-40g3ea">💰 precios</button> <button type="button" class="chip-btn svelte-40g3ea">💳 pagos</button> <button type="button" class="chip-btn svelte-40g3ea">👤 asesor</button></div> <div class="sim-media-actions svelte-40g3ea" style="margin-top: 18px; display: flex; flex-direction: column; gap: 8px;"><button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">🧾 Simular envío de Comprobante / Foto</button> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">📄 Simular envío de Documento PDF</button> <input type="file" accept="audio/*,.oga,.ogg,.mp3,.m4a,.wav" style="display: none;" class="svelte-40g3ea"/> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea" style="border-color: #3b82f6; color: #3b82f6;">🎤 Subir / Probar Audio Propio (Nota de voz)</button> <button type="button" class="btn btn-outline-sm btn-sim-action svelte-40g3ea">🔄 Reiniciar Conversación</button></div></div></div> <div class="phone-mockup svelte-40g3ea"><div class="phone-top-bar svelte-40g3ea"><div class="camera-hole svelte-40g3ea"></div></div> <div class="phone-chat-header svelte-40g3ea"><div class="avatar-circle svelte-40g3ea">🤖</div> <div class="chat-header-info svelte-40g3ea"><span class="chat-name svelte-40g3ea"> </span> <span class="chat-status svelte-40g3ea"><!></span></div></div> <div class="phone-chat-body svelte-40g3ea"><!> <!></div> <form class="phone-chat-footer svelte-40g3ea"><input type="text" id="phone-chat-input" placeholder="Escribe un mensaje de prueba..." autocomplete="off" class="svelte-40g3ea"/> <button type="button" class="btn-audio-sim svelte-40g3ea" title="Simular o subir nota de voz">🎤</button> <button type="submit" class="btn-send-sim svelte-40g3ea" title="Enviar mensaje"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="svelte-40g3ea"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" class="svelte-40g3ea"></path></svg></button></form></div></div></section>`,
+    );
+function Mf(e, t) {
+    Ue(t, !0);
+    let n = () => Z(ga, `$activeCompany`, r),
+        [r, i] = Ui(),
+        a = F(
+            Xt([
+                {
+                    id: 1,
+                    isUser: !1,
+                    text: `¡Hola! Escribe un mensaje o envía un audio para probar la respuesta inteligente de la IA.`,
+                    time: new Date().toLocaleTimeString([], {
+                        hour: `2-digit`,
+                        minute: `2-digit`,
+                    }),
+                    media: null,
+                    isGemini: !1,
+                },
+            ]),
+        ),
+        o = F(``),
+        s = F(!1),
+        c = F(`Escribiendo respuesta...`),
+        l = F(void 0),
+        u = F(void 0);
+    function d(e) {
+        return e
+            ? e
+                  .replace(/\*(.*?)\*/g, `<strong>$1</strong>`)
+                  .replace(/_(.*?)_/g, `<em>$1</em>`)
+                  .replace(/~(.*?)~/g, `<del>$1</del>`)
+                  .replace(/\n/g, `<br>`)
+            : ``;
+    }
+    function f() {
+        setTimeout(() => {
+            V(l) && (V(l).scrollTop = V(l).scrollHeight);
+        }, 50);
+    }
+    async function p({
+        text: e = ``,
+        hasMedia: t = !1,
+        mediaMimetype: n = ``,
+        userIcon: r = null,
+        audio: i = null,
+        audioUrl: o = null,
+    }) {
+        let l = new Date().toLocaleTimeString([], {
+            hour: `2-digit`,
+            minute: `2-digit`,
+        });
+        (V(a).push({
+            id: Date.now(),
+            isUser: !0,
+            text: e,
+            time: l,
+            userIcon: r,
+            audioUrl: o,
+        }),
+            f(),
+            I(s, !0),
+            I(
+                c,
+                i
+                    ? `🎙️ Escuchando y procesando nota de voz con IA...`
+                    : `Escribiendo...`,
+                !0,
+            ));
+        try {
+            let r = await Q.post(`/api/simulate`, {
+                text: e,
+                hasMedia: t,
+                mediaMimetype: n,
+                audio: i,
+            });
+            V(a).push({
+                id: Date.now() + 1,
+                isUser: !1,
+                text: r.response || ``,
+                media: r.media || null,
+                isGemini: !!r.isGemini,
+                time: new Date().toLocaleTimeString([], {
+                    hour: `2-digit`,
+                    minute: `2-digit`,
+                }),
+            });
+        } catch {
+            V(a).push({
+                id: Date.now() + 1,
+                isUser: !1,
+                text: `⚠️ Error conectando con el simulador.`,
+                time: new Date().toLocaleTimeString([], {
+                    hour: `2-digit`,
+                    minute: `2-digit`,
+                }),
+            });
+        } finally {
+            (I(s, !1), f());
+        }
+    }
+    function m(e) {
+        if ((e.preventDefault(), !V(o).trim())) return;
+        let t = V(o).trim();
+        (I(o, ``), p({ text: t }));
+    }
+    async function h() {
+        try {
+            (await Q.post(`/api/gemini/reset`, {
+                sessionId: `simulator-session`,
+            }),
+                I(
+                    a,
+                    [
+                        {
+                            id: Date.now(),
+                            isUser: !1,
+                            text: `🔄 Conversación reiniciada. ¡Hola! ¿En qué te puedo colaborar hoy?`,
+                            time: new Date().toLocaleTimeString([], {
+                                hour: `2-digit`,
+                                minute: `2-digit`,
+                            }),
+                        },
+                    ],
+                    !0,
+                ),
+                $(`Conversación de Gemini reiniciada`, `info`));
+        } catch (e) {
+            $(e.message, `error`);
+        }
+    }
+    function g(e) {
+        let t = e.target.files?.[0];
+        if (!t) return;
+        let n = new FileReader();
+        ((n.onload = () => {
+            let e = n.result,
+                r = e.includes(`base64,`) ? e.split(`base64,`)[1] : e,
+                i = t.type || `audio/ogg`;
+            p({
+                text: ``,
+                hasMedia: !0,
+                mediaMimetype: i,
+                userIcon: `🎤`,
+                audio: { data: r, mimetype: i },
+                audioUrl: URL.createObjectURL(t),
+            });
+        }),
+            n.readAsDataURL(t),
+            (e.target.value = ``));
+    }
+    var _ = jf(),
+        v = L(_),
+        y = L(v),
+        b = z(L(y), 4),
+        x = z(L(b), 2),
+        S = L(x),
+        C = z(S, 2),
+        w = z(C, 2),
+        T = z(w, 2),
+        E = z(T, 2);
+    M(x);
+    var D = z(x, 2),
+        O = L(D),
+        k = z(O, 2),
+        A = z(k, 2);
+    Ni(
+        A,
+        (e) => I(u, e),
+        () => V(u),
+    );
+    var ee = z(A, 2),
+        te = z(ee, 2);
+    (M(D), M(b), M(y));
+    var ne = z(y, 2),
+        re = z(L(ne), 2),
+        ie = z(L(re), 2),
+        ae = L(ie),
+        oe = R(ae, !0),
+        se = z(ae, 2),
+        ce = L(se),
+        le = (e) => {
+            W(e, xf());
+        },
+        ue = (e) => {
+            W(e, Fr(`en línea (Bot con IA)`));
+        };
+    (K(ce, (e) => {
+        V(s) ? e(le) : e(ue, -1);
+    }),
+        M(se),
+        M(ie),
+        M(re));
+    var de = z(re, 2),
+        fe = L(de);
+    Xr(
+        fe,
+        17,
+        () => V(a),
+        (e) => e.id,
+        (e, t) => {
+            var n = kf(),
+                r = L(n),
+                i = (e) => {
+                    W(e, Sf());
+                };
+            K(r, (e) => {
+                !V(t).isUser && V(t).isGemini && e(i);
+            });
+            var a = z(r, 2),
+                o = (e) => {
+                    var n = Cf();
+                    (B(() => Ti(n, `src`, V(t).audioUrl)), W(e, n));
+                };
+            K(a, (e) => {
+                V(t).audioUrl && e(o);
+            });
+            var s = z(a, 2),
+                c = (e) => {
+                    var n = wf(),
+                        r = R(L(n), !0);
+                    (N(2), M(n), B(() => G(r, V(t).userIcon)), W(e, n));
+                };
+            K(s, (e) => {
+                V(t).userIcon && !V(t).audioUrl && e(c);
+            });
+            var l = z(s, 2),
+                u = (e) => {
+                    var n = Ir(),
+                        r = cn(n),
+                        i = (e) => {
+                            var n = Tf(),
+                                r = R(n);
+                            (B(() => {
+                                (Ti(r, `src`, V(t).media.url),
+                                    Ti(r, `alt`, V(t).media.filename));
+                            }),
+                                W(e, n));
+                        },
+                        a = P(() =>
+                            (V(t).media.mimetype || ``).startsWith(`image/`),
+                        ),
+                        o = (e) => {
+                            var n = Ef(),
+                                r = z(L(n), 2),
+                                i = R(L(r), !0);
+                            (N(2),
+                                M(r),
+                                M(n),
+                                B(() => G(i, V(t).media.filename)),
+                                W(e, n));
+                        };
+                    (K(r, (e) => {
+                        V(a) ? e(i) : e(o, -1);
+                    }),
+                        W(e, n));
+                };
+            K(l, (e) => {
+                V(t).media && V(t).media.url && e(u);
+            });
+            var f = z(l, 2),
+                p = (e) => {
+                    var n = Df();
+                    (ni(n, () => d(V(t).text), !0), M(n), W(e, n));
+                };
+            K(f, (e) => {
+                V(t).text && e(p);
+            });
+            var m = z(f, 2),
+                h = L(m),
+                g = z(h),
+                _ = (e) => {
+                    W(e, Of());
+                };
+            (K(g, (e) => {
+                V(t).isUser && e(_);
+            }),
+                M(m),
+                M(n),
+                B(() => {
+                    (q(
+                        n,
+                        1,
+                        `msg-bubble ${V(t).isUser ? `user-bubble` : `bot-bubble`}`,
+                        `svelte-40g3ea`,
+                    ),
+                        G(h, `${V(t).time ?? ``} `));
+                }),
+                W(e, n));
+        },
+    );
+    var pe = z(fe, 2),
+        me = (e) => {
+            var t = Af(),
+                n = R(z(L(t), 6), !0);
+            (M(t), B(() => G(n, V(c))), W(e, t));
+        };
+    (K(pe, (e) => {
+        V(s) && e(me);
+    }),
+        M(de),
+        Ni(
+            de,
+            (e) => I(l, e),
+            () => V(l),
+        ));
+    var he = z(de, 2),
+        ge = L(he);
+    J(ge);
+    var _e = z(ge, 2);
+    (N(2),
+        M(he),
+        M(ne),
+        M(v),
+        M(_),
+        B(() => G(oe, n()?.name || `Mi Tienda Virtual`)),
+        H(`click`, S, () => p({ text: `hola` })),
+        H(`click`, C, () => p({ text: `catalogo` })),
+        H(`click`, w, () => p({ text: `precios` })),
+        H(`click`, T, () => p({ text: `pagos` })),
+        H(`click`, E, () => p({ text: `asesor` })),
+        H(`click`, O, () =>
+            p({
+                text: `Hola, aquí les envío la foto de mi comprobante de pago Nequi`,
+                hasMedia: !0,
+                mediaMimetype: `image/jpeg`,
+                userIcon: `🧾`,
+            }),
+        ),
+        H(`click`, k, () =>
+            p({
+                text: `Adjunto el documento con los detalles del pedido`,
+                hasMedia: !0,
+                mediaMimetype: `application/pdf`,
+                userIcon: `📄`,
+            }),
+        ),
+        H(`change`, A, g),
+        H(`click`, ee, () => V(u)?.click()),
+        H(`click`, te, h),
+        wr(`submit`, he, m),
+        Y(
+            ge,
+            () => V(o),
+            (e) => I(o, e),
+        ),
+        H(`click`, _e, () => V(u)?.click()),
+        W(e, _),
+        We(),
+        i());
+}
+Tr([`click`, `change`]);
+var Nf = U(
+        `<button type="button" class="preset-chip svelte-gpp9le"> </button>`,
+    ),
+    Pf = U(
+        `<span class="spinner-sm svelte-gpp9le"></span> <span>Enviando mensaje a WhatsApp...</span>`,
+        1,
+    ),
+    Ff = U(
+        `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> <span>Enviar Ahora por WhatsApp</span>`,
+        1,
+    ),
+    If = U(
+        `<div class="result-icon svelte-gpp9le">✓</div> <div class="result-content svelte-gpp9le"><strong>¡Mensaje enviado con éxito!</strong> <span> </span></div>`,
+        1,
+    ),
+    Lf = U(
+        `<div class="result-icon svelte-gpp9le">✕</div> <div class="result-content svelte-gpp9le"><strong>Error al enviar</strong> <span> </span></div>`,
+        1,
+    ),
+    Rf = U(`<div><!></div>`),
+    zf = U(`<img class="preview-media-img svelte-gpp9le"/>`),
+    Bf = U(
+        `<div class="preview-doc-card svelte-gpp9le"><span class="preview-doc-icon svelte-gpp9le"> </span> <div class="preview-doc-meta svelte-gpp9le"><span class="preview-doc-name svelte-gpp9le"> </span> <span class="preview-doc-type svelte-gpp9le">Documento adjunto</span></div></div>`,
+    ),
+    Vf = U(`<div class="preview-media-attachment svelte-gpp9le"><!></div>`),
+    Hf = U(`<div class="preview-text svelte-gpp9le"></div>`),
+    Uf = U(
+        `<div class="preview-placeholder svelte-gpp9le">El texto y archivo que redactes a la izquierda aparecerán aquí tal como los verá tu cliente en su WhatsApp...</div>`,
+    ),
+    Wf = U(
+        '<section id="tab-quick-send" class="tab-content active"><div class="content-toolbar"><div><h2>Envío Directo / Prueba de WhatsApp</h2> <p class="section-desc">Envía mensajes de texto, fotos, audios o catálogos en PDF inmediatamente a cualquier número de WhatsApp.</p></div></div> <div class="quick-send-grid svelte-gpp9le"><div class="composer-card svelte-gpp9le"><div class="composer-header svelte-gpp9le"><div class="composer-badge svelte-gpp9le"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg> <span>Redacción Rápida</span></div> <span class="company-badge-name svelte-gpp9le"> </span></div> <form class="composer-form svelte-gpp9le"><div class="form-group"><label for="quick-phone-input">Número de WhatsApp Destinatario</label> <div class="phone-input-group svelte-gpp9le"><span class="phone-prefix svelte-gpp9le">+</span> <input type="tel" id="quick-phone-input" class="phone-field svelte-gpp9le" placeholder="573001234567" required=""/></div> <span class="field-hint svelte-gpp9le">Incluye código de país sin espacios ni símbolos (Ej: 57 para Colombia, 52 para México).</span></div> <div class="form-group"><span class="field-label-small svelte-gpp9le">⚡ Plantillas / Presets Rápidos:</span> <div class="preset-chips svelte-gpp9le"></div></div> <div class="form-group"><div class="message-label-row svelte-gpp9le"><label for="quick-msg-input">Mensaje o Leyenda (Caption)</label> <div class="formatting-toolbar svelte-gpp9le"><button type="button" class="format-btn svelte-gpp9le" title="Negrita (*texto*)">*B*</button> <button type="button" class="format-btn svelte-gpp9le" title="Cursiva (_texto_)">_I_</button> <button type="button" class="format-btn svelte-gpp9le" title="Tachado (~texto~)">~S~</button> <button type="button" class="format-btn svelte-gpp9le" title="Mano">👋</button> <button type="button" class="format-btn svelte-gpp9le" title="Cohete">🚀</button> <button type="button" class="format-btn svelte-gpp9le" title="Dinero">💰</button> <button type="button" class="format-btn svelte-gpp9le" title="Check">✅</button></div></div> <textarea id="quick-msg-input" rows="5" placeholder="Escribe el mensaje que deseas enviar directamente por WhatsApp..."></textarea> <div class="textarea-footer svelte-gpp9le"><span class="char-counter"> </span> <span class="shortcut-hint svelte-gpp9le">Tip: Presiona <kbd class="svelte-gpp9le">Ctrl</kbd> + <kbd class="svelte-gpp9le">Enter</kbd> para enviar</span></div></div> <div class="form-group"><div class="field-label-small svelte-gpp9le">📎 Archivo Adjunto (Foto, PDF, Audio o Documento)</div> <!></div> <div class="submit-action-row svelte-gpp9le"><button type="submit" class="btn btn-primary btn-send-prominent svelte-gpp9le"><!></button></div></form> <!></div> <div class="preview-column svelte-gpp9le"><div class="live-preview-card svelte-gpp9le"><div class="live-preview-header svelte-gpp9le"><div class="preview-contact svelte-gpp9le"><div class="preview-avatar svelte-gpp9le"><svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.37 7.35 9.11 7.41 8.89 7.65C8.68 7.89 8.07 8.46 8.07 9.62C8.07 10.78 8.92 11.9 9.04 12.06C9.16 12.22 10.67 14.63 13.06 15.58C15.04 16.37 15.45 16.21 15.87 16.17C16.3 16.13 17.24 15.61 17.43 15.07C17.63 14.53 17.63 14.07 17.57 13.97C17.51 13.87 17.35 13.81 17.11 13.69C16.87 13.57 15.68 12.98 15.46 12.9C15.24 12.82 15.08 12.78 14.92 13.02C14.76 13.26 14.3 13.81 14.16 13.97C14.02 14.13 13.88 14.15 13.64 14.03C13.4 13.91 12.63 13.66 11.71 12.84C10.99 12.2 10.51 11.41 10.37 11.17C10.23 10.93 10.36 10.8 10.48 10.68C10.59 10.57 10.73 10.39 10.85 10.25C10.97 10.11 11.01 10.01 11.09 9.85C11.17 9.69 11.13 9.55 11.07 9.43C11.01 9.31 10.55 8.17 10.35 7.71C10.16 7.25 9.97 7.31 9.83 7.31C9.69 7.3 9.53 7.35 9.53 7.35Z"></path></svg></div> <div><div class="preview-recipient-title svelte-gpp9le"> </div> <span class="preview-sub svelte-gpp9le">Vista previa del mensaje de salida</span></div></div></div> <div class="live-preview-body svelte-gpp9le"><div class="preview-bubble svelte-gpp9le"><!> <!> <div class="preview-meta-row svelte-gpp9le"><span class="preview-time svelte-gpp9le"> </span> <span class="preview-checks svelte-gpp9le">✓✓</span></div></div></div></div> <div class="tips-card svelte-gpp9le"><h4 class="svelte-gpp9le">💡 Recomendaciones de Envío Directo</h4> <ul class="tips-list svelte-gpp9le"><li class="svelte-gpp9le"><strong class="svelte-gpp9le">Formato Internacional:</strong> Ingresa el código del país sin el símbolo `+` (Colombia: `57`, México: `52`, España: `34`).</li> <li class="svelte-gpp9le"><strong class="svelte-gpp9le">Catálogos y Fotos:</strong> Los archivos PDF e imágenes se envían con su compresión nativa para una descarga rápida en celulares.</li> <li class="svelte-gpp9le"><strong class="svelte-gpp9le">Audios y Mensajes de Voz:</strong> Si subes un audio, el destinatario lo reproducirá directamente en su chat.</li></ul></div></div></div></section>',
+    );
+function Gf(e, t) {
+    Ue(t, !0);
+    let n = () => Z(la, `$quickSendInitialPhone`, i),
+        r = () => Z(ga, `$activeCompany`, i),
+        [i, a] = Ui(),
+        o = F(``),
+        s = F(``),
+        c = F(null),
+        l = F(!1),
+        u = F(null),
+        d = F(void 0),
+        f = [
+            {
+                label: `👋 Hola Mundo`,
+                text: `¡Hola! 🚀 Este es un mensaje de prueba enviado directamente desde mi panel de WhatsApp.`,
+            },
+            {
+                label: `✅ Confirmación de Pedido`,
+                text: `¡Hola! 👋 Te contactamos para confirmar que tu pedido ha sido recibido con éxito y está siendo procesado.`,
+            },
+            {
+                label: `📖 Catálogo y Promos`,
+                text: `¡Hola! Te compartimos nuestro catálogo actualizado y la lista de ofertas y promociones especiales del mes. 🎁`,
+            },
+            {
+                label: `💳 Datos de Pago`,
+                text: `¡Hola! Aquí tienes nuestros canales de pago autorizados (Nequi, Daviplata, Bancolombia). Por favor envíanos tu comprobante cuando realices la transferencia.`,
+            },
+        ];
+    bn(() => {
+        n() && (I(o, n(), !0), la.set(``));
+    });
+    function p(e) {
+        (I(s, e, !0), V(d) && V(d).focus());
+    }
+    function m(e) {
+        if (!V(d)) return;
+        let t = V(d).selectionStart,
+            n = V(d).selectionEnd,
+            r = `${e}${V(s).substring(t, n) || `texto`}${e}`;
+        (I(s, V(s).substring(0, t) + r + V(s).substring(n)), V(d).focus());
+    }
+    function h(e) {
+        if (!V(d)) return;
+        let t = V(d).selectionStart,
+            n = V(d).selectionEnd;
+        (I(s, V(s).substring(0, t) + e + V(s).substring(n)), V(d).focus());
+    }
+    function g(e) {
+        return e
+            ? e
+                  .replace(/\*(.*?)\*/g, `<strong>$1</strong>`)
+                  .replace(/_(.*?)_/g, `<em>$1</em>`)
+                  .replace(/~(.*?)~/g, `<del>$1</del>`)
+                  .replace(/\n/g, `<br>`)
+            : ``;
+    }
+    function _(e) {
+        (e.ctrlKey || e.metaKey) &&
+            e.key === `Enter` &&
+            (e.preventDefault(), v());
+    }
+    async function v(e) {
+        e && e.preventDefault();
+        let t = V(o).replace(/\D/g, ``);
+        if (!t) $(`Ingresa un número de WhatsApp de destino`, `warning`);
+        else if (!V(s).trim() && !V(c))
+            $(`Ingresa un mensaje o adjunta un archivo para enviar`, `warning`);
+        else {
+            (I(l, !0), I(u, null));
+            try {
+                (await Q.post(`/api/send`, {
+                    phone: t,
+                    message: V(s).trim(),
+                    media: V(c),
+                }),
+                    I(
+                        u,
+                        {
+                            success: !0,
+                            phone: t,
+                            time: new Date().toLocaleTimeString([], {
+                                hour: `2-digit`,
+                                minute: `2-digit`,
+                            }),
+                            hasMedia: !!V(c),
+                        },
+                        !0,
+                    ),
+                    $(`¡Mensaje entregado con éxito a +${t}!`, `success`),
+                    I(s, ``),
+                    I(c, null));
+            } catch (e) {
+                (I(u, { success: !1, error: e.message }, !0),
+                    $(e.message, `error`));
+            } finally {
+                I(l, !1);
+            }
+        }
+    }
+    var y = Wf();
+    wr(`keydown`, $t, _);
+    var b = z(L(y), 2),
+        x = L(b),
+        S = L(x),
+        C = R(z(L(S), 2));
+    M(S);
+    var w = z(S, 2),
+        T = L(w),
+        E = z(L(T), 2),
+        D = z(L(E), 2);
+    (J(D), M(E), N(2), M(T));
+    var O = z(T, 2),
+        k = z(L(O), 2);
+    (Xr(
+        k,
+        21,
+        () => f,
+        Kr,
+        (e, t) => {
+            var n = Nf(),
+                r = R(n, !0);
+            (B(() => G(r, V(t).label)),
+                H(`click`, n, () => p(V(t).text)),
+                W(e, n));
+        },
+    ),
+        M(k),
+        M(O));
+    var A = z(O, 2),
+        ee = L(A),
+        te = z(L(ee), 2),
+        ne = L(te),
+        re = z(ne, 2),
+        ie = z(re, 2),
+        ae = z(ie, 2),
+        oe = z(ae, 2),
+        se = z(oe, 2),
+        ce = z(se, 2);
+    (M(te), M(ee));
+    var le = z(ee, 2);
+    (tt(le),
+        Ni(
+            le,
+            (e) => I(d, e),
+            () => V(d),
+        ));
+    var ue = z(le, 2),
+        de = R(L(ue));
+    (N(2), M(ue), M(A));
+    var fe = z(A, 2);
+    (Il(z(L(fe), 2), {
+        category: `quick`,
+        get media() {
+            return V(c);
+        },
+        onMediaChange: (e) => I(c, e, !0),
+    }),
+        M(fe));
+    var pe = z(fe, 2),
+        me = L(pe),
+        he = L(me),
+        ge = (e) => {
+            var t = Pf();
+            (N(2), W(e, t));
+        },
+        _e = (e) => {
+            var t = Ff();
+            (N(2), W(e, t));
+        };
+    (K(he, (e) => {
+        V(l) ? e(ge) : e(_e, -1);
+    }),
+        M(me),
+        M(pe),
+        M(w));
+    var j = z(w, 2),
+        ve = (e) => {
+            var t = Rf(),
+                n = L(t),
+                r = (e) => {
+                    var t = If(),
+                        n = z(cn(t), 2),
+                        r = R(z(L(n), 2));
+                    (M(n),
+                        B(() =>
+                            G(
+                                r,
+                                `Entregado al destinatario +${V(u).phone ?? ``} a las ${V(u).time ?? ``}`,
+                            ),
+                        ),
+                        W(e, t));
+                },
+                i = (e) => {
+                    var t = Lf(),
+                        n = z(cn(t), 2),
+                        r = R(z(L(n), 2), !0);
+                    (M(n),
+                        B(() =>
+                            G(
+                                r,
+                                V(u).error ||
+                                    `No se pudo conectar con WhatsApp Web`,
+                            ),
+                        ),
+                        W(e, t));
+                };
+            (K(n, (e) => {
+                V(u).success ? e(r) : e(i, -1);
+            }),
+                M(t),
+                B(() =>
+                    q(
+                        t,
+                        1,
+                        `result-box ${V(u).success ? `success` : `error`}`,
+                        `svelte-gpp9le`,
+                    ),
+                ),
+                W(e, t));
+        };
+    (K(j, (e) => {
+        V(u) && e(ve);
+    }),
+        M(x));
+    var ye = z(x, 2),
+        be = L(ye),
+        xe = L(be),
+        Se = L(xe),
+        Ce = z(L(Se), 2),
+        we = R(L(Ce), !0);
+    (N(2), M(Ce), M(Se), M(xe));
+    var Te = z(xe, 2),
+        Ee = L(Te),
+        De = L(Ee),
+        Oe = (e) => {
+            var t = Vf(),
+                n = L(t),
+                r = (e) => {
+                    var t = zf();
+                    (B(() => {
+                        (Ti(t, `src`, V(c).url), Ti(t, `alt`, V(c).filename));
+                    }),
+                        W(e, t));
+                },
+                i = P(() => (V(c).mimetype || ``).startsWith(`image/`)),
+                a = (e) => {
+                    var t = Bf(),
+                        n = L(t),
+                        r = R(n, !0),
+                        i = z(n, 2),
+                        a = R(L(i), !0);
+                    (N(2),
+                        M(i),
+                        M(t),
+                        B(
+                            (e) => {
+                                (G(r, e),
+                                    G(a, V(c).filename || V(c).originalName));
+                            },
+                            [
+                                () =>
+                                    (V(c).mimetype || ``).includes(`pdf`)
+                                        ? `📄`
+                                        : `📁`,
+                            ],
+                        ),
+                        W(e, t));
+                };
+            (K(n, (e) => {
+                V(i) ? e(r) : e(a, -1);
+            }),
+                M(t),
+                W(e, t));
+        };
+    K(De, (e) => {
+        V(c) && e(Oe);
+    });
+    var ke = z(De, 2),
+        Ae = (e) => {
+            var t = Hf();
+            (ni(t, () => g(V(s)), !0), M(t), W(e, t));
+        },
+        je = P(() => V(s).trim()),
+        Me = (e) => {
+            W(e, Uf());
+        };
+    K(ke, (e) => {
+        V(je) ? e(Ae) : V(c) || e(Me, 1);
+    });
+    var Ne = z(ke, 2),
+        Pe = R(L(Ne), !0);
+    (N(2),
+        M(Ne),
+        M(Ee),
+        M(Te),
+        M(be),
+        N(2),
+        M(ye),
+        M(b),
+        M(y),
+        B(
+            (e, t) => {
+                (G(C, `Bot: ${(r()?.name || `Empresa`) ?? ``}`),
+                    G(de, `${V(s).length ?? ``} caracteres`),
+                    (me.disabled = V(l)),
+                    G(we, e),
+                    G(Pe, t));
+            },
+            [
+                () =>
+                    V(o).trim()
+                        ? `+${V(o).replace(/\D/g, ``)}`
+                        : `Destinatario`,
+                () =>
+                    new Date().toLocaleTimeString([], {
+                        hour: `2-digit`,
+                        minute: `2-digit`,
+                    }),
+            ],
+        ),
+        wr(`submit`, w, v),
+        Y(
+            D,
+            () => V(o),
+            (e) => I(o, e),
+        ),
+        H(`click`, ne, () => m(`*`)),
+        H(`click`, re, () => m(`_`)),
+        H(`click`, ie, () => m(`~`)),
+        H(`click`, ae, () => h(`👋 `)),
+        H(`click`, oe, () => h(`🚀 `)),
+        H(`click`, se, () => h(`💰 `)),
+        H(`click`, ce, () => h(`✅ `)),
+        Y(
+            le,
+            () => V(s),
+            (e) => I(s, e),
+        ),
+        W(e, y),
+        We(),
+        a());
+}
+Tr([`click`]);
+var Kf =
+        U(`<div class="empty-leads-state svelte-1cc413u"><div style="font-size: 40px; margin-bottom: 12px;">🎯</div> <h3 class="svelte-1cc413u"> </h3> <p>Los clientes que escriban a tu WhatsApp entrarán
                     automáticamente a este embudo como prospectos calificados
-                    con su historial de conversación.</p> <div style="margin-top: 14px;"><button type="button" class="btn btn-outline-sm"> </button></div></div>`),qf=U(`<button type="button" class="btn-view-files"> </button>`),Jf=U(`<span class="badge-no-files">Sin archivos</span>`),Yf=U(`<span style="color: #fb7185; font-weight: 600;">🛑 Pausado (Humano)</span>`),Xf=U(`<span style="color: #4ade80;">🤖 Bot Activo</span>`),Zf=U(`<button type="button" class="btn btn-outline-sm btn-toggle-lead"> </button>`),Qf=U(`<tr><td><div class="lead-name-box"><strong> </strong> <span class="lead-phone-text"> </span></div></td><td><span> </span></td><td class="last-msg-cell svelte-1cc413u"> </td><td><!></td><td class="date-cell svelte-1cc413u"> </td><td><!></td><td><div class="lead-actions-row svelte-1cc413u"><button type="button" class="btn btn-outline-sm btn-view-chat svelte-1cc413u" title="Ver historial de conversación y chatear">💬 Ver Chat</button> <button type="button" class="btn btn-outline-sm btn-add-grp svelte-1cc413u" title="Asignar a un grupo de difusión">👥 + Grupo</button> <!></div></td></tr>`),$f=U(`<div class="leads-table-container"><table class="leads-table"><thead><tr><th>Prospecto</th><th>Etiqueta CRM</th><th>Último Mensaje</th><th>Archivos</th><th>Última Interacción</th><th>Estado del Bot</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>`),ep=U(`<div class="content-toolbar"><div><h2>Prospectos & Archivos Recibidos (Embudo de Ventas)</h2> <p class="section-desc">Clientes que han interactuado con tu WhatsApp, con detección
-                    de comprobantes, historial de conversación y notas de voz.</p></div> <div class="toolbar-actions-group svelte-1cc413u"><div class="toolbar-search svelte-1cc413u"><input type="search" class="search-input svelte-1cc413u" placeholder="🔍 Buscar prospecto por nombre, teléfono o mensaje..."/></div> <button type="button" class="btn btn-outline" title="Crear y organizar grupos de difusión">👥 Grupos de Difusión</button> <button type="button" class="btn btn-primary" title="Importar contactos a la agenda de difusión">📥 Importar a la Agenda</button></div></div> <!>`,1),tp=U(`<option> </option>`),np=U(`<div class="batch-assignment-banner svelte-1cc413u"><div class="batch-left svelte-1cc413u"><span class="batch-badge svelte-1cc413u">📌 <strong> </strong> </span> <span class="batch-desc svelte-1cc413u">Asignar contactos a un grupo de difusión:</span></div> <div class="batch-right svelte-1cc413u"><select class="batch-group-select svelte-1cc413u"><option>Selecciona un grupo destino...</option><!></select> <button type="button" class="btn btn-primary btn-sm"> </button> <button type="button" class="btn btn-outline-sm btn-clear-sel svelte-1cc413u">Desmarcar</button></div></div>`),rp=U(`<div class="empty-leads-state svelte-1cc413u"><div style="font-size: 40px; margin-bottom: 12px;">📒</div> <h3 class="svelte-1cc413u">No se encontraron contactos en la agenda</h3> <p>Puedes importar tus contactos de Google o sincronizar los
+                    con su historial de conversación.</p> <div style="margin-top: 14px;"><button type="button" class="btn btn-outline-sm"> </button></div></div>`),
+    qf = U(`<button type="button" class="btn-view-files"> </button>`),
+    Jf = U(`<span class="badge-no-files">Sin archivos</span>`),
+    Yf = U(
+        `<span style="color: #fb7185; font-weight: 600;">🛑 Pausado (Humano)</span>`,
+    ),
+    Xf = U(`<span style="color: #4ade80;">🤖 Bot Activo</span>`),
+    Zf = U(
+        `<button type="button" class="btn btn-outline-sm btn-toggle-lead"> </button>`,
+    ),
+    Qf = U(
+        `<tr><td><div class="lead-name-box"><strong> </strong> <span class="lead-phone-text"> </span></div></td><td><span> </span></td><td class="last-msg-cell svelte-1cc413u"> </td><td><!></td><td class="date-cell svelte-1cc413u"> </td><td><!></td><td><div class="lead-actions-row svelte-1cc413u"><button type="button" class="btn btn-outline-sm btn-view-chat svelte-1cc413u" title="Ver historial de conversación y chatear">💬 Ver Chat</button> <button type="button" class="btn btn-outline-sm btn-add-grp svelte-1cc413u" title="Asignar a un grupo de difusión">👥 + Grupo</button> <!></div></td></tr>`,
+    ),
+    $f = U(
+        `<div class="leads-table-container"><table class="leads-table"><thead><tr><th>Prospecto</th><th>Etiqueta CRM</th><th>Último Mensaje</th><th>Archivos</th><th>Última Interacción</th><th>Estado del Bot</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>`,
+    ),
+    ep = U(
+        `<div class="content-toolbar"><div><h2>Prospectos & Archivos Recibidos (Embudo de Ventas)</h2> <p class="section-desc">Clientes que han interactuado con tu WhatsApp, con detección
+                    de comprobantes, historial de conversación y notas de voz.</p></div> <div class="toolbar-actions-group svelte-1cc413u"><div class="toolbar-search svelte-1cc413u"><input type="search" class="search-input svelte-1cc413u" placeholder="🔍 Buscar prospecto por nombre, teléfono o mensaje..."/></div> <button type="button" class="btn btn-outline" title="Crear y organizar grupos de difusión">👥 Grupos de Difusión</button> <button type="button" class="btn btn-primary" title="Importar contactos a la agenda de difusión">📥 Importar a la Agenda</button></div></div> <!>`,
+        1,
+    ),
+    tp = U(`<option> </option>`),
+    np = U(
+        `<div class="batch-assignment-banner svelte-1cc413u"><div class="batch-left svelte-1cc413u"><span class="batch-badge svelte-1cc413u">📌 <strong> </strong> </span> <span class="batch-desc svelte-1cc413u">Asignar contactos a un grupo de difusión:</span></div> <div class="batch-right svelte-1cc413u"><select class="batch-group-select svelte-1cc413u"><option>Selecciona un grupo destino...</option><!></select> <button type="button" class="btn btn-primary btn-sm"> </button> <button type="button" class="btn btn-outline-sm btn-clear-sel svelte-1cc413u">Desmarcar</button></div></div>`,
+    ),
+    rp =
+        U(`<div class="empty-leads-state svelte-1cc413u"><div style="font-size: 40px; margin-bottom: 12px;">📒</div> <h3 class="svelte-1cc413u">No se encontraron contactos en la agenda</h3> <p>Puedes importar tus contactos de Google o sincronizar los
                     contactos de tu cuenta de WhatsApp para crear grupos y
-                    enviar difusiones masivas.</p> <div style="margin-top: 14px;"><button type="button" class="btn btn-primary">📥 Importar Contactos Ahora</button></div></div>`),ip=U(`<span class="badge-source badge-whatsapp svelte-1cc413u">📱 Agenda WhatsApp</span>`),ap=U(`<span class="badge-source badge-google svelte-1cc413u">📄 Google Contacts</span>`),op=U(`<span class="badge-source badge-manual svelte-1cc413u">👤 Manual</span>`),sp=U(`<tr><td style="text-align: center;"><input type="checkbox" aria-label="Seleccionar contacto"/></td><td><div class="lead-name-box"><strong> </strong> <span class="lead-phone-text"> </span></div></td><td><!></td><td><span class="badge-tag"> </span></td><td class="date-cell svelte-1cc413u"> </td><td style="text-align: right;"><div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;"><button type="button" class="btn-group-pill-sm svelte-1cc413u" title="Asignar este contacto a un grupo de difusión">👥 + Grupo</button> <button type="button" class="btn-delete-contact svelte-1cc413u" title="Eliminar de la agenda">🗑️</button></div></td></tr>`),cp=U(`<div class="pagination-bar svelte-1cc413u"><div class="pagination-info svelte-1cc413u"> </div> <div class="pagination-controls svelte-1cc413u"><button type="button" class="btn-page svelte-1cc413u">◀ Anterior</button> <span class="page-indicator svelte-1cc413u"> </span> <button type="button" class="btn-page svelte-1cc413u">Siguiente ▶</button></div></div>`),lp=U(`<div class="leads-table-container"><table class="leads-table"><thead><tr><th style="width: 36px; text-align: center;"><input type="checkbox" aria-label="Seleccionar todos los visibles"/></th><th>Contacto</th><th>Origen</th><th>Etiqueta / Lista</th><th>Fecha de Registro</th><th style="text-align: right;">Acciones</th></tr></thead><tbody></tbody></table></div> <!>`,1),up=U(`<div class="content-toolbar"><div><h2>Agenda de Contactos & Difusión de Contenido</h2> <p class="section-desc">Directorio de contactos sincronizados de WhatsApp o
+                    enviar difusiones masivas.</p> <div style="margin-top: 14px;"><button type="button" class="btn btn-primary">📥 Importar Contactos Ahora</button></div></div>`),
+    ip = U(
+        `<span class="badge-source badge-whatsapp svelte-1cc413u">📱 Agenda WhatsApp</span>`,
+    ),
+    ap = U(
+        `<span class="badge-source badge-google svelte-1cc413u">📄 Google Contacts</span>`,
+    ),
+    op = U(
+        `<span class="badge-source badge-manual svelte-1cc413u">👤 Manual</span>`,
+    ),
+    sp = U(
+        `<tr><td style="text-align: center;"><input type="checkbox" aria-label="Seleccionar contacto"/></td><td><div class="lead-name-box"><strong> </strong> <span class="lead-phone-text"> </span></div></td><td><!></td><td><span class="badge-tag"> </span></td><td class="date-cell svelte-1cc413u"> </td><td style="text-align: right;"><div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center;"><button type="button" class="btn-group-pill-sm svelte-1cc413u" title="Asignar este contacto a un grupo de difusión">👥 + Grupo</button> <button type="button" class="btn-delete-contact svelte-1cc413u" title="Eliminar de la agenda">🗑️</button></div></td></tr>`,
+    ),
+    cp = U(
+        `<div class="pagination-bar svelte-1cc413u"><div class="pagination-info svelte-1cc413u"> </div> <div class="pagination-controls svelte-1cc413u"><button type="button" class="btn-page svelte-1cc413u">◀ Anterior</button> <span class="page-indicator svelte-1cc413u"> </span> <button type="button" class="btn-page svelte-1cc413u">Siguiente ▶</button></div></div>`,
+    ),
+    lp = U(
+        `<div class="leads-table-container"><table class="leads-table"><thead><tr><th style="width: 36px; text-align: center;"><input type="checkbox" aria-label="Seleccionar todos los visibles"/></th><th>Contacto</th><th>Origen</th><th>Etiqueta / Lista</th><th>Fecha de Registro</th><th style="text-align: right;">Acciones</th></tr></thead><tbody></tbody></table></div> <!>`,
+        1,
+    ),
+    up = U(
+        `<div class="content-toolbar"><div><h2>Agenda de Contactos & Difusión de Contenido</h2> <p class="section-desc">Directorio de contactos sincronizados de WhatsApp o
                     importados desde Google Contacts. Organízalos en grupos para
-                    difusiones masivas.</p></div> <div class="toolbar-actions-group svelte-1cc413u"><select class="source-filter-select svelte-1cc413u"><option> </option><option>Google Contacts CSV</option><option>Agenda de WhatsApp</option><option>Manuales</option></select> <div class="toolbar-search svelte-1cc413u"><input type="search" class="search-input svelte-1cc413u" placeholder="🔍 Buscar contacto por nombre o número..."/></div> <button type="button" class="btn btn-outline" title="Crear y organizar grupos de difusión"> </button> <button type="button" class="btn btn-primary" title="Importar más contactos desde CSV o WhatsApp">📥 Importar Contactos</button></div></div> <!> <!>`,1),dp=U(`<div class="empty-assign-state svelte-1cc413u"><p>No tienes grupos de difusión creados aún.</p> <button type="button" class="btn btn-primary btn-sm">+ Crear Primer Grupo</button></div>`),fp=U(`<span class="assign-group-desc svelte-1cc413u"> </span>`),pp=U(`<button type="button" class="assign-group-item svelte-1cc413u"><div class="assign-group-info svelte-1cc413u"><span class="assign-color-dot svelte-1cc413u"></span> <div><strong style="color: #fff; font-size: 0.9rem;"> </strong> <!></div></div> <span class="assign-group-count svelte-1cc413u"> </span></button>`),mp=U(`<div class="assign-groups-modal-body"><p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 12px;">Selecciona el grupo al que deseas agregar a este
-                        contacto:</p> <div class="assign-groups-list svelte-1cc413u"></div></div>`),hp=U(`<section id="tab-leads" class="tab-content active"><div class="leads-view-selector svelte-1cc413u"><button type="button"><span class="subtab-icon">🎯</span> <span class="subtab-text">Prospectos del Embudo (CRM)</span> <span class="subtab-badge svelte-1cc413u"> </span></button> <button type="button"><span class="subtab-icon">📒</span> <span class="subtab-text">Agenda de Contactos & Difusión</span> <span class="subtab-badge subtab-badge-accent svelte-1cc413u"> </span></button></div> <!> <!></section>`);function gp(e,t){Ue(t,!0);let n=()=>Z(fo,`$leads`,o),r=()=>Z(ao,`$contacts`,o),i=()=>Z(zs,`$hasPermission`,o),a=()=>Z(Za,`$groups`,o),[o,s]=Ui(),c=F(`crm`),l=F(``),u=F(`all`),d=F(1),f=null;Ki(()=>{Eo(),f=setInterval(Eo,4e3)}),qi(()=>{f&&=(clearInterval(f),null)});let p=F(Xt(new Set)),m=F(``),h=F(!1),g=F(null),_=P(()=>n().filter(e=>{if(!V(l).trim())return!0;let t=V(l).toLowerCase();return(e.name||``).toLowerCase().includes(t)||(e.phone||``).includes(t)||(e.lastMessage||``).toLowerCase().includes(t)||(e.tag||``).toLowerCase().includes(t)})),v=P(()=>r().filter(e=>{if(V(u)!==`all`&&e.source!==V(u))return!1;if(!V(l).trim())return!0;let t=V(l).toLowerCase();return(e.name||``).toLowerCase().includes(t)||(e.phone||``).includes(t)||(e.tags||``).toLowerCase().includes(t)})),y=P(()=>Math.max(1,Math.ceil(V(v).length/50))),b=P(()=>V(v).slice((V(d)-1)*50,V(d)*50)),x=P(()=>V(b).length>0&&V(b).every(e=>V(p).has(e.phone)));function S(e){I(c,e,!0),I(l,``),I(d,1)}function C(e){let t=new Set(V(p));t.has(e)?t.delete(e):t.add(e),I(p,t,!0)}function w(){let e=V(b).map(e=>e.phone),t=new Set(V(p));if(V(x))for(let n of e)t.delete(n);else for(let n of e)t.add(n);I(p,t,!0)}function T(){I(p,new Set,!0)}async function E(){if(!V(m)||V(p).size===0)return;I(h,!0);let e=Array.from(V(p));(await ro(V(m),e)).success&&(I(p,new Set,!0),I(m,``)),I(h,!1)}async function D(e,t){e&&t&&(await ro(e,[t]),I(g,null))}async function O(e,t){if(confirm(`¿Deseas eliminar a "${t||e}" de tu agenda de contactos?`)&&(await co(e),V(p).has(e))){let t=new Set(V(p));t.delete(e),I(p,t,!0)}}var k=hp(),A=L(k),ee=L(A),te=R(z(L(ee),4),!0);M(ee);var ne=z(ee,2),re=R(z(L(ne),4),!0);M(ne),M(A);var ie=z(A,2),ae=e=>{var t=ep(),n=cn(t),a=z(L(n),2),o=L(a),s=L(o);J(s),M(o);var c=z(o,2),u=z(c,2);M(a),M(n);var d=z(n,2),f=e=>{var t=Kf(),n=z(L(t),2),i=R(n),a=z(n,4),o=L(a),s=R(o);M(a),M(t),B(()=>{G(i,`No hay prospectos ${V(l)?`que coincidan con la búsqueda`:`activos en el embudo todavía`}`),G(s,`📒 Ver los ${r().length??``} contactos de tu Agenda de Difusión`)}),H(`click`,o,()=>S(`contacts`)),W(e,t)},p=e=>{var t=$f(),n=L(t),r=z(L(n));Xr(r,21,()=>V(_),e=>e.phone,(e,t)=>{let n=P(()=>V(t).receivedFiles?.length||0);var r=Qf(),a=L(r),o=L(a),s=L(o),c=R(s,!0),l=R(z(s,2));M(o),M(a);var u=z(a),d=L(u),f=R(d);M(u);var p=z(u),m=R(p,!0),h=z(p),_=L(h),v=e=>{var r=qf(),i=R(r);B(()=>G(i,`📁 Ver ${V(n)??``} archivo(s)`)),H(`click`,r,()=>Oo(V(t))),W(e,r)},y=e=>{W(e,Jf())};K(_,e=>{V(n)>0?e(v):e(y,-1)}),M(h);var b=z(h),x=R(b,!0),S=z(b),C=L(S),w=e=>{W(e,Yf())},T=e=>{W(e,Xf())};K(C,e=>{V(t).humanPaused?e(w):e(T,-1)}),M(S);var E=z(S),D=L(E),O=L(D),k=z(O,2),A=z(k,2),ee=e=>{var n=Zf(),r=R(n,!0);B(()=>{Ti(n,`title`,V(t).humanPaused?`Reactivar atención automática del bot`:`Pausar bot para atención humana`),G(r,V(t).humanPaused?`Reactivar`:`Pausar`)}),H(`click`,n,()=>Do(V(t).phone)),W(e,n)},te=P(()=>i()(`leads:pause`));K(A,e=>{V(te)&&e(ee)}),M(D),M(E),M(r),B((e,n)=>{G(c,V(t).name||`Sin Nombre`),G(l,`+${V(t).phone??``}`),q(d,1,`badge-tag badge-tag-${e??``}`,`svelte-1cc413u`),G(f,`🏷️ ${(V(t).tag||`Nuevo`)??``}`),Ti(p,`title`,V(t).lastMessage||``),G(m,V(t).lastMessage||`-`),G(x,n)},[()=>(V(t).tag||`nuevo`).toLowerCase().replace(/\s+/g,``),()=>Tl(V(t).lastInteraction)]),H(`click`,O,()=>ko(V(t))),H(`click`,k,()=>I(g,{name:V(t).name,phone:V(t).phone},!0)),W(e,r)}),M(r),M(n),M(t),W(e,t)};K(d,e=>{V(_).length===0?e(f):e(p,-1)}),Y(s,()=>V(l),e=>I(l,e)),H(`click`,c,()=>Qa.set(!0)),H(`click`,u,()=>ho.set(!0)),W(e,t)},oe=e=>{var t=up(),n=cn(t),i=z(L(n),2),o=L(i),s=L(o),c=R(s);s.value=s.__value=`all`;var f=z(s);f.value=f.__value=`google_csv`;var _=z(f);_.value=_.__value=`whatsapp`;var S=z(_);S.value=S.__value=`manual`,M(o),_i(o);var D=z(o,2),k=L(D);J(k),M(D);var A=z(D,2),ee=R(A),te=z(A,2);M(i),M(n);var ne=z(n,2),re=e=>{var t=np(),n=L(t),r=L(n),i=z(L(r)),o=R(i,!0),s=z(i);M(r),N(2),M(n);var c=z(n,2),l=L(c),u=L(l);u.value=u.__value=``,Xr(z(u),1,a,Kr,(e,t)=>{var n=tp(),r=R(n),i={};B(()=>{G(r,`${V(t).name??``} (${(V(t).memberCount||0)??``} contactos)`),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(l),_i(l);var d=z(l,2),f=R(d,!0),g=z(d,2);M(c),M(t),B(()=>{G(o,V(p).size),G(s,` seleccionado${V(p).size===1?``:`s`}`),d.disabled=!V(m)||V(h),G(f,V(h)?`Asignando...`:`➕ Asignar al Grupo`)}),vi(l,()=>V(m),e=>I(m,e)),H(`click`,d,E),H(`click`,g,T),W(e,t)};K(ne,e=>{V(p).size>0&&e(re)});var ie=z(ne,2),ae=e=>{var t=rp(),n=R(z(L(t),6));M(t),H(`click`,n,()=>ho.set(!0)),W(e,t)},oe=e=>{var t=lp(),n=cn(t),r=L(n),i=L(r),a=L(i),o=L(a),s=L(o);J(s),M(o),N(5),M(a),M(i);var c=z(i);Xr(c,21,()=>V(b),e=>e.phone,(e,t)=>{let n=P(()=>V(p).has(V(t).phone));var r=sp(),i=L(r),a=L(i);J(a),M(i);var o=z(i),s=L(o),c=L(s),l=R(c,!0),u=R(z(c,2));M(s),M(o);var d=z(o),f=L(d),m=e=>{W(e,ip())},h=e=>{W(e,ap())},_=e=>{W(e,op())};K(f,e=>{V(t).source===`whatsapp`?e(m):V(t).source===`google_csv`?e(h,1):e(_,-1)}),M(d);var v=z(d),y=R(L(v));M(v);var b=z(v),x=R(b,!0),S=z(b),w=L(S),T=L(w),E=z(T,2);M(w),M(S),M(r),B(e=>{q(r,1,oi(V(n)?`row-selected`:``),`svelte-1cc413u`),wi(a,V(n)),G(l,V(t).name||`Sin Nombre`),G(u,`+${V(t).phone??``}`),G(y,`🏷️ ${(V(t).tags||`General`)??``}`),G(x,e)},[()=>Tl(V(t).createdAt)]),H(`change`,a,()=>C(V(t).phone)),H(`click`,T,()=>I(g,V(t),!0)),H(`click`,E,()=>O(V(t).phone,V(t).name)),W(e,r)}),M(c),M(r),M(n);var l=z(n,2),u=e=>{var t=cp(),n=L(t),r=R(n),i=z(n,2),a=L(i),o=z(a,2),s=R(o),c=z(o,2);M(i),M(t),B(e=>{G(r,`Mostrando ${(V(d)-1)*50+1} - ${e??``} de ${V(v).length??``} contactos`),a.disabled=V(d)<=1,G(s,`Página ${V(d)??``} de ${V(y)??``}`),c.disabled=V(d)>=V(y)},[()=>Math.min(V(d)*50,V(v).length)]),H(`click`,a,()=>qt(d,-1)),H(`click`,c,()=>qt(d)),W(e,t)};K(l,e=>{V(y)>1&&e(u)}),B(()=>wi(s,V(x))),H(`change`,s,w),W(e,t)};K(ie,e=>{V(v).length===0?e(ae):e(oe,-1)}),B(()=>{G(c,`Todos los orígenes (${r().length??``})`),G(ee,`👥 Grupos de Difusión (${a().length??``})`)}),vi(o,()=>V(u),e=>I(u,e)),Y(k,()=>V(l),e=>I(l,e)),H(`click`,A,()=>Qa.set(!0)),H(`click`,te,()=>ho.set(!0)),W(e,t)};K(ie,e=>{V(c)===`crm`?e(ae):e(oe,-1)});var se=z(ie,2),ce=e=>{{let t=P(()=>!!V(g)),n=P(()=>V(g).name||`este contacto`),r=P(()=>V(g).phone);il(e,{get isOpen(){return V(t)},title:`👥 Asignar a Grupo de Difusión`,get subtitle(){return`Añade a ${V(n)??``} (+${V(r)??``}) a un grupo de difusión`},maxWidth:`460px`,onClose:()=>I(g,null),children:(e,t)=>{var n=Ir(),r=cn(n),i=e=>{var t=dp(),n=z(L(t),2);M(t),H(`click`,n,()=>{I(g,null),Qa.set(!0)}),W(e,t)},o=e=>{var t=mp(),n=z(L(t),2);Xr(n,5,a,Kr,(e,t)=>{var n=pp(),r=L(n),i=L(r),a=z(i,2),o=L(a),s=R(o,!0),c=z(o,2),l=e=>{var n=fp(),r=R(n,!0);B(()=>G(r,V(t).description)),W(e,n)};K(c,e=>{V(t).description&&e(l)}),M(a),M(r);var u=R(z(r,2));M(n),B(()=>{pi(i,`background-color: ${(V(t).color||`#38bdf8`)??``};`),G(s,V(t).name),G(u,`👤 ${(V(t).memberCount||0)??``}`)}),H(`click`,n,()=>D(V(t).id,V(g).phone)),W(e,n)}),M(n),M(t),W(e,t)};K(r,e=>{a().length===0?e(i):e(o,-1)}),W(e,n)},$$slots:{default:!0}})}};K(se,e=>{V(g)&&e(ce)}),M(k),B(()=>{q(ee,1,`subtab-btn ${V(c)===`crm`?`active`:``}`,`svelte-1cc413u`),G(te,n().length),q(ne,1,`subtab-btn ${V(c)===`contacts`?`active`:``}`,`svelte-1cc413u`),G(re,r().length)}),H(`click`,ee,()=>S(`crm`)),H(`click`,ne,()=>S(`contacts`)),W(e,k),We(),s()}Tr([`click`,`change`]);var _p=U(`<div class="library-drag-overlay svelte-1ktenzm"><div class="library-drag-card svelte-1ktenzm"><div style="font-size: 46px; margin-bottom: 8px;">📥</div> <h3 class="svelte-1ktenzm">Suelta tu documento aquí</h3> <p class="svelte-1ktenzm">Se abrirá para integrarlo a la memoria de Gemini (.docx, .txt, .md)</p></div></div>`),vp=U(`<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Subir Documento</button>`),yp=U(`<div class="lib-banner-warning svelte-1ktenzm"><span>⚠️ <strong>Todos los documentos están pausados:</strong> Gemini no responderá mensajes para esta empresa hasta que actives al menos un documento.</span></div>`),bp=U(`<button type="button" class="btn btn-primary" style="margin-top: 16px;">Subir Primer Documento</button>`),xp=U(`<div class="empty-library-state dropzone-interactive svelte-1ktenzm" title="Haz clic o arrastra un archivo aquí para subirlo a la biblioteca"><div style="font-size: 40px; margin-bottom: 12px;">📚</div> <h3 class="svelte-1ktenzm">La biblioteca de conocimiento está vacía</h3> <p>Arrastra aquí tus documentos Word (.docx), Markdown (.md) o texto (.txt), o haz clic para subirlos y entrenar las respuestas de Gemini.</p> <!></div>`),Sp=U(`<label class="switch switch-sm" title="Activar/Desactivar para Gemini"><input type="checkbox"/> <span class="slider round"></span></label>`),Cp=U(`<button type="button" class="icon-btn delete-btn" title="Eliminar de la biblioteca"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`),wp=U(`<div><div class="lib-card-top svelte-1ktenzm"><div class="lib-card-title-group svelte-1ktenzm"><span class="lib-doc-icon svelte-1ktenzm"> </span> <div><strong class="lib-doc-name svelte-1ktenzm"> </strong> <div class="lib-doc-orig svelte-1ktenzm"> </div></div></div> <div class="lib-toggle-group svelte-1ktenzm"><!> <span> </span></div></div> <div class="lib-chips-row svelte-1ktenzm"><span class="lib-chip svelte-1ktenzm">📊 <strong> </strong> palabras</span> <span class="lib-chip svelte-1ktenzm">🔤 <strong> </strong> caracteres</span> <span class="lib-chip svelte-1ktenzm"> </span> <span class="lib-chip svelte-1ktenzm"> </span></div> <div class="lib-card-actions svelte-1ktenzm"><button type="button" class="btn btn-outline-sm">👁️ Ver / Editar Markdown Limpio</button> <!></div></div>`),Tp=U(`<div class="library-cards-grid svelte-1ktenzm"></div>`),Ep=U(`<section id="tab-library" class="tab-content active lib-tab-section svelte-1ktenzm"><!> <div class="content-toolbar"><div><h2>Biblioteca de Conocimiento (Contexto IA)</h2> <p class="section-desc">Entrena a Gemini con tus documentos oficiales para que responda con la información real de tu empresa sin inventar datos.</p></div> <div style="display: flex; gap: 8px;"><button type="button" class="btn btn-secondary" title="Actualizar lista">🔄 Refrescar</button> <!></div></div> <div class="library-stats-bar svelte-1ktenzm"><div class="lib-stat-card svelte-1ktenzm"><span class="lib-stat-label svelte-1ktenzm">Documentos Activos</span> <strong class="lib-stat-val svelte-1ktenzm"> </strong></div> <div class="lib-stat-card svelte-1ktenzm"><span class="lib-stat-label svelte-1ktenzm">Total de Palabras Aprendidas</span> <strong class="lib-stat-val svelte-1ktenzm"> </strong></div></div> <!> <!></section>`);function Dp(e,t){Ue(t,!0);let n=()=>Z(zs,`$hasPermission`,a),r=()=>Z(Yo,`$libraryStats`,a),i=()=>Z(Jo,`$documents`,a),[a,o]=Ui(),s=F(!1);function c(e){e.dataTransfer?.types?.includes(`Files`)&&(e.preventDefault(),I(s,!0))}function l(e){e.preventDefault(),I(s,!1)}function u(e){e.preventDefault(),I(s,!1);let t=e.dataTransfer?.files?.[0];t&&($o.set(t),Qo.set(!0))}function d(e,t){confirm(`¿Deseas eliminar el documento "${t}" de la biblioteca? Gemini ya no tendrá acceso a esta información.`)&&rs(e)}var f=Ep(),p=L(f),m=e=>{W(e,_p())};K(p,e=>{V(s)&&e(m)});var h=z(p,2),g=z(L(h),2),_=L(g),v=z(_,2),y=e=>{var t=vp();H(`click`,t,()=>Qo.set(!0)),W(e,t)},b=P(()=>n()(`library:upload`));K(v,e=>{V(b)&&e(y)}),M(g),M(h);var x=z(h,2),S=L(x),C=R(z(L(S),2),!0);M(S);var w=z(S,2),T=R(z(L(w),2),!0);M(w),M(x);var E=z(x,2),D=e=>{W(e,yp())};K(E,e=>{r().activeDocuments===0&&i().length>0&&e(D)});var O=z(E,2),k=e=>{var t=xp(),r=z(L(t),6),i=e=>{var t=bp();H(`click`,t,e=>{e.stopPropagation(),Qo.set(!0)}),W(e,t)},a=P(()=>n()(`library:upload`));K(r,e=>{V(a)&&e(i)}),M(t),H(`click`,t,()=>Qo.set(!0)),W(e,t)},A=e=>{var t=Tp();Xr(t,5,i,e=>e.id,(e,t)=>{let r=P(()=>(V(t).originalFilename||``).endsWith(`.docx`)),i=P(()=>V(t).active!==!1);var a=wp(),o=L(a),s=L(o),c=L(s),l=R(c,!0),u=z(c,2),f=L(u),p=R(f,!0),m=R(z(f,2),!0);M(u),M(s);var h=z(s,2),g=L(h),_=e=>{var n=Sp(),r=L(n);J(r),N(2),M(n),B(()=>wi(r,V(i))),H(`change`,r,()=>ns(V(t).id)),W(e,n)},v=P(()=>n()(`library:toggle`));K(g,e=>{V(v)&&e(_)});var y=z(g,2),b=R(y,!0);M(h),M(o);var x=z(o,2),S=L(x),C=R(z(L(S)),!0);N(),M(S);var w=z(S,2),T=R(z(L(w)),!0);N(),M(w);var E=z(w,2),D=R(E),O=R(z(E,2));M(x);var k=z(x,2),A=L(k),ee=z(A,2),te=e=>{var n=Cp();H(`click`,n,()=>d(V(t).id,V(t).name||V(t).originalFilename)),W(e,n)},ne=P(()=>n()(`library:delete`));K(ee,e=>{V(ne)&&e(te)}),M(k),M(a),B((e,n)=>{q(a,1,`library-card ${V(i)?``:`disabled`}`,`svelte-1ktenzm`),G(l,V(r)?`📘`:`📑`),G(p,V(t).name||V(t).originalFilename),G(m,V(t).originalFilename),q(y,1,`lib-status-text ${V(i)?`active`:`paused`}`,`svelte-1ktenzm`),G(b,V(i)?`Activo en IA`:`Pausado`),G(C,V(t).wordCount||0),G(T,V(t).charCount||0),G(D,`💾 ${e??``}`),G(O,`📅 ${n??``}`)},[()=>wl(V(t).size||0),()=>Tl(V(t).createdAt,{dateStyle:`short`,timeStyle:void 0})]),H(`click`,A,()=>is(V(t).id)),W(e,a)}),M(t),W(e,t)};K(O,e=>{i().length===0?e(k):e(A,-1)}),M(f),B(e=>{G(C,r().activeDocuments||0),G(T,e)},[()=>Number(r().totalWords||0).toLocaleString(`es-CO`)]),wr(`dragover`,f,c),wr(`dragleave`,f,l),wr(`drop`,f,u),H(`click`,_,function(...e){es?.apply(this,e)}),W(e,f),We(),o()}Tr([`click`,`change`]);var Op=U(`<strong>🔑 Clave Exclusiva de esta Empresa Activa</strong>`),kp=U(`<strong>🌐 Clave Global Compartida - Activa</strong>`),Ap=U(`<strong>⚠️ Sin Clave de Gemini Configurada</strong>`),jp=U(`<span class="masked-badge svelte-1890d61"> </span>`),Mp=U(`<span class="spinner-small svelte-1890d61"></span> Probando conexión con Google...`,1),Np=U(`<span class="test-hint svelte-1890d61">Probará la clave actualmente activa</span>`),Pp=U(`<div><span class="alert-icon svelte-1890d61"> </span> <div class="alert-text"> </div></div>`),Fp=U(`<button type="button" class="btn btn-outline-danger btn-sm" title="Quitar clave exclusiva y volver a la Clave Global Compartida -">🗑️ Usar Clave Global Compartida -</button>`),Ip=U(`<div class="gemini-modal-body svelte-1890d61"><div><div class="status-box-header svelte-1890d61"><span class="status-indicator-dot svelte-1890d61"></span> <!></div> <p class="status-desc svelte-1890d61"><!></p></div> <div class="form-group"><div class="label-row svelte-1890d61"><label for="gemini-key-input" class="svelte-1890d61">Clave de API de Gemini (Google AI Studio)</label> <!></div> <div class="input-with-button svelte-1890d61"><input id="gemini-key-input" autocomplete="off" class="svelte-1890d61"/> <button type="button" class="btn-toggle-eye svelte-1890d61"> </button></div> <small class="field-hint svelte-1890d61">Puedes usar la misma clave en varias empresas o asignar una
+                    difusiones masivas.</p></div> <div class="toolbar-actions-group svelte-1cc413u"><select class="source-filter-select svelte-1cc413u"><option> </option><option>Google Contacts CSV</option><option>Agenda de WhatsApp</option><option>Manuales</option></select> <div class="toolbar-search svelte-1cc413u"><input type="search" class="search-input svelte-1cc413u" placeholder="🔍 Buscar contacto por nombre o número..."/></div> <button type="button" class="btn btn-outline" title="Crear y organizar grupos de difusión"> </button> <button type="button" class="btn btn-primary" title="Importar más contactos desde CSV o WhatsApp">📥 Importar Contactos</button></div></div> <!> <!>`,
+        1,
+    ),
+    dp = U(
+        `<div class="empty-assign-state svelte-1cc413u"><p>No tienes grupos de difusión creados aún.</p> <button type="button" class="btn btn-primary btn-sm">+ Crear Primer Grupo</button></div>`,
+    ),
+    fp = U(`<span class="assign-group-desc svelte-1cc413u"> </span>`),
+    pp = U(
+        `<button type="button" class="assign-group-item svelte-1cc413u"><div class="assign-group-info svelte-1cc413u"><span class="assign-color-dot svelte-1cc413u"></span> <div><strong style="color: #fff; font-size: 0.9rem;"> </strong> <!></div></div> <span class="assign-group-count svelte-1cc413u"> </span></button>`,
+    ),
+    mp =
+        U(`<div class="assign-groups-modal-body"><p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 12px;">Selecciona el grupo al que deseas agregar a este
+                        contacto:</p> <div class="assign-groups-list svelte-1cc413u"></div></div>`),
+    hp = U(
+        `<section id="tab-leads" class="tab-content active"><div class="leads-view-selector svelte-1cc413u"><button type="button"><span class="subtab-icon">🎯</span> <span class="subtab-text">Prospectos del Embudo (CRM)</span> <span class="subtab-badge svelte-1cc413u"> </span></button> <button type="button"><span class="subtab-icon">📒</span> <span class="subtab-text">Agenda de Contactos & Difusión</span> <span class="subtab-badge subtab-badge-accent svelte-1cc413u"> </span></button></div> <!> <!></section>`,
+    );
+function gp(e, t) {
+    Ue(t, !0);
+    let n = () => Z(fo, `$leads`, o),
+        r = () => Z(ao, `$contacts`, o),
+        i = () => Z(zs, `$hasPermission`, o),
+        a = () => Z(Za, `$groups`, o),
+        [o, s] = Ui(),
+        c = F(`crm`),
+        l = F(``),
+        u = F(`all`),
+        d = F(1),
+        f = null;
+    (Ki(() => {
+        (Eo(), (f = setInterval(Eo, 4e3)));
+    }),
+        qi(() => {
+            f &&= (clearInterval(f), null);
+        }));
+    let p = F(Xt(new Set())),
+        m = F(``),
+        h = F(!1),
+        g = F(null),
+        _ = P(() =>
+            n().filter((e) => {
+                if (!V(l).trim()) return !0;
+                let t = V(l).toLowerCase();
+                return (
+                    (e.name || ``).toLowerCase().includes(t) ||
+                    (e.phone || ``).includes(t) ||
+                    (e.lastMessage || ``).toLowerCase().includes(t) ||
+                    (e.tag || ``).toLowerCase().includes(t)
+                );
+            }),
+        ),
+        v = P(() =>
+            r().filter((e) => {
+                if (V(u) !== `all` && e.source !== V(u)) return !1;
+                if (!V(l).trim()) return !0;
+                let t = V(l).toLowerCase();
+                return (
+                    (e.name || ``).toLowerCase().includes(t) ||
+                    (e.phone || ``).includes(t) ||
+                    (e.tags || ``).toLowerCase().includes(t)
+                );
+            }),
+        ),
+        y = P(() => Math.max(1, Math.ceil(V(v).length / 50))),
+        b = P(() => V(v).slice((V(d) - 1) * 50, V(d) * 50)),
+        x = P(() => V(b).length > 0 && V(b).every((e) => V(p).has(e.phone)));
+    function S(e) {
+        (I(c, e, !0), I(l, ``), I(d, 1));
+    }
+    function C(e) {
+        let t = new Set(V(p));
+        (t.has(e) ? t.delete(e) : t.add(e), I(p, t, !0));
+    }
+    function w() {
+        let e = V(b).map((e) => e.phone),
+            t = new Set(V(p));
+        if (V(x)) for (let n of e) t.delete(n);
+        else for (let n of e) t.add(n);
+        I(p, t, !0);
+    }
+    function T() {
+        I(p, new Set(), !0);
+    }
+    async function E() {
+        if (!V(m) || V(p).size === 0) return;
+        I(h, !0);
+        let e = Array.from(V(p));
+        ((await ro(V(m), e)).success && (I(p, new Set(), !0), I(m, ``)),
+            I(h, !1));
+    }
+    async function D(e, t) {
+        e && t && (await ro(e, [t]), I(g, null));
+    }
+    async function O(e, t) {
+        if (
+            confirm(
+                `¿Deseas eliminar a "${t || e}" de tu agenda de contactos?`,
+            ) &&
+            (await co(e), V(p).has(e))
+        ) {
+            let t = new Set(V(p));
+            (t.delete(e), I(p, t, !0));
+        }
+    }
+    var k = hp(),
+        A = L(k),
+        ee = L(A),
+        te = R(z(L(ee), 4), !0);
+    M(ee);
+    var ne = z(ee, 2),
+        re = R(z(L(ne), 4), !0);
+    (M(ne), M(A));
+    var ie = z(A, 2),
+        ae = (e) => {
+            var t = ep(),
+                n = cn(t),
+                a = z(L(n), 2),
+                o = L(a),
+                s = L(o);
+            (J(s), M(o));
+            var c = z(o, 2),
+                u = z(c, 2);
+            (M(a), M(n));
+            var d = z(n, 2),
+                f = (e) => {
+                    var t = Kf(),
+                        n = z(L(t), 2),
+                        i = R(n),
+                        a = z(n, 4),
+                        o = L(a),
+                        s = R(o);
+                    (M(a),
+                        M(t),
+                        B(() => {
+                            (G(
+                                i,
+                                `No hay prospectos ${V(l) ? `que coincidan con la búsqueda` : `activos en el embudo todavía`}`,
+                            ),
+                                G(
+                                    s,
+                                    `📒 Ver los ${r().length ?? ``} contactos de tu Agenda de Difusión`,
+                                ));
+                        }),
+                        H(`click`, o, () => S(`contacts`)),
+                        W(e, t));
+                },
+                p = (e) => {
+                    var t = $f(),
+                        n = L(t),
+                        r = z(L(n));
+                    (Xr(
+                        r,
+                        21,
+                        () => V(_),
+                        (e) => e.phone,
+                        (e, t) => {
+                            let n = P(() => V(t).receivedFiles?.length || 0);
+                            var r = Qf(),
+                                a = L(r),
+                                o = L(a),
+                                s = L(o),
+                                c = R(s, !0),
+                                l = R(z(s, 2));
+                            (M(o), M(a));
+                            var u = z(a),
+                                d = L(u),
+                                f = R(d);
+                            M(u);
+                            var p = z(u),
+                                m = R(p, !0),
+                                h = z(p),
+                                _ = L(h),
+                                v = (e) => {
+                                    var r = qf(),
+                                        i = R(r);
+                                    (B(() =>
+                                        G(i, `📁 Ver ${V(n) ?? ``} archivo(s)`),
+                                    ),
+                                        H(`click`, r, () => Oo(V(t))),
+                                        W(e, r));
+                                },
+                                y = (e) => {
+                                    W(e, Jf());
+                                };
+                            (K(_, (e) => {
+                                V(n) > 0 ? e(v) : e(y, -1);
+                            }),
+                                M(h));
+                            var b = z(h),
+                                x = R(b, !0),
+                                S = z(b),
+                                C = L(S),
+                                w = (e) => {
+                                    W(e, Yf());
+                                },
+                                T = (e) => {
+                                    W(e, Xf());
+                                };
+                            (K(C, (e) => {
+                                V(t).humanPaused ? e(w) : e(T, -1);
+                            }),
+                                M(S));
+                            var E = z(S),
+                                D = L(E),
+                                O = L(D),
+                                k = z(O, 2),
+                                A = z(k, 2),
+                                ee = (e) => {
+                                    var n = Zf(),
+                                        r = R(n, !0);
+                                    (B(() => {
+                                        (Ti(
+                                            n,
+                                            `title`,
+                                            V(t).humanPaused
+                                                ? `Reactivar atención automática del bot`
+                                                : `Pausar bot para atención humana`,
+                                        ),
+                                            G(
+                                                r,
+                                                V(t).humanPaused
+                                                    ? `Reactivar`
+                                                    : `Pausar`,
+                                            ));
+                                    }),
+                                        H(`click`, n, () => Do(V(t).phone)),
+                                        W(e, n));
+                                },
+                                te = P(() => i()(`leads:pause`));
+                            (K(A, (e) => {
+                                V(te) && e(ee);
+                            }),
+                                M(D),
+                                M(E),
+                                M(r),
+                                B(
+                                    (e, n) => {
+                                        (G(c, V(t).name || `Sin Nombre`),
+                                            G(l, `+${V(t).phone ?? ``}`),
+                                            q(
+                                                d,
+                                                1,
+                                                `badge-tag badge-tag-${e ?? ``}`,
+                                                `svelte-1cc413u`,
+                                            ),
+                                            G(
+                                                f,
+                                                `🏷️ ${(V(t).tag || `Nuevo`) ?? ``}`,
+                                            ),
+                                            Ti(
+                                                p,
+                                                `title`,
+                                                V(t).lastMessage || ``,
+                                            ),
+                                            G(m, V(t).lastMessage || `-`),
+                                            G(x, n));
+                                    },
+                                    [
+                                        () =>
+                                            (V(t).tag || `nuevo`)
+                                                .toLowerCase()
+                                                .replace(/\s+/g, ``),
+                                        () => Tl(V(t).lastInteraction),
+                                    ],
+                                ),
+                                H(`click`, O, () => ko(V(t))),
+                                H(`click`, k, () =>
+                                    I(
+                                        g,
+                                        { name: V(t).name, phone: V(t).phone },
+                                        !0,
+                                    ),
+                                ),
+                                W(e, r));
+                        },
+                    ),
+                        M(r),
+                        M(n),
+                        M(t),
+                        W(e, t));
+                };
+            (K(d, (e) => {
+                V(_).length === 0 ? e(f) : e(p, -1);
+            }),
+                Y(
+                    s,
+                    () => V(l),
+                    (e) => I(l, e),
+                ),
+                H(`click`, c, () => Qa.set(!0)),
+                H(`click`, u, () => ho.set(!0)),
+                W(e, t));
+        },
+        oe = (e) => {
+            var t = up(),
+                n = cn(t),
+                i = z(L(n), 2),
+                o = L(i),
+                s = L(o),
+                c = R(s);
+            s.value = s.__value = `all`;
+            var f = z(s);
+            f.value = f.__value = `google_csv`;
+            var _ = z(f);
+            _.value = _.__value = `whatsapp`;
+            var S = z(_);
+            ((S.value = S.__value = `manual`), M(o), _i(o));
+            var D = z(o, 2),
+                k = L(D);
+            (J(k), M(D));
+            var A = z(D, 2),
+                ee = R(A),
+                te = z(A, 2);
+            (M(i), M(n));
+            var ne = z(n, 2),
+                re = (e) => {
+                    var t = np(),
+                        n = L(t),
+                        r = L(n),
+                        i = z(L(r)),
+                        o = R(i, !0),
+                        s = z(i);
+                    (M(r), N(2), M(n));
+                    var c = z(n, 2),
+                        l = L(c),
+                        u = L(l);
+                    ((u.value = u.__value = ``),
+                        Xr(z(u), 1, a, Kr, (e, t) => {
+                            var n = tp(),
+                                r = R(n),
+                                i = {};
+                            (B(() => {
+                                (G(
+                                    r,
+                                    `${V(t).name ?? ``} (${(V(t).memberCount || 0) ?? ``} contactos)`,
+                                ),
+                                    i !== (i = V(t).id) &&
+                                        (n.value = (n.__value = i) ?? ``));
+                            }),
+                                W(e, n));
+                        }),
+                        M(l),
+                        _i(l));
+                    var d = z(l, 2),
+                        f = R(d, !0),
+                        g = z(d, 2);
+                    (M(c),
+                        M(t),
+                        B(() => {
+                            (G(o, V(p).size),
+                                G(
+                                    s,
+                                    ` seleccionado${V(p).size === 1 ? `` : `s`}`,
+                                ),
+                                (d.disabled = !V(m) || V(h)),
+                                G(
+                                    f,
+                                    V(h)
+                                        ? `Asignando...`
+                                        : `➕ Asignar al Grupo`,
+                                ));
+                        }),
+                        vi(
+                            l,
+                            () => V(m),
+                            (e) => I(m, e),
+                        ),
+                        H(`click`, d, E),
+                        H(`click`, g, T),
+                        W(e, t));
+                };
+            K(ne, (e) => {
+                V(p).size > 0 && e(re);
+            });
+            var ie = z(ne, 2),
+                ae = (e) => {
+                    var t = rp(),
+                        n = R(z(L(t), 6));
+                    (M(t), H(`click`, n, () => ho.set(!0)), W(e, t));
+                },
+                oe = (e) => {
+                    var t = lp(),
+                        n = cn(t),
+                        r = L(n),
+                        i = L(r),
+                        a = L(i),
+                        o = L(a),
+                        s = L(o);
+                    (J(s), M(o), N(5), M(a), M(i));
+                    var c = z(i);
+                    (Xr(
+                        c,
+                        21,
+                        () => V(b),
+                        (e) => e.phone,
+                        (e, t) => {
+                            let n = P(() => V(p).has(V(t).phone));
+                            var r = sp(),
+                                i = L(r),
+                                a = L(i);
+                            (J(a), M(i));
+                            var o = z(i),
+                                s = L(o),
+                                c = L(s),
+                                l = R(c, !0),
+                                u = R(z(c, 2));
+                            (M(s), M(o));
+                            var d = z(o),
+                                f = L(d),
+                                m = (e) => {
+                                    W(e, ip());
+                                },
+                                h = (e) => {
+                                    W(e, ap());
+                                },
+                                _ = (e) => {
+                                    W(e, op());
+                                };
+                            (K(f, (e) => {
+                                V(t).source === `whatsapp`
+                                    ? e(m)
+                                    : V(t).source === `google_csv`
+                                      ? e(h, 1)
+                                      : e(_, -1);
+                            }),
+                                M(d));
+                            var v = z(d),
+                                y = R(L(v));
+                            M(v);
+                            var b = z(v),
+                                x = R(b, !0),
+                                S = z(b),
+                                w = L(S),
+                                T = L(w),
+                                E = z(T, 2);
+                            (M(w),
+                                M(S),
+                                M(r),
+                                B(
+                                    (e) => {
+                                        (q(
+                                            r,
+                                            1,
+                                            oi(V(n) ? `row-selected` : ``),
+                                            `svelte-1cc413u`,
+                                        ),
+                                            wi(a, V(n)),
+                                            G(l, V(t).name || `Sin Nombre`),
+                                            G(u, `+${V(t).phone ?? ``}`),
+                                            G(
+                                                y,
+                                                `🏷️ ${(V(t).tags || `General`) ?? ``}`,
+                                            ),
+                                            G(x, e));
+                                    },
+                                    [() => Tl(V(t).createdAt)],
+                                ),
+                                H(`change`, a, () => C(V(t).phone)),
+                                H(`click`, T, () => I(g, V(t), !0)),
+                                H(`click`, E, () => O(V(t).phone, V(t).name)),
+                                W(e, r));
+                        },
+                    ),
+                        M(c),
+                        M(r),
+                        M(n));
+                    var l = z(n, 2),
+                        u = (e) => {
+                            var t = cp(),
+                                n = L(t),
+                                r = R(n),
+                                i = z(n, 2),
+                                a = L(i),
+                                o = z(a, 2),
+                                s = R(o),
+                                c = z(o, 2);
+                            (M(i),
+                                M(t),
+                                B(
+                                    (e) => {
+                                        (G(
+                                            r,
+                                            `Mostrando ${(V(d) - 1) * 50 + 1} - ${e ?? ``} de ${V(v).length ?? ``} contactos`,
+                                        ),
+                                            (a.disabled = V(d) <= 1),
+                                            G(
+                                                s,
+                                                `Página ${V(d) ?? ``} de ${V(y) ?? ``}`,
+                                            ),
+                                            (c.disabled = V(d) >= V(y)));
+                                    },
+                                    [() => Math.min(V(d) * 50, V(v).length)],
+                                ),
+                                H(`click`, a, () => qt(d, -1)),
+                                H(`click`, c, () => qt(d)),
+                                W(e, t));
+                        };
+                    (K(l, (e) => {
+                        V(y) > 1 && e(u);
+                    }),
+                        B(() => wi(s, V(x))),
+                        H(`change`, s, w),
+                        W(e, t));
+                };
+            (K(ie, (e) => {
+                V(v).length === 0 ? e(ae) : e(oe, -1);
+            }),
+                B(() => {
+                    (G(c, `Todos los orígenes (${r().length ?? ``})`),
+                        G(ee, `👥 Grupos de Difusión (${a().length ?? ``})`));
+                }),
+                vi(
+                    o,
+                    () => V(u),
+                    (e) => I(u, e),
+                ),
+                Y(
+                    k,
+                    () => V(l),
+                    (e) => I(l, e),
+                ),
+                H(`click`, A, () => Qa.set(!0)),
+                H(`click`, te, () => ho.set(!0)),
+                W(e, t));
+        };
+    K(ie, (e) => {
+        V(c) === `crm` ? e(ae) : e(oe, -1);
+    });
+    var se = z(ie, 2),
+        ce = (e) => {
+            {
+                let t = P(() => !!V(g)),
+                    n = P(() => V(g).name || `este contacto`),
+                    r = P(() => V(g).phone);
+                il(e, {
+                    get isOpen() {
+                        return V(t);
+                    },
+                    title: `👥 Asignar a Grupo de Difusión`,
+                    get subtitle() {
+                        return `Añade a ${V(n) ?? ``} (+${V(r) ?? ``}) a un grupo de difusión`;
+                    },
+                    maxWidth: `460px`,
+                    onClose: () => I(g, null),
+                    children: (e, t) => {
+                        var n = Ir(),
+                            r = cn(n),
+                            i = (e) => {
+                                var t = dp(),
+                                    n = z(L(t), 2);
+                                (M(t),
+                                    H(`click`, n, () => {
+                                        (I(g, null), Qa.set(!0));
+                                    }),
+                                    W(e, t));
+                            },
+                            o = (e) => {
+                                var t = mp(),
+                                    n = z(L(t), 2);
+                                (Xr(n, 5, a, Kr, (e, t) => {
+                                    var n = pp(),
+                                        r = L(n),
+                                        i = L(r),
+                                        a = z(i, 2),
+                                        o = L(a),
+                                        s = R(o, !0),
+                                        c = z(o, 2),
+                                        l = (e) => {
+                                            var n = fp(),
+                                                r = R(n, !0);
+                                            (B(() => G(r, V(t).description)),
+                                                W(e, n));
+                                        };
+                                    (K(c, (e) => {
+                                        V(t).description && e(l);
+                                    }),
+                                        M(a),
+                                        M(r));
+                                    var u = R(z(r, 2));
+                                    (M(n),
+                                        B(() => {
+                                            (pi(
+                                                i,
+                                                `background-color: ${(V(t).color || `#38bdf8`) ?? ``};`,
+                                            ),
+                                                G(s, V(t).name),
+                                                G(
+                                                    u,
+                                                    `👤 ${(V(t).memberCount || 0) ?? ``}`,
+                                                ));
+                                        }),
+                                        H(`click`, n, () =>
+                                            D(V(t).id, V(g).phone),
+                                        ),
+                                        W(e, n));
+                                }),
+                                    M(n),
+                                    M(t),
+                                    W(e, t));
+                            };
+                        (K(r, (e) => {
+                            a().length === 0 ? e(i) : e(o, -1);
+                        }),
+                            W(e, n));
+                    },
+                    $$slots: { default: !0 },
+                });
+            }
+        };
+    (K(se, (e) => {
+        V(g) && e(ce);
+    }),
+        M(k),
+        B(() => {
+            (q(
+                ee,
+                1,
+                `subtab-btn ${V(c) === `crm` ? `active` : ``}`,
+                `svelte-1cc413u`,
+            ),
+                G(te, n().length),
+                q(
+                    ne,
+                    1,
+                    `subtab-btn ${V(c) === `contacts` ? `active` : ``}`,
+                    `svelte-1cc413u`,
+                ),
+                G(re, r().length));
+        }),
+        H(`click`, ee, () => S(`crm`)),
+        H(`click`, ne, () => S(`contacts`)),
+        W(e, k),
+        We(),
+        s());
+}
+Tr([`click`, `change`]);
+var _p = U(
+        `<div class="library-drag-overlay svelte-1ktenzm"><div class="library-drag-card svelte-1ktenzm"><div style="font-size: 46px; margin-bottom: 8px;">📥</div> <h3 class="svelte-1ktenzm">Suelta tu documento aquí</h3> <p class="svelte-1ktenzm">Se abrirá para integrarlo a la memoria de Gemini (.docx, .txt, .md)</p></div></div>`,
+    ),
+    vp = U(
+        `<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Subir Documento</button>`,
+    ),
+    yp = U(
+        `<div class="lib-banner-warning svelte-1ktenzm"><span>⚠️ <strong>Todos los documentos están pausados:</strong> Gemini no responderá mensajes para esta empresa hasta que actives al menos un documento.</span></div>`,
+    ),
+    bp = U(
+        `<button type="button" class="btn btn-primary" style="margin-top: 16px;">Subir Primer Documento</button>`,
+    ),
+    xp = U(
+        `<div class="empty-library-state dropzone-interactive svelte-1ktenzm" title="Haz clic o arrastra un archivo aquí para subirlo a la biblioteca"><div style="font-size: 40px; margin-bottom: 12px;">📚</div> <h3 class="svelte-1ktenzm">La biblioteca de conocimiento está vacía</h3> <p>Arrastra aquí tus documentos Word (.docx), Markdown (.md) o texto (.txt), o haz clic para subirlos y entrenar las respuestas de Gemini.</p> <!></div>`,
+    ),
+    Sp = U(
+        `<label class="switch switch-sm" title="Activar/Desactivar para Gemini"><input type="checkbox"/> <span class="slider round"></span></label>`,
+    ),
+    Cp = U(
+        `<button type="button" class="icon-btn delete-btn" title="Eliminar de la biblioteca"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`,
+    ),
+    wp = U(
+        `<div><div class="lib-card-top svelte-1ktenzm"><div class="lib-card-title-group svelte-1ktenzm"><span class="lib-doc-icon svelte-1ktenzm"> </span> <div><strong class="lib-doc-name svelte-1ktenzm"> </strong> <div class="lib-doc-orig svelte-1ktenzm"> </div></div></div> <div class="lib-toggle-group svelte-1ktenzm"><!> <span> </span></div></div> <div class="lib-chips-row svelte-1ktenzm"><span class="lib-chip svelte-1ktenzm">📊 <strong> </strong> palabras</span> <span class="lib-chip svelte-1ktenzm">🔤 <strong> </strong> caracteres</span> <span class="lib-chip svelte-1ktenzm"> </span> <span class="lib-chip svelte-1ktenzm"> </span></div> <div class="lib-card-actions svelte-1ktenzm"><button type="button" class="btn btn-outline-sm">👁️ Ver / Editar Markdown Limpio</button> <!></div></div>`,
+    ),
+    Tp = U(`<div class="library-cards-grid svelte-1ktenzm"></div>`),
+    Ep = U(
+        `<section id="tab-library" class="tab-content active lib-tab-section svelte-1ktenzm"><!> <div class="content-toolbar"><div><h2>Biblioteca de Conocimiento (Contexto IA)</h2> <p class="section-desc">Entrena a Gemini con tus documentos oficiales para que responda con la información real de tu empresa sin inventar datos.</p></div> <div style="display: flex; gap: 8px;"><button type="button" class="btn btn-secondary" title="Actualizar lista">🔄 Refrescar</button> <!></div></div> <div class="library-stats-bar svelte-1ktenzm"><div class="lib-stat-card svelte-1ktenzm"><span class="lib-stat-label svelte-1ktenzm">Documentos Activos</span> <strong class="lib-stat-val svelte-1ktenzm"> </strong></div> <div class="lib-stat-card svelte-1ktenzm"><span class="lib-stat-label svelte-1ktenzm">Total de Palabras Aprendidas</span> <strong class="lib-stat-val svelte-1ktenzm"> </strong></div></div> <!> <!></section>`,
+    );
+function Dp(e, t) {
+    Ue(t, !0);
+    let n = () => Z(zs, `$hasPermission`, a),
+        r = () => Z(Yo, `$libraryStats`, a),
+        i = () => Z(Jo, `$documents`, a),
+        [a, o] = Ui(),
+        s = F(!1);
+    function c(e) {
+        e.dataTransfer?.types?.includes(`Files`) &&
+            (e.preventDefault(), I(s, !0));
+    }
+    function l(e) {
+        (e.preventDefault(), I(s, !1));
+    }
+    function u(e) {
+        (e.preventDefault(), I(s, !1));
+        let t = e.dataTransfer?.files?.[0];
+        t && ($o.set(t), Qo.set(!0));
+    }
+    function d(e, t) {
+        confirm(
+            `¿Deseas eliminar el documento "${t}" de la biblioteca? Gemini ya no tendrá acceso a esta información.`,
+        ) && rs(e);
+    }
+    var f = Ep(),
+        p = L(f),
+        m = (e) => {
+            W(e, _p());
+        };
+    K(p, (e) => {
+        V(s) && e(m);
+    });
+    var h = z(p, 2),
+        g = z(L(h), 2),
+        _ = L(g),
+        v = z(_, 2),
+        y = (e) => {
+            var t = vp();
+            (H(`click`, t, () => Qo.set(!0)), W(e, t));
+        },
+        b = P(() => n()(`library:upload`));
+    (K(v, (e) => {
+        V(b) && e(y);
+    }),
+        M(g),
+        M(h));
+    var x = z(h, 2),
+        S = L(x),
+        C = R(z(L(S), 2), !0);
+    M(S);
+    var w = z(S, 2),
+        T = R(z(L(w), 2), !0);
+    (M(w), M(x));
+    var E = z(x, 2),
+        D = (e) => {
+            W(e, yp());
+        };
+    K(E, (e) => {
+        r().activeDocuments === 0 && i().length > 0 && e(D);
+    });
+    var O = z(E, 2),
+        k = (e) => {
+            var t = xp(),
+                r = z(L(t), 6),
+                i = (e) => {
+                    var t = bp();
+                    (H(`click`, t, (e) => {
+                        (e.stopPropagation(), Qo.set(!0));
+                    }),
+                        W(e, t));
+                },
+                a = P(() => n()(`library:upload`));
+            (K(r, (e) => {
+                V(a) && e(i);
+            }),
+                M(t),
+                H(`click`, t, () => Qo.set(!0)),
+                W(e, t));
+        },
+        A = (e) => {
+            var t = Tp();
+            (Xr(
+                t,
+                5,
+                i,
+                (e) => e.id,
+                (e, t) => {
+                    let r = P(() =>
+                            (V(t).originalFilename || ``).endsWith(`.docx`),
+                        ),
+                        i = P(() => V(t).active !== !1);
+                    var a = wp(),
+                        o = L(a),
+                        s = L(o),
+                        c = L(s),
+                        l = R(c, !0),
+                        u = z(c, 2),
+                        f = L(u),
+                        p = R(f, !0),
+                        m = R(z(f, 2), !0);
+                    (M(u), M(s));
+                    var h = z(s, 2),
+                        g = L(h),
+                        _ = (e) => {
+                            var n = Sp(),
+                                r = L(n);
+                            (J(r),
+                                N(2),
+                                M(n),
+                                B(() => wi(r, V(i))),
+                                H(`change`, r, () => ns(V(t).id)),
+                                W(e, n));
+                        },
+                        v = P(() => n()(`library:toggle`));
+                    K(g, (e) => {
+                        V(v) && e(_);
+                    });
+                    var y = z(g, 2),
+                        b = R(y, !0);
+                    (M(h), M(o));
+                    var x = z(o, 2),
+                        S = L(x),
+                        C = R(z(L(S)), !0);
+                    (N(), M(S));
+                    var w = z(S, 2),
+                        T = R(z(L(w)), !0);
+                    (N(), M(w));
+                    var E = z(w, 2),
+                        D = R(E),
+                        O = R(z(E, 2));
+                    M(x);
+                    var k = z(x, 2),
+                        A = L(k),
+                        ee = z(A, 2),
+                        te = (e) => {
+                            var n = Cp();
+                            (H(`click`, n, () =>
+                                d(V(t).id, V(t).name || V(t).originalFilename),
+                            ),
+                                W(e, n));
+                        },
+                        ne = P(() => n()(`library:delete`));
+                    (K(ee, (e) => {
+                        V(ne) && e(te);
+                    }),
+                        M(k),
+                        M(a),
+                        B(
+                            (e, n) => {
+                                (q(
+                                    a,
+                                    1,
+                                    `library-card ${V(i) ? `` : `disabled`}`,
+                                    `svelte-1ktenzm`,
+                                ),
+                                    G(l, V(r) ? `📘` : `📑`),
+                                    G(p, V(t).name || V(t).originalFilename),
+                                    G(m, V(t).originalFilename),
+                                    q(
+                                        y,
+                                        1,
+                                        `lib-status-text ${V(i) ? `active` : `paused`}`,
+                                        `svelte-1ktenzm`,
+                                    ),
+                                    G(b, V(i) ? `Activo en IA` : `Pausado`),
+                                    G(C, V(t).wordCount || 0),
+                                    G(T, V(t).charCount || 0),
+                                    G(D, `💾 ${e ?? ``}`),
+                                    G(O, `📅 ${n ?? ``}`));
+                            },
+                            [
+                                () => wl(V(t).size || 0),
+                                () =>
+                                    Tl(V(t).createdAt, {
+                                        dateStyle: `short`,
+                                        timeStyle: void 0,
+                                    }),
+                            ],
+                        ),
+                        H(`click`, A, () => is(V(t).id)),
+                        W(e, a));
+                },
+            ),
+                M(t),
+                W(e, t));
+        };
+    (K(O, (e) => {
+        i().length === 0 ? e(k) : e(A, -1);
+    }),
+        M(f),
+        B(
+            (e) => {
+                (G(C, r().activeDocuments || 0), G(T, e));
+            },
+            [() => Number(r().totalWords || 0).toLocaleString(`es-CO`)],
+        ),
+        wr(`dragover`, f, c),
+        wr(`dragleave`, f, l),
+        wr(`drop`, f, u),
+        H(`click`, _, function (...e) {
+            es?.apply(this, e);
+        }),
+        W(e, f),
+        We(),
+        o());
+}
+Tr([`click`, `change`]);
+var Op = U(`<strong>🔑 Clave Exclusiva de esta Empresa Activa</strong>`),
+    kp = U(`<strong>🌐 Clave Global Compartida - Activa</strong>`),
+    Ap = U(`<strong>⚠️ Sin Clave de Gemini Configurada</strong>`),
+    jp = U(`<span class="masked-badge svelte-1890d61"> </span>`),
+    Mp = U(
+        `<span class="spinner-small svelte-1890d61"></span> Probando conexión con Google...`,
+        1,
+    ),
+    Np = U(
+        `<span class="test-hint svelte-1890d61">Probará la clave actualmente activa</span>`,
+    ),
+    Pp = U(
+        `<div><span class="alert-icon svelte-1890d61"> </span> <div class="alert-text"> </div></div>`,
+    ),
+    Fp = U(
+        `<button type="button" class="btn btn-outline-danger btn-sm" title="Quitar clave exclusiva y volver a la Clave Global Compartida -">🗑️ Usar Clave Global Compartida -</button>`,
+    ),
+    Ip =
+        U(`<div class="gemini-modal-body svelte-1890d61"><div><div class="status-box-header svelte-1890d61"><span class="status-indicator-dot svelte-1890d61"></span> <!></div> <p class="status-desc svelte-1890d61"><!></p></div> <div class="form-group"><div class="label-row svelte-1890d61"><label for="gemini-key-input" class="svelte-1890d61">Clave de API de Gemini (Google AI Studio)</label> <!></div> <div class="input-with-button svelte-1890d61"><input id="gemini-key-input" autocomplete="off" class="svelte-1890d61"/> <button type="button" class="btn-toggle-eye svelte-1890d61"> </button></div> <small class="field-hint svelte-1890d61">Puedes usar la misma clave en varias empresas o asignar una
                 distinta para empresas de alto tráfico. Obtén tu clave en <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="svelte-1890d61">Google AI Studio</a>.</small></div> <div class="form-group"><label for="gemini-model-select">Modelo Preferido de Gemini</label> <select id="gemini-model-select"><option>Gemini 3.5 Flash-Lite (Recomendado - Ultrarrápido, respuesta en &lt;1s, bajo consumo de cuota)</option><option>Gemini 3.5 Flash (Gran precisión y razonamiento balanceado)</option><option>Gemini 3.1 Flash-Lite (Ultra veloz de baja latencia)</option><option>Gemini 3.8 Flash (Modelo de última generación de Google)</option></select> <small class="field-hint svelte-1890d61">Si el modelo seleccionado llegara a tener saturación temporal de
                 Google, el sistema automáticamente intentará con los modelos de
-                respaldo.</small></div> <div class="test-row svelte-1890d61"><button type="button" class="btn btn-secondary btn-test svelte-1890d61"><!></button> <!></div> <!> <div class="modal-footer-row svelte-1890d61"><div class="left-actions"><!></div> <div class="right-actions svelte-1890d61"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-primary"><span> </span></button></div></div></div>`);function Lp(e,t){Ue(t,!0);let n=()=>Z(qs,`$geminiStatus`,i),r=()=>Z(ga,`$activeCompany`,i),[i,a]=Ui(),o=Gi(t,`isOpen`,3,!1),s=Gi(t,`onClose`,3,()=>{}),c=F(``),l=F(`gemini-3.5-flash-lite`),u=F(!1),d=F(!1),f=F(!1),p=F(null);bn(()=>{o()&&(I(c,``),I(l,n().model||`gemini-3.5-flash-lite`,!0),I(p,null),I(u,!1))});async function m(){I(d,!0),I(p,null);try{let e=await Zs(V(c).trim()||null,V(l));I(p,{success:!0,message:e.message||`¡Conexión exitosa! El modelo ${V(l)} respondió correctamente.`},!0)}catch(e){I(p,{success:!1,message:e.message||`Error al validar la clave con Google Gemini.`},!0)}finally{I(d,!1)}}async function h(){I(f,!0),I(p,null);try{V(c).trim()?V(c).trim():n().isCustom,(await Xs(V(c).trim()===``?n().isCustom?n().maskedKey:null:V(c).trim(),V(l))).success&&s()()}finally{I(f,!1)}}async function g(){if(confirm(`¿Deseas eliminar la clave exclusiva de esta empresa y usar la clave global del sistema (.env)?`)){I(f,!0);try{(await Xs(null,V(l))).success&&s()()}finally{I(f,!1)}}}{let t=P(()=>`Configuración de Inteligencia Artificial para: ${r()?.name||`Esta Empresa`}`);il(e,{get isOpen(){return o()},title:`🤖 API Key de Google Gemini`,get subtitle(){return V(t)},maxWidth:`640px`,get onClose(){return s()},children:(e,t)=>{var r=Ip(),i=L(r),a=L(i),o=z(L(a),2),_=e=>{W(e,Op())},v=e=>{W(e,kp())},y=e=>{W(e,Ap())};K(o,e=>{n().isCustom?e(_):n().hasGlobalKey?e(v,1):e(y,-1)}),M(a);var b=z(a,2),x=L(b),S=e=>{var t=Fr();B(()=>G(t,`Esta empresa tiene su propia cuota y límite de Gemini
-                    independiente (${n().maskedKey??``}). No se satura con
-                    otras empresas.`)),W(e,t)},C=e=>{W(e,Fr(`Esta empresa está usando la clave compartida del servidor.
+                respaldo.</small></div> <div class="test-row svelte-1890d61"><button type="button" class="btn btn-secondary btn-test svelte-1890d61"><!></button> <!></div> <!> <div class="modal-footer-row svelte-1890d61"><div class="left-actions"><!></div> <div class="right-actions svelte-1890d61"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-primary"><span> </span></button></div></div></div>`);
+function Lp(e, t) {
+    Ue(t, !0);
+    let n = () => Z(qs, `$geminiStatus`, i),
+        r = () => Z(ga, `$activeCompany`, i),
+        [i, a] = Ui(),
+        o = Gi(t, `isOpen`, 3, !1),
+        s = Gi(t, `onClose`, 3, () => {}),
+        c = F(``),
+        l = F(`gemini-3.5-flash-lite`),
+        u = F(!1),
+        d = F(!1),
+        f = F(!1),
+        p = F(null);
+    bn(() => {
+        o() &&
+            (I(c, ``),
+            I(l, n().model || `gemini-3.5-flash-lite`, !0),
+            I(p, null),
+            I(u, !1));
+    });
+    async function m() {
+        (I(d, !0), I(p, null));
+        try {
+            let e = await Zs(V(c).trim() || null, V(l));
+            I(
+                p,
+                {
+                    success: !0,
+                    message:
+                        e.message ||
+                        `¡Conexión exitosa! El modelo ${V(l)} respondió correctamente.`,
+                },
+                !0,
+            );
+        } catch (e) {
+            I(
+                p,
+                {
+                    success: !1,
+                    message:
+                        e.message ||
+                        `Error al validar la clave con Google Gemini.`,
+                },
+                !0,
+            );
+        } finally {
+            I(d, !1);
+        }
+    }
+    async function h() {
+        (I(f, !0), I(p, null));
+        try {
+            (V(c).trim() ? V(c).trim() : n().isCustom,
+                (
+                    await Xs(
+                        V(c).trim() === ``
+                            ? n().isCustom
+                                ? n().maskedKey
+                                : null
+                            : V(c).trim(),
+                        V(l),
+                    )
+                ).success && s()());
+        } finally {
+            I(f, !1);
+        }
+    }
+    async function g() {
+        if (
+            confirm(
+                `¿Deseas eliminar la clave exclusiva de esta empresa y usar la clave global del sistema (.env)?`,
+            )
+        ) {
+            I(f, !0);
+            try {
+                (await Xs(null, V(l))).success && s()();
+            } finally {
+                I(f, !1);
+            }
+        }
+    }
+    {
+        let t = P(
+            () =>
+                `Configuración de Inteligencia Artificial para: ${r()?.name || `Esta Empresa`}`,
+        );
+        il(e, {
+            get isOpen() {
+                return o();
+            },
+            title: `🤖 API Key de Google Gemini`,
+            get subtitle() {
+                return V(t);
+            },
+            maxWidth: `640px`,
+            get onClose() {
+                return s();
+            },
+            children: (e, t) => {
+                var r = Ip(),
+                    i = L(r),
+                    a = L(i),
+                    o = z(L(a), 2),
+                    _ = (e) => {
+                        W(e, Op());
+                    },
+                    v = (e) => {
+                        W(e, kp());
+                    },
+                    y = (e) => {
+                        W(e, Ap());
+                    };
+                (K(o, (e) => {
+                    n().isCustom ? e(_) : n().hasGlobalKey ? e(v, 1) : e(y, -1);
+                }),
+                    M(a));
+                var b = z(a, 2),
+                    x = L(b),
+                    S = (e) => {
+                        var t = Fr();
+                        (B(() =>
+                            G(
+                                t,
+                                `Esta empresa tiene su propia cuota y límite de Gemini
+                    independiente (${n().maskedKey ?? ``}). No se satura con
+                    otras empresas.`,
+                            ),
+                        ),
+                            W(e, t));
+                    },
+                    C = (e) => {
+                        W(
+                            e,
+                            Fr(`Esta empresa está usando la clave compartida del servidor.
                     Puedes asignarle su propia clave abajo para aislar sus
-                    consumos y cuotas.`))},w=e=>{W(e,Fr(`El bot no podrá responder preguntas automáticas ni procesar
-                    notas de voz hasta que configures una API Key.`))};K(x,e=>{n().isCustom?e(S):n().hasGlobalKey?e(C,1):e(w,-1)}),M(b),M(i);var T=z(i,2),E=L(T),D=z(L(E),2),O=e=>{var t=jp(),r=R(t);B(()=>G(r,`Actual: ${n().maskedKey??``}`)),W(e,t)};K(D,e=>{n().isCustom&&e(O)}),M(E);var k=z(E,2),A=L(k);J(A);var ee=z(A,2),te=R(ee,!0);M(k),N(2),M(T);var ne=z(T,2),re=z(L(ne),2),ie=L(re);ie.value=ie.__value=`gemini-3.5-flash-lite`;var ae=z(ie);ae.value=ae.__value=`gemini-3.5-flash`;var oe=z(ae);oe.value=oe.__value=`gemini-3.1-flash-lite`;var se=z(oe);se.value=se.__value=`gemini-3.8-flash`,M(re),_i(re),N(2),M(ne);var ce=z(ne,2),le=L(ce),ue=L(le),de=e=>{var t=Mp();N(),W(e,t)},fe=e=>{W(e,Fr(`🧪 Probar Conexión con Gemini`))};K(ue,e=>{V(d)?e(de):e(fe,-1)}),M(le);var pe=z(le,2),me=e=>{W(e,Np())},he=P(()=>!V(c).trim()&&n().configured);K(pe,e=>{V(he)&&e(me)}),M(ce);var ge=z(ce,2),_e=e=>{var t=Pp(),n=L(t),r=R(n,!0),i=R(z(n,2),!0);M(t),B(()=>{q(t,1,`test-alert ${V(p).success?`alert-success`:`alert-error`}`,`svelte-1890d61`),G(r,V(p).success?`✅`:`❌`),G(i,V(p).message)}),W(e,t)};K(ge,e=>{V(p)&&e(_e)});var j=z(ge,2),ve=L(j),ye=L(ve),be=e=>{var t=Fp();B(()=>t.disabled=V(f)),H(`click`,t,g),W(e,t)};K(ye,e=>{n().isCustom&&e(be)}),M(ve);var xe=z(ve,2),Se=L(xe),Ce=z(Se,2),we=R(L(Ce),!0);M(Ce),M(xe),M(j),M(r),B((e,t)=>{q(i,1,`status-box ${n().isCustom?`custom-active`:n().hasGlobalKey?`global-active`:`no-key-active`}`,`svelte-1890d61`),Ti(A,`type`,V(u)?`text`:`password`),Ti(A,`placeholder`,n().isCustom?`Dejar vacío para mantener la clave actual o escribe una nueva`:`Pega aquí tu API Key (AIzaSy...)`),Ti(ee,`title`,V(u)?`Ocultar clave`:`Mostrar clave`),Ti(ee,`aria-label`,V(u)?`Ocultar clave`:`Mostrar clave`),G(te,V(u)?`🙈`:`👁️`),le.disabled=e,Se.disabled=V(f),Ce.disabled=t,G(we,V(f)?`Guardando...`:`💾 Guardar en esta Empresa`)},[()=>V(d)||!V(c).trim()&&!n().configured,()=>V(f)||V(c).trim()===``&&!n().isCustom&&!V(l)]),Y(A,()=>V(c),e=>I(c,e)),H(`click`,ee,()=>I(u,!V(u))),vi(re,()=>V(l),e=>I(l,e)),H(`click`,le,m),H(`click`,Se,function(...e){s()?.apply(this,e)}),H(`click`,Ce,h),W(e,r)},$$slots:{default:!0}})}We(),a()}Tr([`click`]);var Rp=U(`<span class="status-badge is-custom svelte-1v525za" title="Esta empresa tiene su propia API Key"> </span>`),zp=U(`<span class="status-badge is-global svelte-1v525za" title="Esta empresa comparte la clave global del servidor">🌐 Clave Global</span>`),Bp=U(`<span class="status-badge no-key svelte-1v525za" title="No hay ninguna clave configurada">⚠️ Sin Clave de Gemini</span>`),Vp=U(`<p class="gemini-subtitle key-implications svelte-1v525za">Estás usando la versión premium de nuestro
+                    consumos y cuotas.`),
+                        );
+                    },
+                    w = (e) => {
+                        W(
+                            e,
+                            Fr(`El bot no podrá responder preguntas automáticas ni procesar
+                    notas de voz hasta que configures una API Key.`),
+                        );
+                    };
+                (K(x, (e) => {
+                    n().isCustom ? e(S) : n().hasGlobalKey ? e(C, 1) : e(w, -1);
+                }),
+                    M(b),
+                    M(i));
+                var T = z(i, 2),
+                    E = L(T),
+                    D = z(L(E), 2),
+                    O = (e) => {
+                        var t = jp(),
+                            r = R(t);
+                        (B(() => G(r, `Actual: ${n().maskedKey ?? ``}`)),
+                            W(e, t));
+                    };
+                (K(D, (e) => {
+                    n().isCustom && e(O);
+                }),
+                    M(E));
+                var k = z(E, 2),
+                    A = L(k);
+                J(A);
+                var ee = z(A, 2),
+                    te = R(ee, !0);
+                (M(k), N(2), M(T));
+                var ne = z(T, 2),
+                    re = z(L(ne), 2),
+                    ie = L(re);
+                ie.value = ie.__value = `gemini-3.5-flash-lite`;
+                var ae = z(ie);
+                ae.value = ae.__value = `gemini-3.5-flash`;
+                var oe = z(ae);
+                oe.value = oe.__value = `gemini-3.1-flash-lite`;
+                var se = z(oe);
+                ((se.value = se.__value = `gemini-3.8-flash`),
+                    M(re),
+                    _i(re),
+                    N(2),
+                    M(ne));
+                var ce = z(ne, 2),
+                    le = L(ce),
+                    ue = L(le),
+                    de = (e) => {
+                        var t = Mp();
+                        (N(), W(e, t));
+                    },
+                    fe = (e) => {
+                        W(e, Fr(`🧪 Probar Conexión con Gemini`));
+                    };
+                (K(ue, (e) => {
+                    V(d) ? e(de) : e(fe, -1);
+                }),
+                    M(le));
+                var pe = z(le, 2),
+                    me = (e) => {
+                        W(e, Np());
+                    },
+                    he = P(() => !V(c).trim() && n().configured);
+                (K(pe, (e) => {
+                    V(he) && e(me);
+                }),
+                    M(ce));
+                var ge = z(ce, 2),
+                    _e = (e) => {
+                        var t = Pp(),
+                            n = L(t),
+                            r = R(n, !0),
+                            i = R(z(n, 2), !0);
+                        (M(t),
+                            B(() => {
+                                (q(
+                                    t,
+                                    1,
+                                    `test-alert ${V(p).success ? `alert-success` : `alert-error`}`,
+                                    `svelte-1890d61`,
+                                ),
+                                    G(r, V(p).success ? `✅` : `❌`),
+                                    G(i, V(p).message));
+                            }),
+                            W(e, t));
+                    };
+                K(ge, (e) => {
+                    V(p) && e(_e);
+                });
+                var j = z(ge, 2),
+                    ve = L(j),
+                    ye = L(ve),
+                    be = (e) => {
+                        var t = Fp();
+                        (B(() => (t.disabled = V(f))),
+                            H(`click`, t, g),
+                            W(e, t));
+                    };
+                (K(ye, (e) => {
+                    n().isCustom && e(be);
+                }),
+                    M(ve));
+                var xe = z(ve, 2),
+                    Se = L(xe),
+                    Ce = z(Se, 2),
+                    we = R(L(Ce), !0);
+                (M(Ce),
+                    M(xe),
+                    M(j),
+                    M(r),
+                    B(
+                        (e, t) => {
+                            (q(
+                                i,
+                                1,
+                                `status-box ${n().isCustom ? `custom-active` : n().hasGlobalKey ? `global-active` : `no-key-active`}`,
+                                `svelte-1890d61`,
+                            ),
+                                Ti(A, `type`, V(u) ? `text` : `password`),
+                                Ti(
+                                    A,
+                                    `placeholder`,
+                                    n().isCustom
+                                        ? `Dejar vacío para mantener la clave actual o escribe una nueva`
+                                        : `Pega aquí tu API Key (AIzaSy...)`,
+                                ),
+                                Ti(
+                                    ee,
+                                    `title`,
+                                    V(u) ? `Ocultar clave` : `Mostrar clave`,
+                                ),
+                                Ti(
+                                    ee,
+                                    `aria-label`,
+                                    V(u) ? `Ocultar clave` : `Mostrar clave`,
+                                ),
+                                G(te, V(u) ? `🙈` : `👁️`),
+                                (le.disabled = e),
+                                (Se.disabled = V(f)),
+                                (Ce.disabled = t),
+                                G(
+                                    we,
+                                    V(f)
+                                        ? `Guardando...`
+                                        : `💾 Guardar en esta Empresa`,
+                                ));
+                        },
+                        [
+                            () => V(d) || (!V(c).trim() && !n().configured),
+                            () =>
+                                V(f) ||
+                                (V(c).trim() === `` && !n().isCustom && !V(l)),
+                        ],
+                    ),
+                    Y(
+                        A,
+                        () => V(c),
+                        (e) => I(c, e),
+                    ),
+                    H(`click`, ee, () => I(u, !V(u))),
+                    vi(
+                        re,
+                        () => V(l),
+                        (e) => I(l, e),
+                    ),
+                    H(`click`, le, m),
+                    H(`click`, Se, function (...e) {
+                        s()?.apply(this, e);
+                    }),
+                    H(`click`, Ce, h),
+                    W(e, r));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    (We(), a());
+}
+Tr([`click`]);
+var Rp = U(
+        `<span class="status-badge is-custom svelte-1v525za" title="Esta empresa tiene su propia API Key"> </span>`,
+    ),
+    zp = U(
+        `<span class="status-badge is-global svelte-1v525za" title="Esta empresa comparte la clave global del servidor">🌐 Clave Global</span>`,
+    ),
+    Bp = U(
+        `<span class="status-badge no-key svelte-1v525za" title="No hay ninguna clave configurada">⚠️ Sin Clave de Gemini</span>`,
+    ),
+    Vp =
+        U(`<p class="gemini-subtitle key-implications svelte-1v525za">Estás usando la versión premium de nuestro
                                 servicio de chatbot, esto implica que tienes
                                 un bot dedicado exclusivamente a tu
                                 servicio, por lo que tendrás velocidades de
-                                respuesta más rápidas.</p>`),Hp=U(`<p class="gemini-subtitle key-implications svelte-1v525za">Estás usando la versión regular de nuestro
+                                respuesta más rápidas.</p>`),
+    Hp =
+        U(`<p class="gemini-subtitle key-implications svelte-1v525za">Estás usando la versión regular de nuestro
                                 servicio de chatbot, esto implica que las
                                 velocidades de respuesta se pueden ver
                                 afectadas, si quieres más velocidad de
-                                respuesta paga por nuestra versión premium.</p>`),Up=U(`<button type="button" class="btn btn-secondary btn-configure-key svelte-1v525za"><span>🔑 Configurar API Key de Gemini</span></button>`),Wp=U(`<div style="margin-top: 24px;"><button type="submit" class="btn btn-primary"><span> </span></button></div>`),Gp=U(`<section id="tab-settings" class="tab-content active"><div class="content-toolbar"><div><h2>Configuración General de la Empresa y del Bot</h2> <p class="section-desc">Personaliza el comportamiento de atención, delays de digitación
+                                respuesta paga por nuestra versión premium.</p>`),
+    Up = U(
+        `<button type="button" class="btn btn-secondary btn-configure-key svelte-1v525za"><span>🔑 Configurar API Key de Gemini</span></button>`,
+    ),
+    Wp = U(
+        `<div style="margin-top: 24px;"><button type="submit" class="btn btn-primary"><span> </span></button></div>`,
+    ),
+    Gp = U(
+        `<section id="tab-settings" class="tab-content active"><div class="content-toolbar"><div><h2>Configuración General de la Empresa y del Bot</h2> <p class="section-desc">Personaliza el comportamiento de atención, delays de digitación
                 humana e inteligencia artificial por empresa.</p></div></div> <div class="settings-card svelte-1v525za"><form class="form-body"><div class="form-group"><label for="biz-name">Nombre Comercial del Negocio</label> <input type="text" id="biz-name" placeholder="Ej: Digital Pass Express" required=""/></div> <div class="gemini-card-box svelte-1v525za"><div class="gemini-card-header svelte-1v525za"><div class="gemini-title-group svelte-1v525za"><span class="gemini-icon svelte-1v525za">🤖</span> <div><h3 class="gemini-title svelte-1v525za">Inteligencia Artificial Gemini Flash</h3> <p class="gemini-subtitle svelte-1v525za">Atiende consultas automáticamente fuera de tus
                                 reglas y procesa notas de voz con la información
                                 de tu Biblioteca.</p></div></div> <div class="gemini-badges-col svelte-1v525za"><div class="badge-wrapper svelte-1v525za"><!></div> <!> <div class="badge-wrapper svelte-1v525za"><span class="model-badge svelte-1v525za"> </span></div></div></div> <div class="gemini-card-body svelte-1v525za"><div class="form-group flex-1 svelte-1v525za" style="margin-bottom: 0;"><label for="gemini-toggle">Estado del Asistente IA para esta Empresa</label> <select id="gemini-toggle"><option>Habilitado (Usa IA cuando no coincida una regla
-                                manual)</option><option>Deshabilitado (Solo responde reglas exactas)</option></select></div> <div class="gemini-key-action-col svelte-1v525za"><div class="btn-spacer svelte-1v525za" aria-hidden="true"></div> <!></div></div></div> <div class="form-row svelte-1v525za" style="margin-top: 16px;"><div class="form-group flex-1 svelte-1v525za"><label for="simulate-typing">Simular "Escribiendo..." en WhatsApp</label> <select id="simulate-typing"><option>Sí (Da apariencia 100% humana)</option><option>No (Envía respuestas al instante)</option></select></div> <div class="form-group flex-1 svelte-1v525za"><label for="delay-sec">Segundos de Simulación de Digitación</label> <input type="number" id="delay-sec" min="1" max="15"/></div></div> <div class="form-group"><label for="ignore-groups">Ignorar Mensajes de Grupos de WhatsApp</label> <select id="ignore-groups"><option>Sí (Recomendado - Solo atiende chats individuales)</option><option>No (Responder también en grupos)</option></select></div> <div class="form-group"><label for="fallback-msg">Mensaje por Defecto (Fallback si no hay coincidencia ni IA)</label> <textarea id="fallback-msg" rows="4" placeholder="¡Hola! Gracias por comunicarte con nosotros. Escribe *menu* para ver las opciones disponibles..."></textarea></div> <!></form></div></section> <!>`,1);function Kp(e,t){Ue(t,!0);let n=()=>Z(Ks,`$settings`,o),r=()=>Z(qs,`$geminiStatus`,o),i=()=>Z(Rs,`$isSuperadmin`,o),a=()=>Z(zs,`$hasPermission`,o),[o,s]=Ui(),c=F(``),l=F(!0),u=F(!0),d=F(2),f=F(!0),p=F(``),m=F(!1),h=F(!1);bn(()=>{n()&&(I(c,n().businessName||``,!0),I(l,n().geminiEnabled??!0,!0),I(u,n().simulateTyping??!0,!0),I(d,n().typingDelaySeconds||2,!0),I(f,n().ignoreGroups??!0,!0),I(p,n().fallbackMessage||``,!0))});async function g(e){e.preventDefault(),I(m,!0),await Ys({businessName:V(c).trim(),geminiEnabled:!!V(l),simulateTyping:!!V(u),typingDelaySeconds:parseInt(V(d),10)||2,ignoreGroups:!!V(f),fallbackMessage:V(p).trim()}),I(m,!1)}var _=Gp(),v=cn(_),y=z(L(v),2),b=L(y),x=L(b),S=z(L(x),2);J(S),M(x);var C=z(x,2),w=L(C),T=z(L(w),2),E=L(T),D=L(E),O=e=>{var t=Rp(),n=R(t);B(()=>G(n,`🔑 Clave Exclusiva (${(r().maskedKey||`Configurada`)??``})`)),W(e,t)},k=e=>{W(e,zp())},A=e=>{W(e,Bp())};K(D,e=>{r().isCustom?e(O):r().hasGlobalKey?e(k,1):e(A,-1)}),M(E);var ee=z(E,2),te=e=>{W(e,Vp())},ne=e=>{W(e,Hp())};K(ee,e=>{r().isCustom?e(te):r().hasGlobalKey&&e(ne,1)});var re=z(ee,2),ie=R(L(re));M(re),M(T),M(w);var ae=z(w,2),oe=L(ae),se=z(L(oe),2),ce=L(se);ce.value=ce.__value=!0;var le=z(ce);le.value=le.__value=!1,M(se),_i(se),M(oe);var ue=z(oe,2),de=z(L(ue),2),fe=e=>{var t=Up();H(`click`,t,()=>I(h,!0)),W(e,t)};K(de,e=>{i()&&e(fe)}),M(ue),M(ae),M(C);var pe=z(C,2),me=L(pe),he=z(L(me),2),ge=L(he);ge.value=ge.__value=!0;var _e=z(ge);_e.value=_e.__value=!1,M(he),_i(he),M(me);var j=z(me,2),ve=z(L(j),2);J(ve),M(j),M(pe);var ye=z(pe,2),be=z(L(ye),2),xe=L(be);xe.value=xe.__value=!0;var N=z(xe);N.value=N.__value=!1,M(be),_i(be),M(ye);var Se=z(ye,2),Ce=z(L(Se),2);tt(Ce),M(Se);var we=z(Se,2),Te=e=>{var t=Wp(),n=L(t),r=R(L(n),!0);M(n),M(t),B(()=>{n.disabled=V(m),G(r,V(m)?`Guardando...`:`💾 Guardar Cambios de Configuración`)}),W(e,t)},Ee=P(()=>a()(`settings:edit`));K(we,e=>{V(Ee)&&e(Te)}),M(b),M(y),M(v),Lp(z(v,2),{get isOpen(){return V(h)},onClose:()=>I(h,!1)}),B(()=>G(ie,`⚡ ${(r().model||`gemini-3.5-flash-lite`)??``}`)),wr(`submit`,b,g),Y(S,()=>V(c),e=>I(c,e)),vi(se,()=>V(l),e=>I(l,e)),vi(he,()=>V(u),e=>I(u,e)),Y(ve,()=>V(d),e=>I(d,e)),vi(be,()=>V(f),e=>I(f,e)),Y(Ce,()=>V(p),e=>I(p,e)),W(e,_),We(),s()}Tr([`click`]);var qp=U(`<div class="admin-full-banner svelte-nfpt9c"><div class="admin-crown svelte-nfpt9c">👑</div> <div><h4 class="svelte-nfpt9c">Control Total y Sin Restricciones</h4> <p class="svelte-nfpt9c">Este rol posee privilegios totales en la plataforma. Puede ver, crear, modificar y eliminar cualquier elemento,
-              vincular cuentas de WhatsApp, entrenar a la inteligencia artificial y gestionar colaboradores.</p></div></div>`),Jp=U(`<div class="empty-state-text svelte-nfpt9c">Este rol no tiene ningún permiso asignado actualmente.</div>`),Yp=U(`<div class="perm-detail-item allowed svelte-nfpt9c"><span class="check-icon svelte-nfpt9c">✓</span> <div class="perm-text svelte-nfpt9c"><strong class="perm-title svelte-nfpt9c"> </strong> <span class="perm-desc svelte-nfpt9c"> </span></div></div>`),Xp=U(`<div class="module-group-card svelte-nfpt9c"><div class="module-group-header svelte-nfpt9c"><span class="module-icon svelte-nfpt9c"> </span> <div><h4 class="module-title svelte-nfpt9c"> </h4> <p class="module-desc svelte-nfpt9c"> </p></div></div> <div class="perms-list svelte-nfpt9c"></div></div>`),Zp=U(`<div class="grouped-sections-list svelte-nfpt9c"></div>`),Qp=U(`<div class="perms-tab-body svelte-nfpt9c"><!></div>`),$p=U(`<div class="no-restrictions-box svelte-nfpt9c"><span style="font-size: 2rem;">🛡️</span> <div><strong>Este rol no tiene ninguna restricción</strong> <p>Tiene acceso completo a todas las herramientas del sistema.</p></div></div>`),em=U(`<div class="perm-detail-item blocked svelte-nfpt9c"><span class="blocked-icon svelte-nfpt9c">✕</span> <div class="perm-text svelte-nfpt9c"><strong class="perm-title svelte-nfpt9c"> </strong> <span class="perm-desc svelte-nfpt9c"> </span></div></div>`),tm=U(`<div class="module-group-card restricted svelte-nfpt9c"><div class="module-group-header svelte-nfpt9c"><span class="module-icon svelte-nfpt9c"> </span> <div><h4 class="module-title svelte-nfpt9c"> </h4> <p class="module-desc svelte-nfpt9c"> </p></div></div> <div class="perms-list svelte-nfpt9c"></div></div>`),nm=U(`<div class="restrictions-notice svelte-nfpt9c">⚠️ Los colaboradores con este rol tienen bloqueadas las siguientes acciones para proteger la seguridad y los datos de tu empresa:</div> <div class="grouped-sections-list svelte-nfpt9c"></div>`,1),rm=U(`<button type="button" class="btn btn-outline-danger svelte-nfpt9c" title="Eliminar este rol de la empresa">🗑️ Eliminar Rol</button>`),im=U(`<div class="role-modal-content svelte-nfpt9c"><div class="role-hero-box svelte-nfpt9c"><div class="role-hero-info"><div class="role-title-row svelte-nfpt9c"><span> </span> <span> </span></div> <p class="role-desc-text svelte-nfpt9c"> </p></div></div> <!> <div class="modal-tabs-header svelte-nfpt9c"><button type="button"> </button> <button type="button"> </button></div> <!> <div class="modal-footer-actions svelte-nfpt9c"><!> <button type="button" class="btn btn-secondary">Cerrar</button></div></div>`);function am(e,t){Ue(t,!0);let n=()=>Z(zs,`$hasPermission`,r),[r,i]=Ui(),a=Gi(t,`role`,3,null),o=Gi(t,`isOpen`,3,!1),s=Gi(t,`onClose`,3,()=>{}),c=P(()=>Array.isArray(a()?.permissions)?a().permissions:[]),l=P(()=>kd(a()||{})),u=P(()=>Od(V(c))),d=P(()=>{if(V(l))return[];let e=new Set(V(c)),t=[];for(let[n,r]of Object.entries(Ed))e.has(n)||t.push(r);return t}),f=P(()=>{if(V(l))return[];let e=new Set(V(c));return Od(Object.keys(Ed).filter(t=>!e.has(t)))}),p=F(`allowed`);async function m(){a()&&confirm(`¿Estás seguro de eliminar el rol personalizado "${a().name}"? Los colaboradores que lo tengan deberán tener otro rol asignado.`)&&(await _s(a().id,a().name)).success&&s()()}var h=Ir(),g=cn(h),_=e=>{{let t=P(()=>`🛡️ Detalle de Permisos: ${a().name}`),r=P(()=>a().isSystemDefault||a().is_system_default?`Rol oficial predeterminado del sistema`:`Rol personalizado creado para tu empresa`);il(e,{get isOpen(){return o()},get title(){return V(t)},get subtitle(){return V(r)},maxWidth:`740px`,get onClose(){return s()},children:(e,t)=>{var r=im(),i=L(r),o=L(i),h=L(o),g=L(h),_=R(g,!0),v=z(g,2),y=R(v,!0);M(h);var b=R(z(h,2),!0);M(o),M(i);var x=z(i,2),S=e=>{W(e,qp())};K(x,e=>{V(l)&&e(S)});var C=z(x,2),w=L(C),T=R(w),E=z(w,2),D=R(E);M(C);var O=z(C,2),k=e=>{var t=Qp(),n=L(t),r=e=>{W(e,Jp())},i=e=>{var t=Zp();Xr(t,21,()=>V(u),Kr,(e,t)=>{var n=Xp(),r=L(n),i=L(r),a=R(i,!0),o=z(i,2),s=L(o),c=R(s,!0),l=R(z(s,2),!0);M(o),M(r);var u=z(r,2);Xr(u,21,()=>V(t).permissions,Kr,(e,t)=>{var n=Yp(),r=z(L(n),2),i=L(r),a=R(i,!0),o=R(z(i,2),!0);M(r),M(n),B(()=>{G(a,V(t).label),G(o,V(t).description)}),W(e,n)}),M(u),M(n),B(()=>{G(a,V(t).icon),G(c,V(t).name),G(l,V(t).description)}),W(e,n)}),M(t),W(e,t)};K(n,e=>{V(c).length===0?e(r):e(i,-1)}),M(t),W(e,t)},A=e=>{var t=Qp(),n=L(t),r=e=>{W(e,$p())},i=e=>{var t=nm(),n=z(cn(t),2);Xr(n,21,()=>V(f),Kr,(e,t)=>{var n=tm(),r=L(n),i=L(r),a=R(i,!0),o=z(i,2),s=L(o),c=R(s,!0),l=R(z(s,2),!0);M(o),M(r);var u=z(r,2);Xr(u,21,()=>V(t).permissions,Kr,(e,t)=>{var n=em(),r=z(L(n),2),i=L(r),a=R(i),o=R(z(i,2),!0);M(r),M(n),B(e=>{G(a,`No puede ${e??``}`),G(o,V(t).description)},[()=>V(t).label.toLowerCase()]),W(e,n)}),M(u),M(n),B(()=>{G(a,V(t).icon),G(c,V(t).name),G(l,V(t).description)}),W(e,n)}),M(n),W(e,t)};K(n,e=>{V(d).length===0?e(r):e(i,-1)}),M(t),W(e,t)};K(O,e=>{V(p)===`allowed`?e(k):e(A,-1)});var ee=z(O,2),te=L(ee),ne=e=>{var t=rm();H(`click`,t,m),W(e,t)},re=P(()=>!a().isSystemDefault&&!a().is_system_default&&n()(`roles:manage`));K(te,e=>{V(re)&&e(ne)});var ie=z(te,2);M(ee),M(r),B(()=>{q(g,1,`role-badge ${((a().isSystemDefault||a().is_system_default)&&a().id||`custom-role`)??``}`,`svelte-nfpt9c`),G(_,a().name),q(v,1,`role-nature-tag ${a().isSystemDefault||a().is_system_default?`system`:`custom`}`,`svelte-nfpt9c`),G(y,a().isSystemDefault||a().is_system_default?`🔒 Sistema (No modificable)`:`✨ Personalizado`),G(b,a().description||`Sin descripción asignada.`),q(w,1,`modal-tab-btn ${V(p)===`allowed`?`active`:``}`,`svelte-nfpt9c`),G(T,`✅ Lo que puede hacer y ver (${V(c).length??``})`),q(E,1,`modal-tab-btn ${V(p)===`restricted`?`active`:``}`,`svelte-nfpt9c`),G(D,`🚫 Restricciones (${V(d).length??``})`)}),H(`click`,w,()=>I(p,`allowed`)),H(`click`,E,()=>I(p,`restricted`)),H(`click`,ie,function(...e){s()?.apply(this,e)}),W(e,r)},$$slots:{default:!0}})}};K(g,e=>{a()&&e(_)}),W(e,h),We(),i()}Tr([`click`]);var om=U(`<button type="button" class="btn btn-secondary">🛡️ Crear Rol Personalizado</button>`),sm=U(`<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Agregar Colaborador</button>`),cm=U(`<div style="text-align: center; padding: 40px; color: var(--text-dim);">No hay colaboradores registrados en esta empresa.</div>`),lm=U(`<button type="button" class="btn btn-outline-sm" title="Cambiar rol">Cambiar Rol</button> <button type="button" class="icon-btn delete-btn" title="Eliminar de la empresa"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`,1),um=U(`<tr><td><div class="member-user-cell svelte-pumxiu"><span class="member-avatar svelte-pumxiu"> </span> <div><strong> </strong> <div style="font-size: 0.75rem; color: var(--text-dim);"> </div></div></div></td><td><div style="font-size: 0.85rem; color: var(--text-main);"> </div> <div style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);"> </div></td><td><span> </span></td><td><span style="color: #4ade80; font-size: 0.85rem; font-weight: 500;">● Activo</span></td><td style="color: var(--text-muted); font-size: 0.82rem;"> </td><td><div style="display: flex; gap: 6px;"><!></div></td></tr>`),dm=U(`<div class="leads-table-container"><table class="leads-table"><thead><tr><th>Colaborador</th><th>Contacto</th><th>Rol Asignado</th><th>Estado</th><th>Fecha de Ingreso</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>`),fm=U(`<div class="admin-full-box svelte-pumxiu"><span class="admin-icon svelte-pumxiu">👑</span> <div class="admin-box-text svelte-pumxiu"><strong class="svelte-pumxiu">Control Total Sin Restricciones</strong> <p class="svelte-pumxiu">Puede operar WhatsApp, configurar inteligencia artificial, ver y gestionar todos los clientes, programar difusiones y administrar colaboradores.</p></div></div>`),pm=U(`<span class="friendly-perm-pill svelte-pumxiu"> </span>`),mm=U(`<div class="module-caps-row svelte-pumxiu"><span class="module-caps-name svelte-pumxiu"> </span> <div class="module-caps-pills svelte-pumxiu"></div></div>`),hm=U(`<div class="role-grouped-modules svelte-pumxiu"></div>`),gm=U(`<div><div class="role-card-header svelte-pumxiu"><div class="role-card-title-group svelte-pumxiu"><span> </span> <span> </span></div> <span> </span></div> <p class="role-card-desc svelte-pumxiu"> </p> <div class="role-capabilities-summary svelte-pumxiu"><!></div> <div class="role-card-footer svelte-pumxiu"><button type="button" class="btn-inspect-role svelte-pumxiu"> </button></div></div>`),_m=U(`<section id="tab-team" class="tab-content active"><div class="content-toolbar"><div><h2>Equipo y Roles de la Empresa</h2> <p class="section-desc">Gestiona qué miembros pueden acceder a esta empresa, ver prospectos, editar flujos y enviar mensajes.</p></div> <div style="display: flex; gap: 8px;"><!> <!></div></div> <div class="team-section-card svelte-pumxiu"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><h3 style="font-size: 1.1rem; color: #fff;"> </h3></div> <!></div> <div class="team-section-card svelte-pumxiu" style="margin-top: 32px;"><div class="roles-section-header svelte-pumxiu"><div><h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 4px;">🛡️ Roles y Niveles de Acceso del Equipo</h3> <p class="section-desc" style="margin: 0; font-size: 0.85rem;">Conoce en español y lenguaje claro qué puede ver y hacer cada colaborador en tu empresa, desde ventas y atención hasta administración total.</p></div> <!></div> <div class="roles-display-grid svelte-pumxiu"></div></div> <!></section>`);function vm(e,t){Ue(t,!0);let n=()=>Z(zs,`$hasPermission`,a),r=()=>Z(os,`$teamMembers`,a),i=()=>Z(ss,`$companyRoles`,a),[a,o]=Ui(),s=F(null),c=F(!1);function l(e){I(s,e,!0),I(c,!0)}function u(){I(s,null),I(c,!1)}function d(e){ds.set({id:e.id,name:e.fullName||e.email,currentRoleId:e.roleId}),ls.set(!0)}function f(e){let t=e.fullName||e.email;confirm(`¿Estás seguro de eliminar a ${t} de esta empresa? Perderá el acceso de inmediato.`)&&hs(e.id,t)}var p=_m(),m=L(p),h=z(L(m),2),g=L(h),_=e=>{var t=om();H(`click`,t,()=>us.set(!0)),W(e,t)},v=P(()=>n()(`roles:manage`));K(g,e=>{V(v)&&e(_)});var y=z(g,2),b=e=>{var t=sm();H(`click`,t,()=>cs.set(!0)),W(e,t)},x=P(()=>n()(`team:manage`));K(y,e=>{V(x)&&e(b)}),M(h),M(m);var S=z(m,2),C=L(S),w=R(L(C));M(C);var T=z(C,2),E=e=>{W(e,cm())},D=e=>{var t=dm(),i=L(t),a=z(L(i));Xr(a,5,r,e=>e.id,(e,t)=>{let r=P(()=>(V(t).fullName||V(t).email||`U`).charAt(0).toUpperCase());var i=um(),a=L(i),o=L(a),s=L(o),c=R(s,!0),l=z(s,2),u=L(l),p=R(u,!0),m=R(z(u,2));M(l),M(o),M(a);var h=z(a),g=L(h),_=R(g,!0),v=R(z(g,2),!0);M(h);var y=z(h),b=L(y),x=R(b,!0);M(y);var S=z(y,2),C=R(S,!0),w=z(S),T=L(w),E=L(T),D=e=>{var n=lm(),r=cn(n),i=z(r,2);H(`click`,r,()=>d(V(t))),H(`click`,i,()=>f(V(t))),W(e,n)},O=P(()=>n()(`team:manage`));K(E,e=>{V(O)&&e(D)}),M(T),M(w),M(i),B(e=>{G(c,V(r)),G(p,V(t).fullName||`Sin Nombre`),G(m,`ID: ${V(t).id??``}`),G(_,V(t).email),G(v,V(t).phone||`Sin teléfono`),q(b,1,`role-badge ${(V(t).is_system_default&&V(t).roleId||`custom-role`)??``}`,`svelte-pumxiu`),G(x,V(t).roleName||`Colaborador`),G(C,e)},[()=>Tl(V(t).joinedAt||V(t).createdAt,{dateStyle:`short`,timeStyle:void 0})]),W(e,i)}),M(a),M(i),M(t),W(e,t)};K(T,e=>{r().length===0?e(E):e(D,-1)}),M(S);var O=z(S,2),k=L(O),A=z(L(k),2),ee=e=>{var t=om();H(`click`,t,()=>us.set(!0)),W(e,t)},te=P(()=>n()(`roles:manage`));K(A,e=>{V(te)&&e(ee)}),M(k);var ne=z(k,2);Xr(ne,5,i,e=>e.id,(e,t)=>{let n=P(()=>Array.isArray(V(t).permissions)?V(t).permissions:[]),r=P(()=>kd(V(t))),i=P(()=>Od(V(n))),a=P(()=>!!(V(t).isSystemDefault||V(t).is_system_default));var o=gm(),s=L(o),c=L(s),u=L(c),d=R(u,!0),f=z(u,2),p=R(f,!0);M(c);var m=z(c,2),h=R(m,!0);M(s);var g=z(s,2),_=R(g,!0),v=z(g,2),y=L(v),b=e=>{W(e,fm())},x=e=>{var t=hm();Xr(t,21,()=>V(i),Kr,(e,t)=>{var n=mm(),r=L(n),i=R(r),a=z(r,2);Xr(a,21,()=>V(t).permissions,Kr,(e,t)=>{var n=pm(),r=R(n);B(()=>{Ti(n,`title`,V(t).description),G(r,`${V(t).icon??``} ${V(t).shortLabel??``}`)}),W(e,n)}),M(a),M(n),B(()=>G(i,`${V(t).icon??``} ${V(t).name??``}:`)),W(e,n)}),M(t),W(e,t)};K(y,e=>{V(r)?e(b):e(x,-1)}),M(v);var S=z(v,2),C=L(S),w=R(C);M(S),M(o),B(()=>{q(o,1,`role-card ${V(r)?`admin-card`:``}`,`svelte-pumxiu`),q(u,1,`role-badge ${(V(a)&&V(t).id||`custom-role`)??``}`,`svelte-pumxiu`),G(d,V(t).name),q(f,1,`role-type-tag ${V(a)?`system`:`custom`}`,`svelte-pumxiu`),G(p,V(a)?`Sistema`:`Personalizado`),q(m,1,`role-perms-count-badge ${V(r)?`admin-badge`:``}`,`svelte-pumxiu`),G(h,V(r)?`⭐ Acceso Total`:`${V(n).length} permisos`),G(_,V(t).description||`Sin descripción asignada.`),G(w,`🔍 Ver qué puede y qué no puede hacer (${V(n).length??``})`)}),H(`click`,C,()=>l(V(t))),W(e,o)}),M(ne),M(O),am(z(O,2),{get role(){return V(s)},get isOpen(){return V(c)},onClose:u}),M(p),B(()=>G(w,`Miembros de la Empresa (${r().length??``})`)),W(e,p),We(),o()}Tr([`click`]);var ym=U(`<form class="form-body svelte-fit5xe"><div class="form-group"><label for="company-admin-name">Nombre de la Empresa</label> <input type="text" id="company-admin-name" placeholder="Ej: Inmobiliaria Horizonte S.A.S." required=""/></div> <div class="modal-footer-btns svelte-fit5xe"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`);function bm(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`company`,3,null),a=F(``),o=F(!1);bn(()=>{n()&&I(a,i()&&i().name||``,!0)});async function s(e){if(e.preventDefault(),V(a).trim()){I(o,!0);try{i()&&i().id?await Ma(i().id,{name:V(a).trim()}):await ja(V(a).trim()),r()()}finally{I(o,!1)}}}{let t=P(()=>i()?`✏️ Editar Empresa: ${i().name}`:`🏢 Nueva Empresa en el Sistema`),c=P(()=>i()?`Modifica los datos globales de la empresa`:`Crea una nueva empresa con sesión de WhatsApp y flujos aislados`);il(e,{get isOpen(){return n()},get title(){return V(t)},get subtitle(){return V(c)},maxWidth:`480px`,get onClose(){return r()},children:(e,t)=>{var n=ym(),c=L(n),l=z(L(c),2);J(l),M(c);var u=z(c,2),d=L(u),f=z(d,2),p=R(L(f),!0);M(f),M(u),M(n),B(e=>{d.disabled=V(o),f.disabled=e,G(p,V(o)?`Guardando...`:i()?`💾 Guardar Cambios`:`➕ Crear Empresa`)},[()=>V(o)||!V(a).trim()]),wr(`submit`,n,s),Y(l,()=>V(a),e=>I(a,e)),H(`click`,d,function(...e){r()?.apply(this,e)}),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var xm=U(`<span class="badge badge-custom svelte-1hzx7zo"> </span>`),Sm=U(`<span class="badge badge-global svelte-1hzx7zo">🌐 Clave Global Compartida</span>`),Cm=U(`Ingresa una clave que comience con <code class="svelte-1hzx7zo">AIzaSy...</code> de Google AI Studio.`,1),wm=U(`<button type="button" class="btn-clear-key svelte-1hzx7zo" title="Eliminar la clave exclusiva y volver a usar la clave global">🗑️ Eliminar Clave Exclusiva</button>`),Tm=U(`<div><span class="feedback-icon svelte-1hzx7zo"> </span> <span class="feedback-text"> </span></div>`),Em=U(`<div class="gemini-admin-modal svelte-1hzx7zo"><div class="status-summary-box svelte-1hzx7zo"><div class="status-summary-header svelte-1hzx7zo"><span class="status-summary-label svelte-1hzx7zo">Estado de la IA en esta empresa:</span> <!></div> <p class="status-summary-desc svelte-1hzx7zo">Como Superusuario, puedes asignarle a esta empresa su propia clave de Gemini para aislar su cuota o presupuesto de tokens.</p></div> <div class="form-group"><label for="gemini-admin-key">API Key de Google Gemini</label> <div class="input-with-action svelte-1hzx7zo"><input id="gemini-admin-key" autocomplete="off" spellcheck="false" class="svelte-1hzx7zo"/> <button type="button" class="btn-toggle-show svelte-1hzx7zo"> </button></div> <span class="field-hint svelte-1hzx7zo"><!></span></div> <div class="form-group"><label for="gemini-admin-model">Modelo de Lenguaje</label> <select id="gemini-admin-model"><option>gemini-3.5-flash-lite (Ultra Rápido y Económico - Recomendado)</option><option>gemini-2.5-flash (Equilibrado para Ventas y Soporte)</option><option>gemini-2.5-pro (Máximo Razonamiento Complejo)</option></select></div> <div class="test-row svelte-1hzx7zo"><button type="button" class="btn btn-secondary btn-sm"><span> </span></button> <!></div> <!> <div class="modal-footer-btns svelte-1hzx7zo"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-primary"><span> </span></button></div></div>`);function Dm(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`company`,3,null),a=F(``),o=F(`gemini-3.5-flash-lite`),s=F(!1),c=F(!1),l=F(!1),u=F(null);bn(()=>{n()&&i()&&(I(a,``),I(o,i().geminiModel||`gemini-3.5-flash-lite`,!0),I(s,!1),I(u,null))});async function d(){I(c,!0),I(u,null);try{let e=await Zs(V(a).trim()||null,V(o));I(u,{success:!0,message:e.message||`¡Conexión exitosa! El modelo ${V(o)} respondió correctamente.`},!0)}catch(e){I(u,{success:!1,message:e.message||`Error al validar la clave con Google Gemini.`},!0)}finally{I(c,!1)}}async function f(){if(i()){I(l,!0);try{let e=V(a).trim();!e&&i().isCustomGeminiKey?e=void 0:e||=null,await Ia(i().id,e,V(o)),r()()}finally{I(l,!1)}}}async function p(){if(i()&&confirm(`¿Eliminar la API Key exclusiva de "${i().name}"?\nLa empresa pasará a usar la clave global del sistema (si existe).`)){I(l,!0);try{await Ia(i().id,null,V(o)),r()()}finally{I(l,!1)}}}{let t=P(()=>i()?`🤖 Configurar Gemini: ${i().name}`:`🤖 Configuración de Gemini`);il(e,{get isOpen(){return n()},get title(){return V(t)},subtitle:`Configuración exclusiva de IA para esta empresa. Solo accesible por Superusuarios.`,maxWidth:`540px`,get onClose(){return r()},children:(e,t)=>{var n=Em(),m=L(n),h=L(m),g=z(L(h),2),_=e=>{var t=xm(),n=R(t);B(()=>G(n,`🔑 Clave Exclusiva (${(i().geminiApiKeyMasked||`Configurada`)??``})`)),W(e,t)},v=e=>{W(e,Sm())};K(g,e=>{i()?.isCustomGeminiKey?e(_):e(v,-1)}),M(h),N(2),M(m);var y=z(m,2),b=z(L(y),2),x=L(b);J(x);var S=z(x,2),C=R(S,!0);M(b);var w=z(b,2),T=L(w),E=e=>{W(e,Fr(`Deja este campo en blanco si solo deseas cambiar el modelo sin modificar la clave guardada.`))},D=e=>{var t=Cm();N(2),W(e,t)};K(T,e=>{i()?.isCustomGeminiKey?e(E):e(D,-1)}),M(w),M(y);var O=z(y,2),k=z(L(O),2),A=L(k);A.value=A.__value=`gemini-3.5-flash-lite`;var ee=z(A);ee.value=ee.__value=`gemini-2.5-flash`;var te=z(ee);te.value=te.__value=`gemini-2.5-pro`,M(k),_i(k),M(O);var ne=z(O,2),re=L(ne),ie=R(L(re),!0);M(re);var ae=z(re,2),oe=e=>{var t=wm();B(()=>t.disabled=V(l)||V(c)),H(`click`,t,p),W(e,t)};K(ae,e=>{i()?.isCustomGeminiKey&&e(oe)}),M(ne);var se=z(ne,2),ce=e=>{var t=Tm(),n=L(t),r=R(n,!0),i=R(z(n,2),!0);M(t),B(()=>{q(t,1,`test-feedback ${V(u).success?`feedback-success`:`feedback-error`}`,`svelte-1hzx7zo`),G(r,V(u).success?`✅`:`❌`),G(i,V(u).message)}),W(e,t)};K(se,e=>{V(u)&&e(ce)});var le=z(se,2),ue=L(le),de=z(ue,2),fe=R(L(de),!0);M(de),M(le),M(n),B(()=>{Ti(x,`type`,V(s)?`text`:`password`),Ti(x,`placeholder`,i()?.isCustomGeminiKey?`Mantener clave actual (${i().geminiApiKeyMasked})`:`AIzaSy... (o deja vacío para clave global)`),Ti(S,`title`,V(s)?`Ocultar clave`:`Mostrar clave`),G(C,V(s)?`🙈`:`👁️`),re.disabled=V(c)||V(l),G(ie,V(c)?`Validando...`:`🧪 Probar Conexión con Gemini`),ue.disabled=V(l),de.disabled=V(l)||V(c),G(fe,V(l)?`Guardando...`:`💾 Guardar Configuración`)}),Y(x,()=>V(a),e=>I(a,e)),H(`click`,S,()=>I(s,!V(s))),vi(k,()=>V(o),e=>I(o,e)),H(`click`,re,d),H(`click`,ue,function(...e){r()?.apply(this,e)}),H(`click`,de,f),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var Om=U(`<div class="clean-modal-content svelte-al4ny0"><div class="warning-alert-card svelte-al4ny0"><div class="warning-header svelte-al4ny0"><span class="warning-icon svelte-al4ny0">⚠️</span> <h4 class="warning-title svelte-al4ny0">Acción Irreversible de Mantenimiento</h4></div> <p class="warning-desc svelte-al4ny0">Como Superusuario, tienes el privilegio de liberar espacio y resetear las conversaciones de cualquier empresa.</p> <div class="warning-details svelte-al4ny0"><div class="detail-item to-delete"><span class="detail-badge red svelte-al4ny0">Se eliminarán permanentemente:</span> <ul class="svelte-al4ny0"><li> </li> <li> </li> <li>Archivos adjuntos descargados en la carpeta temporal de esta empresa.</li></ul></div> <div class="detail-item to-keep"><span class="detail-badge green svelte-al4ny0">Se conservarán intactos:</span> <ul class="svelte-al4ny0"><li>Flujos y rutas de venta automatizadas.</li> <li>Biblioteca de documentos y conocimiento de la IA.</li> <li>Configuraciones del negocio y credenciales de Gemini.</li> <li>Usuarios vinculados y sus permisos.</li></ul></div></div></div> <div class="confirmation-input-box svelte-al4ny0"><label for="clean-confirm-input" class="svelte-al4ny0">Para confirmar esta purga, escribe la palabra <strong class="highlight-word svelte-al4ny0">LIMPIAR</strong> en mayúsculas:</label> <input type="text" id="clean-confirm-input" placeholder="Escribe LIMPIAR..." autocomplete="off" class="svelte-al4ny0"/></div> <div class="modal-footer-btns svelte-al4ny0"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-danger svelte-al4ny0"><span> </span></button></div></div>`);function km(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`company`,3,null),a=F(``),o=F(!1);bn(()=>{n()&&I(a,``)});async function s(){if(i()&&V(a).trim().toUpperCase()===`LIMPIAR`){I(o,!0);try{await Fa(i().id),r()()}finally{I(o,!1)}}}{let t=P(()=>i()?`🧹 Limpiar Data: ${i().name}`:`🧹 Limpieza de Data`);il(e,{get isOpen(){return n()},get title(){return V(t)},subtitle:`Purga de almacenamiento y base de datos (Solo Superusuario)`,maxWidth:`520px`,get onClose(){return r()},children:(e,t)=>{var n=Om(),c=L(n),l=z(L(c),4),u=L(l),d=z(L(u),2),f=L(d),p=R(f),m=R(z(f,2));N(2),M(d),M(u),N(2),M(l),M(c);var h=z(c,2),g=z(L(h),2);J(g),M(h);var _=z(h,2),v=L(_),y=z(v,2),b=R(L(y),!0);M(y),M(_),M(n),B(e=>{G(p,`Todos los mensajes guardados en el historial de chat (${(i()?.messagesCount||0)??``} mensajes).`),G(m,`Todos los contactos y prospectos (${(i()?.leadsCount||0)??``} prospectos).`),v.disabled=V(o),y.disabled=e,G(b,V(o)?`Purgando Data...`:`🧹 Purgar Mensajes y Prospectos`)},[()=>V(o)||V(a).trim().toUpperCase()!==`LIMPIAR`]),Y(g,()=>V(a),e=>I(a,e)),H(`click`,v,function(...e){r()?.apply(this,e)}),H(`click`,y,s),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var Am=U(`<option> </option>`),jm=U(`<div class="form-group flex-1 svelte-abzbhs" style="margin-bottom: 0;"><label for="assign-role">Rol en la Empresa</label> <select id="assign-role"><option>👑 Administrador</option><option>💼 Asesor / Agente de Ventas</option><option>✍️ Gestor de Flujos</option><option>👀 Supervisor (Solo lectura)</option></select></div>`),Mm=U(`<div class="company-assign-box svelte-abzbhs"><span class="assign-box-title svelte-abzbhs">🏢 Asignar a Empresa Inicial (Opcional):</span> <div class="form-row svelte-abzbhs"><div class="form-group flex-1 svelte-abzbhs" style="margin-bottom: 0;"><label for="assign-comp">Empresa</label> <select id="assign-comp"><option>-- Ninguna (Solo usuario global) --</option><!></select></div> <!></div></div>`),Nm=U(`<div class="form-group"><label for="user-admin-password">Contraseña Inicial</label> <input type="password" id="user-admin-password" placeholder="Mínimo 6 caracteres" minlength="6" required=""/></div> <div class="superadmin-checkbox-box svelte-abzbhs"><label class="checkbox-label svelte-abzbhs"><input type="checkbox" class="svelte-abzbhs"/> <span class="checkbox-text svelte-abzbhs"><strong class="svelte-abzbhs">⭐ Otorgar Rol de Superusuario Global</strong> <small class="svelte-abzbhs">Tendrá acceso al panel raíz, todas las empresas, asignación de llaves de Gemini y gestión global.</small></span></label></div> <!>`,1),Pm=U(`<div class="form-group"><label for="user-admin-status">Estado de la Cuenta</label> <select id="user-admin-status"><option>✅ Activo (Puede iniciar sesión)</option><option>🚫 Inactivo / Bloqueado</option></select></div>`),Fm=U(`<form class="form-body svelte-abzbhs"><div class="form-group"><label for="user-admin-name">Nombre Completo</label> <input type="text" id="user-admin-name" placeholder="Ej: Laura Gómez" required=""/></div> <div class="form-row svelte-abzbhs"><div class="form-group flex-1 svelte-abzbhs"><label for="user-admin-email">Correo Electrónico</label> <input type="email" id="user-admin-email" placeholder="laura@empresa.com" required=""/></div> <div class="form-group flex-1 svelte-abzbhs"><label for="user-admin-phone">Teléfono / Móvil</label> <input type="tel" id="user-admin-phone" placeholder="+573001234567"/></div></div> <!> <div class="modal-footer-btns svelte-abzbhs"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`);function Im(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`user`,3,null),a=Gi(t,`companies`,19,()=>[]),o=F(``),s=F(``),c=F(``),l=F(``),u=F(!1),d=F(!0),f=F(``),p=F(`role_sales_agent`),m=F(!1);bn(()=>{n()&&(i()?(I(o,i().full_name||``,!0),I(s,i().email||``,!0),I(c,i().phone||``,!0),I(l,``),I(d,i().is_active??!0,!0),I(u,!!i().is_superadmin,!0),I(f,``),I(p,`role_sales_agent`)):(I(o,``),I(s,``),I(c,``),I(l,``),I(d,!0),I(u,!1),I(f,a().length>0?a()[0].id:``,!0),I(p,`role_sales_agent`)))});async function h(e){if(e.preventDefault(),V(o).trim()&&V(s).trim()){I(m,!0);try{if(i()&&i().id)await Ra(i().id,{fullName:V(o).trim(),email:V(s).trim(),phone:V(c).trim()||null,isActive:!!V(d)});else{if(!V(l)||V(l).length<6){alert(`La contraseña debe tener al menos 6 caracteres`);return}await La({fullName:V(o).trim(),email:V(s).trim(),phone:V(c).trim()||null,password:V(l).trim(),isSuperadmin:!!V(u),companyId:V(f)||null,roleId:V(f)?V(p):null})}r()()}finally{I(m,!1)}}}{let t=P(()=>i()?`✏️ Modificar Usuario: ${i().full_name}`:`👤 Registrar Nuevo Usuario`),g=P(()=>i()?`Actualiza los datos personales y estado de la cuenta`:`Crea una cuenta de usuario global en el sistema`);il(e,{get isOpen(){return n()},get title(){return V(t)},get subtitle(){return V(g)},maxWidth:`520px`,get onClose(){return r()},children:(e,t)=>{var n=Fm(),g=L(n),_=z(L(g),2);J(_),M(g);var v=z(g,2),y=L(v),b=z(L(y),2);J(b),M(y);var x=z(y,2),S=z(L(x),2);J(S),M(x),M(v);var C=z(v,2),w=e=>{var t=Nm(),n=cn(t),r=z(L(n),2);J(r),M(n);var i=z(n,2),o=L(i),s=L(o);J(s),N(2),M(o),M(i);var c=z(i,2),d=e=>{var t=Mm(),n=z(L(t),2),r=L(n),i=z(L(r),2),o=L(i);o.value=o.__value=``,Xr(z(o),17,a,Kr,(e,t)=>{var n=Am(),r=R(n,!0),i={};B(()=>{G(r,V(t).name),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(i),_i(i),M(r);var s=z(r,2),c=e=>{var t=jm(),n=z(L(t),2),r=L(n);r.value=r.__value=`role_admin`;var i=z(r);i.value=i.__value=`role_sales_agent`;var a=z(i);a.value=a.__value=`role_content_manager`;var o=z(a);o.value=o.__value=`role_viewer`,M(n),_i(n),M(t),vi(n,()=>V(p),e=>I(p,e)),W(e,t)};K(s,e=>{V(f)&&e(c)}),M(n),M(t),vi(i,()=>V(f),e=>I(f,e)),W(e,t)};K(c,e=>{a().length>0&&e(d)}),Y(r,()=>V(l),e=>I(l,e)),ki(s,()=>V(u),e=>I(u,e)),W(e,t)},T=e=>{var t=Pm(),n=z(L(t),2),r=L(n);r.value=r.__value=!0;var i=z(r);i.value=i.__value=!1,M(n),_i(n),M(t),vi(n,()=>V(d),e=>I(d,e)),W(e,t)};K(C,e=>{i()?e(T,-1):e(w)});var E=z(C,2),D=L(E),O=z(D,2),k=R(L(O),!0);M(O),M(E),M(n),B(e=>{D.disabled=V(m),O.disabled=e,G(k,V(m)?`Guardando...`:i()?`💾 Guardar Cambios`:`➕ Crear Usuario`)},[()=>V(m)||!V(o).trim()||!V(s).trim()]),wr(`submit`,n,h),Y(_,()=>V(o),e=>I(o,e)),Y(b,()=>V(s),e=>I(s,e)),Y(S,()=>V(c),e=>I(c,e)),H(`click`,D,function(...e){r()?.apply(this,e)}),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var Lm=U(`<span class="must-change-hint svelte-1tcl25d">ℹ️ Se le solicitará cambiar esta contraseña obligatoriamente al iniciar sesión.</span>`),Rm=U(`<div class="success-screen svelte-1tcl25d"><div class="success-icon-badge svelte-1tcl25d">✅</div> <h4 class="success-title svelte-1tcl25d">¡Contraseña Restablecida con Éxito!</h4> <p class="success-desc svelte-1tcl25d">La contraseña de <strong> </strong> fue actualizada. Puedes copiarla y enviársela de forma segura:</p> <div class="password-display-card svelte-1tcl25d"><code class="temp-password svelte-1tcl25d"> </code> <button type="button" class="btn-copy-pass svelte-1tcl25d" title="Copiar contraseña">📋 Copiar</button></div> <!> <div class="modal-footer-btns svelte-1tcl25d" style="margin-top: 16px;"><button type="button" class="btn btn-primary">Listo / Cerrar</button></div></div>`),zm=U(`<form class="form-body svelte-1tcl25d"><div class="user-target-info svelte-1tcl25d"><span class="target-name svelte-1tcl25d"> </span> <span class="target-email svelte-1tcl25d"> </span></div> <div class="form-group"><label for="reset-pass-input">Nueva Contraseña Provisoria</label> <div class="input-with-tools svelte-1tcl25d"><input id="reset-pass-input" placeholder="Escribe o genera una clave" minlength="6" required="" class="svelte-1tcl25d"/> <button type="button" class="btn-tool svelte-1tcl25d"> </button> <button type="button" class="btn-tool svelte-1tcl25d" title="Generar otra clave aleatoria">🎲</button></div></div> <div class="require-change-box svelte-1tcl25d"><label class="checkbox-label svelte-1tcl25d"><input type="checkbox" class="svelte-1tcl25d"/> <span class="checkbox-text svelte-1tcl25d"><strong class="svelte-1tcl25d">Exigir cambio de contraseña en el próximo inicio de sesión</strong> <small class="svelte-1tcl25d">El usuario verá un aviso obligatorio para definir su propia clave personal al ingresar.</small></span></label></div> <div class="modal-footer-btns svelte-1tcl25d"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`);function Bm(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`user`,3,null),a=F(``),o=F(!0),s=F(!0),c=F(!1),l=F(null);bn(()=>{n()&&(I(a,u(),!0),I(o,!0),I(s,!0),I(l,null))});function u(){let e=``;for(let t=0;t<10;t++)e+=`ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$`.charAt(Math.floor(Math.random()*60));return e}function d(){I(a,u(),!0),I(s,!0)}async function f(e){if(e.preventDefault(),i()&&V(a).trim()){if(V(a).trim().length<6)alert(`La contraseña debe tener al menos 6 caracteres`);else{I(c,!0);try{let e=await Ba(i().id,V(a).trim(),V(o));e.success&&I(l,e.temporaryPassword||V(a).trim(),!0)}finally{I(c,!1)}}}}function p(e){navigator.clipboard.writeText(e),$(`Contraseña copiada al portapapeles`,`info`)}{let t=P(()=>i()?`🔑 Resetear Clave: ${i().full_name}`:`🔑 Restablecer Contraseña`);il(e,{get isOpen(){return n()},get title(){return V(t)},subtitle:`Proceso administrativo de recuperación y cambio de credenciales`,maxWidth:`480px`,get onClose(){return r()},children:(e,t)=>{var n=Ir(),u=cn(n),m=e=>{var t=Rm(),n=z(L(t),4),a=R(z(L(n)),!0);N(),M(n);var s=z(n,2),c=L(s),u=R(c,!0),d=z(c,2);M(s);var f=z(s,2),m=e=>{W(e,Lm())};K(f,e=>{V(o)&&e(m)});var h=R(z(f,2));M(t),B(()=>{G(a,i()?.email),G(u,V(l))}),H(`click`,d,()=>p(V(l))),H(`click`,h,function(...e){r()?.apply(this,e)}),W(e,t)},h=e=>{var t=zm(),n=L(t),l=L(n),u=R(l),p=R(z(l,2));M(n);var m=z(n,2),h=z(L(m),2),g=L(h);J(g);var _=z(g,2),v=R(_,!0),y=z(_,2);M(h),M(m);var b=z(m,2),x=L(b),S=L(x);J(S),N(2),M(x),M(b);var C=z(b,2),w=L(C),T=z(w,2),E=R(L(T),!0);M(T),M(C),M(t),B(e=>{G(u,`👤 ${i()?.full_name??``}`),G(p,`✉️ ${i()?.email??``}`),Ti(g,`type`,V(s)?`text`:`password`),Ti(_,`title`,V(s)?`Ocultar`:`Mostrar`),G(v,V(s)?`🙈`:`👁️`),w.disabled=V(c),T.disabled=e,G(E,V(c)?`Guardando...`:`🔑 Establecer Nueva Contraseña`)},[()=>V(c)||!V(a).trim()]),wr(`submit`,t,f),Y(g,()=>V(a),e=>I(a,e)),H(`click`,_,()=>I(s,!V(s))),H(`click`,y,d),ki(S,()=>V(o),e=>I(o,e)),H(`click`,w,function(...e){r()?.apply(this,e)}),W(e,t)};K(u,e=>{V(l)?e(m):e(h,-1)}),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var Vm=U(`<div class="empty-memberships svelte-11m6znh"><span>Este usuario no está vinculado a ninguna empresa actualmente.</span></div>`),Hm=U(`<span class="owner-badge svelte-11m6znh">Propietario</span>`),Um=U(`<div class="membership-item svelte-11m6znh"><div class="comp-info svelte-11m6znh"><span class="comp-name svelte-11m6znh"> </span> <div class="comp-badges svelte-11m6znh"><span class="role-badge svelte-11m6znh"> </span> <!></div></div> <button type="button" class="btn-remove-membership svelte-11m6znh" title="Desvincular usuario de esta empresa">✕ Desvincular</button></div>`),Wm=U(`<div class="memberships-list svelte-11m6znh"></div>`),Gm=U(`<p class="all-assigned-msg svelte-11m6znh">El usuario ya está vinculado a todas las empresas registradas en el sistema.</p>`),Km=U(`<option> </option>`),qm=U(`<form class="assign-form svelte-11m6znh"><div class="form-row svelte-11m6znh"><div class="form-group flex-1 svelte-11m6znh"><label for="modal-assign-comp">Seleccionar Empresa</label> <select id="modal-assign-comp" required=""></select></div> <div class="form-group flex-1 svelte-11m6znh"><label for="modal-assign-role">Rol Asignado</label> <select id="modal-assign-role"><option>👑 Administrador</option><option>💼 Asesor / Agente</option><option>✍️ Gestor de Flujos</option><option>👀 Supervisor (Lectura)</option></select></div></div> <div class="owner-checkbox-row"><label class="owner-checkbox svelte-11m6znh"><input type="checkbox" class="svelte-11m6znh"/> <span>Marcar como Propietario (Owner) de esta empresa</span></label></div> <div class="form-actions-row svelte-11m6znh"><button type="submit" class="btn btn-primary btn-sm"><span> </span></button></div></form>`),Jm=U(`<div class="user-companies-container svelte-11m6znh"><div class="section-block svelte-11m6znh"><span class="block-title svelte-11m6znh">Empresas en las que participa:</span> <!></div> <div class="section-block add-block svelte-11m6znh"><span class="block-title svelte-11m6znh">➕ Vincular a otra empresa:</span> <!></div> <div class="modal-footer-btns svelte-11m6znh"><button type="button" class="btn btn-secondary">Cerrar</button></div></div>`);function Ym(e,t){Ue(t,!0);let n=Gi(t,`isOpen`,3,!1),r=Gi(t,`onClose`,3,()=>{}),i=Gi(t,`user`,7,null),a=Gi(t,`allCompanies`,19,()=>[]),o=F(``),s=F(`role_sales_agent`),c=F(!1),l=F(!1),u=P(()=>{if(!i()||!i().memberships)return a();let e=new Set(i().memberships.map(e=>e.companyId));return a().filter(t=>!e.has(t.id))});bn(()=>{n()&&(I(s,`role_sales_agent`),I(c,!1),V(u).length>0?I(o,V(u)[0].id,!0):I(o,``))});async function d(e){if(e.preventDefault(),i()&&V(o)){I(l,!0);try{if((await Ha(i().id,V(o),V(s),V(c))).success){let e=a().find(e=>e.id===V(o)),t={role_admin:`👑 Administrador`,role_sales_agent:`💼 Asesor / Agente de Ventas`,role_content_manager:`✍️ Gestor de Flujos`,role_viewer:`👀 Supervisor`};i().memberships=[...i().memberships||[],{companyId:V(o),companyName:e?e.name:`Empresa`,roleId:V(s),roleName:t[V(s)]||V(s),isOwner:!!V(c),status:`active`}];let n=V(u).filter(e=>e.id!==V(o));I(o,n.length>0?n[0].id:``,!0)}}finally{I(l,!1)}}}async function f(e,t){if(i()&&confirm(`¿Desvincular a "${i().full_name}" de la empresa "${t}"?`)){I(l,!0);try{(await Ua(i().id,e)).success&&(i().memberships=(i().memberships||[]).filter(t=>t.companyId!==e))}finally{I(l,!1)}}}{let t=P(()=>i()?`🏢 Empresas de: ${i().full_name}`:`🏢 Membresías de Empresas`);il(e,{get isOpen(){return n()},get title(){return V(t)},subtitle:`Vincula o desvincula a este usuario de las empresas y gestiona su rol específico`,maxWidth:`540px`,get onClose(){return r()},children:(e,t)=>{var n=Jm(),a=L(n),p=z(L(a),2),m=e=>{W(e,Vm())},h=e=>{var t=Wm();Xr(t,21,()=>i().memberships,Kr,(e,t)=>{var n=Um(),r=L(n),i=L(r),a=R(i),o=z(i,2),s=L(o),c=R(s,!0),u=z(s,2),d=e=>{W(e,Hm())};K(u,e=>{V(t).isOwner&&e(d)}),M(o),M(r);var p=z(r,2);M(n),B(()=>{G(a,`🏢 ${V(t).companyName??``}`),G(c,V(t).roleName||V(t).roleId),p.disabled=V(l)}),H(`click`,p,()=>f(V(t).companyId,V(t).companyName)),W(e,n)}),M(t),W(e,t)};K(p,e=>{!i()?.memberships||i().memberships.length===0?e(m):e(h,-1)}),M(a);var g=z(a,2),_=z(L(g),2),v=e=>{W(e,Gm())},y=e=>{var t=qm(),n=L(t),r=L(n),i=z(L(r),2);Xr(i,21,()=>V(u),Kr,(e,t)=>{var n=Km(),r=R(n,!0),i={};B(()=>{G(r,V(t).name),i!==(i=V(t).id)&&(n.value=(n.__value=i)??``)}),W(e,n)}),M(i),_i(i),M(r);var a=z(r,2),f=z(L(a),2),p=L(f);p.value=p.__value=`role_admin`;var m=z(p);m.value=m.__value=`role_sales_agent`;var h=z(m);h.value=h.__value=`role_content_manager`;var g=z(h);g.value=g.__value=`role_viewer`,M(f),_i(f),M(a),M(n);var _=z(n,2),v=L(_),y=L(v);J(y),N(2),M(v),M(_);var b=z(_,2),x=L(b),S=R(L(x),!0);M(x),M(b),M(t),B(()=>{x.disabled=V(l)||!V(o),G(S,V(l)?`Vinculando...`:`➕ Vincular a la Empresa`)}),wr(`submit`,t,d),vi(i,()=>V(o),e=>I(o,e)),vi(f,()=>V(s),e=>I(s,e)),ki(y,()=>V(c),e=>I(c,e)),W(e,t)};K(_,e=>{V(u).length===0?e(v):e(y,-1)}),M(g);var b=R(z(g,2));M(n),H(`click`,b,function(...e){r()?.apply(this,e)}),W(e,n)},$$slots:{default:!0}})}We()}Tr([`click`]);var Xm=U(`<button type="button" class="btn-clear-search svelte-kldx70">✕</button>`),Zm=U(`<button type="button" class="btn btn-primary btn-add svelte-kldx70"><span>➕ Nueva Empresa</span></button>`),Qm=U(`<button type="button" class="btn btn-primary btn-add svelte-kldx70"><span>➕ Nuevo Usuario</span></button>`),$m=U(`<tr class="svelte-kldx70"><td colspan="7" class="empty-table-row svelte-kldx70">No se encontraron empresas con el término de búsqueda.</td></tr>`),eh=U(`<span class="status-pill ready svelte-kldx70">● Conectado</span>`),th=U(`<span class="status-pill qr svelte-kldx70">● Esperando QR</span>`),nh=U(`<span class="status-pill idle svelte-kldx70">● Desconectado</span>`),rh=U(`<span class="gemini-pill custom svelte-kldx70" title="Clave exclusiva configurada"> </span>`),ih=U(`<span class="gemini-pill global svelte-kldx70" title="Usa la clave global del servidor"> </span>`),ah=U(`<span class="gemini-pill no-key svelte-kldx70">⚠️ Sin clave</span>`),oh=U(`<tr class="svelte-kldx70"><td class="svelte-kldx70"><div class="comp-cell-name svelte-kldx70"><strong> </strong> <code class="cell-id svelte-kldx70"> </code></div></td><td class="svelte-kldx70"><span class="text-secondary"> </span></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><span class="badge-counter svelte-kldx70"> </span></td><td class="svelte-kldx70"><div class="stats-mini-cell svelte-kldx70"><span> </span> <span class="dot-separator svelte-kldx70">•</span> <span> </span></div></td><td class="svelte-kldx70"><!></td><td class="text-right svelte-kldx70"><div class="actions-row svelte-kldx70"><button type="button" class="btn-action-icon gemini-action svelte-kldx70" title="Configurar API Key de Gemini exclusiva para esta empresa">🔑 Gemini</button> <button type="button" class="btn-action-icon disconnect-action svelte-kldx70" title="Desvincular WhatsApp (cierra sesión y borra credenciales en disco)">🔌 WhatsApp</button> <button type="button" class="btn-action-icon clean-action svelte-kldx70" title="Limpiar Data (Purgar mensajes y prospectos)">🧹 Limpiar</button> <button type="button" class="btn-action-icon edit-action svelte-kldx70" title="Editar nombre de la empresa">✏️</button> <button type="button" class="btn-action-icon delete-action svelte-kldx70" title="Eliminar empresa definitivamente">🗑️</button></div></td></tr>`),sh=U(`<div class="data-table-container svelte-kldx70"><table class="data-table svelte-kldx70"><thead><tr><th class="svelte-kldx70">Empresa / Marca</th><th class="svelte-kldx70">Propietario / Creador</th><th class="svelte-kldx70">Estado WhatsApp</th><th class="svelte-kldx70">Equipo</th><th class="svelte-kldx70">Flujos & Leads</th><th class="svelte-kldx70">Inteligencia Artificial</th><th class="text-right svelte-kldx70">Acciones de Superadmin</th></tr></thead><tbody><!><!></tbody></table></div>`),ch=U(`<tr class="svelte-kldx70"><td colspan="6" class="empty-table-row svelte-kldx70">No se encontraron usuarios con el término de búsqueda.</td></tr>`),lh=U(`<span class="global-role-pill superadmin svelte-kldx70" title="Tiene acceso total al sistema como superusuario">⭐ Superusuario</span>`),uh=U(`<span class="global-role-pill normal svelte-kldx70">👤 Normal</span>`),dh=U(`<span class="status-pill ready svelte-kldx70">Activo</span>`),fh=U(`<span class="status-pill idle svelte-kldx70">Inactivo</span>`),ph=U(`<span class="no-memberships-tag svelte-kldx70">Sin empresas</span>`),mh=U(`<span class="chip-owner-star svelte-kldx70" title="Propietario">👑</span>`),hh=U(`<span class="company-chip svelte-kldx70"> <!></span>`),gh=U(`<tr class="svelte-kldx70"><td class="svelte-kldx70"><div class="user-cell-info svelte-kldx70"><strong> </strong> <span class="cell-email svelte-kldx70"> </span></div></td><td class="svelte-kldx70"><span class="text-secondary"> </span></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><div class="memberships-chips svelte-kldx70"><!></div></td><td class="text-right svelte-kldx70"><div class="actions-row svelte-kldx70"><button type="button"> </button> <button type="button" class="btn-action-icon comp-action svelte-kldx70" title="Vincular o desvincular empresas">🏢 Empresas</button> <button type="button" class="btn-action-icon pass-action svelte-kldx70" title="Restablecer o generar contraseña">🔑 Clave</button> <button type="button" class="btn-action-icon edit-action svelte-kldx70" title="Editar datos del usuario">✏️</button> <button type="button" class="btn-action-icon delete-action svelte-kldx70">🗑️</button></div></td></tr>`),_h=U(`<div class="data-table-container svelte-kldx70"><table class="data-table svelte-kldx70"><thead><tr><th class="svelte-kldx70">Usuario</th><th class="svelte-kldx70">Contacto</th><th class="svelte-kldx70">Rol Global</th><th class="svelte-kldx70">Estado</th><th class="svelte-kldx70">Empresas Vinculadas</th><th class="text-right svelte-kldx70">Acciones de Superadmin</th></tr></thead><tbody><!><!></tbody></table></div>`),vh=U(`<section id="tab-superadmin" class="tab-content active superadmin-view svelte-kldx70"><div class="superadmin-header-card svelte-kldx70"><div class="header-left svelte-kldx70"><div class="crown-badge-icon svelte-kldx70">👑</div> <div><div class="header-title-row svelte-kldx70"><h2 class="svelte-kldx70">Panel de Superusuario Global</h2> <span class="badge-root svelte-kldx70">SISTEMA ROOT</span></div> <p class="section-desc svelte-kldx70">Centro de administración técnica y programación para todas las empresas, cuentas globales, credenciales de Gemini y mantenimiento del servidor.</p></div></div> <div class="header-actions"><button type="button" class="btn btn-secondary btn-refresh svelte-kldx70" title="Recargar todos los datos del sistema"><span> </span></button></div></div> <div class="stats-grid svelte-kldx70"><div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper comp-icon svelte-kldx70">🏢</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Empresas Registradas</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper user-icon svelte-kldx70">👥</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Usuarios Globales</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper super-icon svelte-kldx70">⭐</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Superadministradores</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper bot-icon svelte-kldx70">🤖</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Bots WhatsApp Activos</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper leads-icon svelte-kldx70">🎯</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Prospectos en Sistema</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper msg-icon svelte-kldx70">💬</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Mensajes Registrados</span></div></div></div> <div class="subtabs-bar svelte-kldx70"><div class="tabs-group svelte-kldx70"><button type="button"><span> </span></button> <button type="button"><span> </span></button></div> <div class="subtabs-actions svelte-kldx70"><div class="search-box svelte-kldx70"><span class="search-icon svelte-kldx70">🔍</span> <input type="text" class="svelte-kldx70"/> <!></div> <!></div></div> <!> <!></section> <!> <!> <!> <!> <!> <!>`,1);function yh(e,t){Ue(t,!0);let n=()=>Z(Rs,`$isSuperadmin`,c),r=()=>Z(Ca,`$adminCompanies`,c),i=()=>Z(wa,`$adminUsers`,c),a=()=>Z(Ms,`$currentUser`,c),o=()=>Z(Ta,`$isSuperadminLoading`,c),s=()=>Z(Sa,`$adminStats`,c),[c,l]=Ui(),u=F(`companies`),d=F(``),f=F(!1),p=F(null),m=F(!1),h=F(null),g=F(!1),_=F(null),v=F(!1),y=F(null),b=F(!1),x=F(null),S=F(!1),C=F(null);bn(()=>{n()||sa.set(`tab-rules`)}),Ki(()=>{n()?Aa():sa.set(`tab-rules`)});let w=P(()=>{let e=V(d).toLowerCase().trim();return e?r().filter(t=>(t.name||``).toLowerCase().includes(e)||(t.id||``).toLowerCase().includes(e)||(t.creatorEmail||``).toLowerCase().includes(e)):r()}),T=P(()=>{let e=V(d).toLowerCase().trim();return e?i().filter(t=>(t.full_name||``).toLowerCase().includes(e)||(t.email||``).toLowerCase().includes(e)||(t.phone||``).toLowerCase().includes(e)):i()});function E(){I(p,null),I(f,!0)}function D(e){I(p,e,!0),I(f,!0)}function O(e){I(h,e,!0),I(m,!0)}function k(e){I(_,e,!0),I(g,!0)}async function A(e){confirm(`¿Desvincular WhatsApp de "${e.name}"?\nEl bot quedará desconectado y esperará un nuevo escaneo de código QR.`)&&await Pa(e.id)}async function ee(e){r().length<=1?alert(`No puedes eliminar la única empresa activa en el sistema.`):confirm(`⚠️ ¿ELIMINAR DEFINITIVAMENTE la empresa "${e.name}"?\nSe borrarán sus flujos, biblioteca, contactos y mensajes de la base de datos.`)&&await Na(e.id)}function te(){I(y,null),I(v,!0)}function ne(e){I(y,e,!0),I(v,!0)}function re(e){I(x,e,!0),I(b,!0)}function ie(e){I(C,e,!0),I(S,!0)}async function ae(e){let t=!e.is_superadmin;confirm(`¿Estás seguro de ${t?`promover a SUPERUSUARIO`:`quitar privilegios de Superusuario a`} ${e.full_name||e.email}?`)&&await Va(e.id,t)}async function oe(e){a()?.id===e.id?alert(`No puedes eliminar tu propia cuenta de usuario en uso.`):confirm(`¿Eliminar al usuario ${e.full_name} (${e.email}) del sistema?\nEsta acción es irreversible.`)&&await za(e.id)}var se=Ir(),ce=cn(se),le=e=>{var t=vh(),n=cn(t),c=L(n),l=z(L(c),2),se=L(l),ce=R(L(se),!0);M(se),M(l),M(c);var le=z(c,2),ue=L(le),de=z(L(ue),2),fe=R(L(de),!0);N(2),M(de),M(ue);var pe=z(ue,2),me=z(L(pe),2),he=R(L(me),!0);N(2),M(me),M(pe);var ge=z(pe,2),_e=z(L(ge),2),j=R(L(_e),!0);N(2),M(_e),M(ge);var ve=z(ge,2),ye=z(L(ve),2),be=R(L(ye),!0);N(2),M(ye),M(ve);var xe=z(ve,2),Se=z(L(xe),2),Ce=R(L(Se),!0);N(2),M(Se),M(xe);var we=z(xe,2),Te=z(L(we),2),Ee=R(L(Te),!0);N(2),M(Te),M(we),M(le);var De=z(le,2),Oe=L(De),ke=L(Oe),Ae=R(L(ke));M(ke);var je=z(ke,2),Me=R(L(je));M(je),M(Oe);var Ne=z(Oe,2),Pe=L(Ne),Fe=z(L(Pe),2);J(Fe);var Ie=z(Fe,2),Le=e=>{var t=Xm();H(`click`,t,()=>I(d,``)),W(e,t)};K(Ie,e=>{V(d)&&e(Le)}),M(Pe);var Re=z(Pe,2),ze=e=>{var t=Zm();H(`click`,t,E),W(e,t)},Be=e=>{var t=Qm();H(`click`,t,te),W(e,t)};K(Re,e=>{V(u)===`companies`?e(ze):e(Be,-1)}),M(Ne),M(De);var Ve=z(De,2),He=e=>{var t=sh(),n=L(t),r=z(L(n)),i=L(r),a=e=>{W(e,$m())};K(i,e=>{V(w).length===0&&e(a)}),Xr(z(i),17,()=>V(w),Kr,(e,t)=>{var n=oh(),r=L(n),i=L(r),a=L(i),o=R(a,!0),s=R(z(a,2),!0);M(i),M(r);var c=z(r),l=R(L(c),!0);M(c);var u=z(c),d=L(u),f=e=>{W(e,eh())},p=e=>{W(e,th())},m=e=>{W(e,nh())};K(d,e=>{V(t).whatsappStatus===`ready`?e(f):V(t).whatsappStatus===`qr_ready`?e(p,1):e(m,-1)}),M(u);var h=z(u),g=R(L(h));M(h);var _=z(h),v=L(_),y=L(v),b=R(y),x=R(z(y,4));M(v),M(_);var S=z(_),C=L(S),w=e=>{var n=rh(),r=R(n);B(()=>G(r,`🔑 Exclusiva (${V(t).geminiApiKeyMasked??``})`)),W(e,n)},T=e=>{var n=ih(),r=R(n);B(()=>G(r,`🌐 Global (${(V(t).geminiModel||`Flash Lite`)??``})`)),W(e,n)},E=e=>{W(e,ah())};K(C,e=>{V(t).isCustomGeminiKey?e(w):V(t).hasGlobalKey?e(T,1):e(E,-1)}),M(S);var te=z(S),ne=L(te),re=L(ne),ie=z(re,2),ae=z(ie,2),oe=z(ae,2),se=z(oe,2);M(ne),M(te),M(n),B(()=>{G(o,V(t).name),G(s,V(t).id),G(l,V(t).creatorEmail||V(t).creatorName||`Sistema`),G(g,`${(V(t).memberCount||0)??``} usuarios`),G(b,`${(V(t).rulesCount||0)??``} rutas`),G(x,`${(V(t).leadsCount||0)??``} prospectos`)}),H(`click`,re,()=>O(V(t))),H(`click`,ie,()=>A(V(t))),H(`click`,ae,()=>k(V(t))),H(`click`,oe,()=>D(V(t))),H(`click`,se,()=>ee(V(t))),W(e,n)}),M(r),M(n),M(t),W(e,t)};K(Ve,e=>{V(u)===`companies`&&e(He)});var Ue=z(Ve,2),We=e=>{var t=_h(),n=L(t),r=z(L(n)),i=L(r),o=e=>{W(e,ch())};K(i,e=>{V(T).length===0&&e(o)}),Xr(z(i),17,()=>V(T),Kr,(e,t)=>{var n=gh(),r=L(n),i=L(r),o=L(i),s=R(o,!0),c=R(z(o,2),!0);M(i),M(r);var l=z(r),u=R(L(l),!0);M(l);var d=z(l),f=L(d),p=e=>{W(e,lh())},m=e=>{W(e,uh())};K(f,e=>{V(t).is_superadmin?e(p):e(m,-1)}),M(d);var h=z(d),g=L(h),_=e=>{W(e,dh())},v=e=>{W(e,fh())};K(g,e=>{V(t).is_active?e(_):e(v,-1)}),M(h);var y=z(h),b=L(y),x=L(b),S=e=>{W(e,ph())},C=e=>{var n=Ir();Xr(cn(n),17,()=>V(t).memberships,Kr,(e,t)=>{var n=hh(),r=L(n),i=z(r),a=e=>{W(e,mh())};K(i,e=>{V(t).isOwner&&e(a)}),M(n),B(()=>{Ti(n,`title`,`${V(t).roleName||V(t).roleId}${V(t).isOwner?` (Owner)`:``}`),G(r,`🏢 ${V(t).companyName??``} `)}),W(e,n)}),W(e,n)};K(x,e=>{!V(t).memberships||V(t).memberships.length===0?e(S):e(C,-1)}),M(b),M(y);var w=z(y),T=L(w),E=L(T),D=R(E,!0),O=z(E,2),k=z(O,2),A=z(k,2),ee=z(A,2);M(T),M(w),M(n),B(()=>{G(s,V(t).full_name||`Sin Nombre`),G(c,V(t).email),G(u,V(t).phone||`No registrado`),q(E,1,`btn-action-icon ${V(t).is_superadmin?`demote-action`:`promote-action`}`,`svelte-kldx70`),Ti(E,`title`,V(t).is_superadmin?`Quitar privilegios de Superusuario`:`Hacer Superusuario global`),G(D,V(t).is_superadmin?`Quitar ⭐`:`Hacer ⭐`),ee.disabled=a()?.id===V(t).id,Ti(ee,`title`,a()?.id===V(t).id?`No puedes eliminarte a ti mismo`:`Eliminar usuario`)}),H(`click`,E,()=>ae(V(t))),H(`click`,O,()=>ie(V(t))),H(`click`,k,()=>re(V(t))),H(`click`,A,()=>ne(V(t))),H(`click`,ee,()=>oe(V(t))),W(e,n)}),M(r),M(n),M(t),W(e,t)};K(Ue,e=>{V(u)===`users`&&e(We)}),M(n);var Ge=z(n,2);bm(Ge,{get isOpen(){return V(f)},get company(){return V(p)},onClose:()=>{I(f,!1),I(p,null)}});var Ke=z(Ge,2);Dm(Ke,{get isOpen(){return V(m)},get company(){return V(h)},onClose:()=>{I(m,!1),I(h,null)}});var qe=z(Ke,2);km(qe,{get isOpen(){return V(g)},get company(){return V(_)},onClose:()=>{I(g,!1),I(_,null)}});var Je=z(qe,2);Im(Je,{get isOpen(){return V(v)},get user(){return V(y)},get companies(){return r()},onClose:()=>{I(v,!1),I(y,null)}});var Ye=z(Je,2);Bm(Ye,{get isOpen(){return V(b)},get user(){return V(x)},onClose:()=>{I(b,!1),I(x,null)}}),Ym(z(Ye,2),{get isOpen(){return V(S)},get user(){return V(C)},get allCompanies(){return r()},onClose:()=>{I(S,!1),I(C,null)}}),B(()=>{se.disabled=o(),G(ce,o()?`⏳ Actualizando...`:`🔄 Actualizar Datos`),G(fe,s().companiesCount||0),G(he,s().usersCount||0),G(j,s().superadminsCount||0),G(be,s().activeBotsCount||0),G(Ce,s().leadsCount||0),G(Ee,s().messagesCount||0),q(ke,1,`subtab-btn ${V(u)===`companies`?`active`:``}`,`svelte-kldx70`),G(Ae,`🏢 Empresas del Sistema (${r().length??``})`),q(je,1,`subtab-btn ${V(u)===`users`?`active`:``}`,`svelte-kldx70`),G(Me,`👥 Usuarios Globales (${i().length??``})`),Ti(Fe,`placeholder`,V(u)===`companies`?`Buscar empresa por nombre...`:`Buscar usuario por nombre o correo...`)}),H(`click`,se,()=>Aa()),H(`click`,ke,()=>{I(u,`companies`),I(d,``)}),H(`click`,je,()=>{I(u,`users`),I(d,``)}),Y(Fe,()=>V(d),e=>I(d,e)),W(e,t)};K(ce,e=>{n()&&e(le)}),W(e,se),We(),l()}Tr([`click`]);var bh=U(`<div class="app-root svelte-1n46o8q"><!> <div class="app-body-layout svelte-1n46o8q"><!> <main class="app-content-viewport svelte-1n46o8q"><!></main></div> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!></div>`),xh=U(`<!> <!>`,1);function Sh(e,t){Ue(t,!0);let n=()=>Z(Ls,`$isAuthenticated`,o),r=()=>Z(Rs,`$isSuperadmin`,o),i=()=>Z(fa,`$currentCompanyId`,o),a=()=>Z(sa,`$activeTab`,o),[o,s]=Ui();async function c(){await Promise.all([Es(),qa(),Ho(),Eo(),so(),$a(),es(),Js(),fs()])}Ki(async()=>{await Bs()&&(await _a(),Ds(3500),await c())}),qi(()=>{Os(),To()}),bn(()=>{n()?(_a().then(e=>{e&&e.length>0?c():r()&&sa.set(`tab-superadmin`)}),Ds(3500)):(Os(),To())}),bn(()=>{n()&&i()&&wo(i())}),bn(()=>{!r()&&a()===`tab-superadmin`&&sa.set(`tab-rules`)});var l=Ir(),u=cn(l),d=e=>{var t=bh(),n=L(t);oc(n,{onCompanySwitched:c});var i=z(n,2),o=L(i);Vc(o,{});var s=z(o,2),l=L(s),u=e=>{Xd(e,{})},d=e=>{bf(e,{})},f=e=>{Mf(e,{})},p=e=>{Gf(e,{})},m=e=>{gp(e,{})},h=e=>{Dp(e,{})},g=e=>{Kp(e,{})},_=e=>{vm(e,{})},v=e=>{yh(e,{})};K(l,e=>{a()===`tab-rules`?e(u):a()===`tab-scheduler`?e(d,1):a()===`tab-simulator`?e(f,2):a()===`tab-quick-send`?e(p,3):a()===`tab-leads`?e(m,4):a()===`tab-library`?e(h,5):a()===`tab-settings`?e(g,6):a()===`tab-team`?e(_,7):a()===`tab-superadmin`&&r()&&e(v,8)}),M(s),M(i);var y=z(i,2);sl(y,{});var b=z(y,2);yl(b,{});var x=z(b,2);Cl(x,{});var S=z(x,2);Hl(S,{});var C=z(S,2);ru(C,{});var w=z(C,2);pu(w,{});var T=z(w,2);Nu(T,{});var E=z(T,2);Vu(E,{});var D=z(E,2);dd(D,{});var O=z(D,2);hd(O,{});var k=z(O,2);vd(k,{});var A=z(k,2);xd(A,{});var ee=z(A,2);wd(ee,{});var te=z(ee,2);Nd(te,{}),Wc(z(te,2),{}),M(t),W(e,t)},f=e=>{var t=xh(),n=cn(t);Qc(n,{}),Wc(z(n,2),{}),W(e,t)};K(u,e=>{n()?e(d):e(f,-1)}),W(e,l),We(),s()}Vr(Sh,{target:document.getElementById(`app`)});
+                                manual)</option><option>Deshabilitado (Solo responde reglas exactas)</option></select></div> <div class="gemini-key-action-col svelte-1v525za"><div class="btn-spacer svelte-1v525za" aria-hidden="true"></div> <!></div></div></div> <div class="form-row svelte-1v525za" style="margin-top: 16px;"><div class="form-group flex-1 svelte-1v525za"><label for="simulate-typing">Simular "Escribiendo..." en WhatsApp</label> <select id="simulate-typing"><option>Sí (Da apariencia 100% humana)</option><option>No (Envía respuestas al instante)</option></select></div> <div class="form-group flex-1 svelte-1v525za"><label for="delay-sec">Segundos de Simulación de Digitación</label> <input type="number" id="delay-sec" min="1" max="15"/></div></div> <div class="form-group"><label for="ignore-groups">Ignorar Mensajes de Grupos de WhatsApp</label> <select id="ignore-groups"><option>Sí (Recomendado - Solo atiende chats individuales)</option><option>No (Responder también en grupos)</option></select></div> <div class="form-group"><label for="fallback-msg">Mensaje por Defecto (Fallback si no hay coincidencia ni IA)</label> <textarea id="fallback-msg" rows="4" placeholder="¡Hola! Gracias por comunicarte con nosotros. Escribe *menu* para ver las opciones disponibles..."></textarea></div> <!></form></div></section> <!>`,
+        1,
+    );
+function Kp(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Ks, `$settings`, o),
+        r = () => Z(qs, `$geminiStatus`, o),
+        i = () => Z(Rs, `$isSuperadmin`, o),
+        a = () => Z(zs, `$hasPermission`, o),
+        [o, s] = Ui(),
+        c = F(``),
+        l = F(!0),
+        u = F(!0),
+        d = F(2),
+        f = F(!0),
+        p = F(``),
+        m = F(!1),
+        h = F(!1);
+    bn(() => {
+        n() &&
+            (I(c, n().businessName || ``, !0),
+            I(l, n().geminiEnabled ?? !0, !0),
+            I(u, n().simulateTyping ?? !0, !0),
+            I(d, n().typingDelaySeconds || 2, !0),
+            I(f, n().ignoreGroups ?? !0, !0),
+            I(p, n().fallbackMessage || ``, !0));
+    });
+    async function g(e) {
+        (e.preventDefault(),
+            I(m, !0),
+            await Ys({
+                businessName: V(c).trim(),
+                geminiEnabled: !!V(l),
+                simulateTyping: !!V(u),
+                typingDelaySeconds: parseInt(V(d), 10) || 2,
+                ignoreGroups: !!V(f),
+                fallbackMessage: V(p).trim(),
+            }),
+            I(m, !1));
+    }
+    var _ = Gp(),
+        v = cn(_),
+        y = z(L(v), 2),
+        b = L(y),
+        x = L(b),
+        S = z(L(x), 2);
+    (J(S), M(x));
+    var C = z(x, 2),
+        w = L(C),
+        T = z(L(w), 2),
+        E = L(T),
+        D = L(E),
+        O = (e) => {
+            var t = Rp(),
+                n = R(t);
+            (B(() =>
+                G(
+                    n,
+                    `🔑 Clave Exclusiva (${(r().maskedKey || `Configurada`) ?? ``})`,
+                ),
+            ),
+                W(e, t));
+        },
+        k = (e) => {
+            W(e, zp());
+        },
+        A = (e) => {
+            W(e, Bp());
+        };
+    (K(D, (e) => {
+        r().isCustom ? e(O) : r().hasGlobalKey ? e(k, 1) : e(A, -1);
+    }),
+        M(E));
+    var ee = z(E, 2),
+        te = (e) => {
+            W(e, Vp());
+        },
+        ne = (e) => {
+            W(e, Hp());
+        };
+    K(ee, (e) => {
+        r().isCustom ? e(te) : r().hasGlobalKey && e(ne, 1);
+    });
+    var re = z(ee, 2),
+        ie = R(L(re));
+    (M(re), M(T), M(w));
+    var ae = z(w, 2),
+        oe = L(ae),
+        se = z(L(oe), 2),
+        ce = L(se);
+    ce.value = ce.__value = !0;
+    var le = z(ce);
+    ((le.value = le.__value = !1), M(se), _i(se), M(oe));
+    var ue = z(oe, 2),
+        de = z(L(ue), 2),
+        fe = (e) => {
+            var t = Up();
+            (H(`click`, t, () => I(h, !0)), W(e, t));
+        };
+    (K(de, (e) => {
+        i() && e(fe);
+    }),
+        M(ue),
+        M(ae),
+        M(C));
+    var pe = z(C, 2),
+        me = L(pe),
+        he = z(L(me), 2),
+        ge = L(he);
+    ge.value = ge.__value = !0;
+    var _e = z(ge);
+    ((_e.value = _e.__value = !1), M(he), _i(he), M(me));
+    var j = z(me, 2),
+        ve = z(L(j), 2);
+    (J(ve), M(j), M(pe));
+    var ye = z(pe, 2),
+        be = z(L(ye), 2),
+        xe = L(be);
+    xe.value = xe.__value = !0;
+    var N = z(xe);
+    ((N.value = N.__value = !1), M(be), _i(be), M(ye));
+    var Se = z(ye, 2),
+        Ce = z(L(Se), 2);
+    (tt(Ce), M(Se));
+    var we = z(Se, 2),
+        Te = (e) => {
+            var t = Wp(),
+                n = L(t),
+                r = R(L(n), !0);
+            (M(n),
+                M(t),
+                B(() => {
+                    ((n.disabled = V(m)),
+                        G(
+                            r,
+                            V(m)
+                                ? `Guardando...`
+                                : `💾 Guardar Cambios de Configuración`,
+                        ));
+                }),
+                W(e, t));
+        },
+        Ee = P(() => a()(`settings:edit`));
+    (K(we, (e) => {
+        V(Ee) && e(Te);
+    }),
+        M(b),
+        M(y),
+        M(v),
+        Lp(z(v, 2), {
+            get isOpen() {
+                return V(h);
+            },
+            onClose: () => I(h, !1),
+        }),
+        B(() => G(ie, `⚡ ${(r().model || `gemini-3.5-flash-lite`) ?? ``}`)),
+        wr(`submit`, b, g),
+        Y(
+            S,
+            () => V(c),
+            (e) => I(c, e),
+        ),
+        vi(
+            se,
+            () => V(l),
+            (e) => I(l, e),
+        ),
+        vi(
+            he,
+            () => V(u),
+            (e) => I(u, e),
+        ),
+        Y(
+            ve,
+            () => V(d),
+            (e) => I(d, e),
+        ),
+        vi(
+            be,
+            () => V(f),
+            (e) => I(f, e),
+        ),
+        Y(
+            Ce,
+            () => V(p),
+            (e) => I(p, e),
+        ),
+        W(e, _),
+        We(),
+        s());
+}
+Tr([`click`]);
+var qp =
+        U(`<div class="admin-full-banner svelte-nfpt9c"><div class="admin-crown svelte-nfpt9c">👑</div> <div><h4 class="svelte-nfpt9c">Control Total y Sin Restricciones</h4> <p class="svelte-nfpt9c">Este rol posee privilegios totales en la plataforma. Puede ver, crear, modificar y eliminar cualquier elemento,
+              vincular cuentas de WhatsApp, entrenar a la inteligencia artificial y gestionar colaboradores.</p></div></div>`),
+    Jp = U(
+        `<div class="empty-state-text svelte-nfpt9c">Este rol no tiene ningún permiso asignado actualmente.</div>`,
+    ),
+    Yp = U(
+        `<div class="perm-detail-item allowed svelte-nfpt9c"><span class="check-icon svelte-nfpt9c">✓</span> <div class="perm-text svelte-nfpt9c"><strong class="perm-title svelte-nfpt9c"> </strong> <span class="perm-desc svelte-nfpt9c"> </span></div></div>`,
+    ),
+    Xp = U(
+        `<div class="module-group-card svelte-nfpt9c"><div class="module-group-header svelte-nfpt9c"><span class="module-icon svelte-nfpt9c"> </span> <div><h4 class="module-title svelte-nfpt9c"> </h4> <p class="module-desc svelte-nfpt9c"> </p></div></div> <div class="perms-list svelte-nfpt9c"></div></div>`,
+    ),
+    Zp = U(`<div class="grouped-sections-list svelte-nfpt9c"></div>`),
+    Qp = U(`<div class="perms-tab-body svelte-nfpt9c"><!></div>`),
+    $p = U(
+        `<div class="no-restrictions-box svelte-nfpt9c"><span style="font-size: 2rem;">🛡️</span> <div><strong>Este rol no tiene ninguna restricción</strong> <p>Tiene acceso completo a todas las herramientas del sistema.</p></div></div>`,
+    ),
+    em = U(
+        `<div class="perm-detail-item blocked svelte-nfpt9c"><span class="blocked-icon svelte-nfpt9c">✕</span> <div class="perm-text svelte-nfpt9c"><strong class="perm-title svelte-nfpt9c"> </strong> <span class="perm-desc svelte-nfpt9c"> </span></div></div>`,
+    ),
+    tm = U(
+        `<div class="module-group-card restricted svelte-nfpt9c"><div class="module-group-header svelte-nfpt9c"><span class="module-icon svelte-nfpt9c"> </span> <div><h4 class="module-title svelte-nfpt9c"> </h4> <p class="module-desc svelte-nfpt9c"> </p></div></div> <div class="perms-list svelte-nfpt9c"></div></div>`,
+    ),
+    nm = U(
+        `<div class="restrictions-notice svelte-nfpt9c">⚠️ Los colaboradores con este rol tienen bloqueadas las siguientes acciones para proteger la seguridad y los datos de tu empresa:</div> <div class="grouped-sections-list svelte-nfpt9c"></div>`,
+        1,
+    ),
+    rm = U(
+        `<button type="button" class="btn btn-outline-danger svelte-nfpt9c" title="Eliminar este rol de la empresa">🗑️ Eliminar Rol</button>`,
+    ),
+    im = U(
+        `<div class="role-modal-content svelte-nfpt9c"><div class="role-hero-box svelte-nfpt9c"><div class="role-hero-info"><div class="role-title-row svelte-nfpt9c"><span> </span> <span> </span></div> <p class="role-desc-text svelte-nfpt9c"> </p></div></div> <!> <div class="modal-tabs-header svelte-nfpt9c"><button type="button"> </button> <button type="button"> </button></div> <!> <div class="modal-footer-actions svelte-nfpt9c"><!> <button type="button" class="btn btn-secondary">Cerrar</button></div></div>`,
+    );
+function am(e, t) {
+    Ue(t, !0);
+    let n = () => Z(zs, `$hasPermission`, r),
+        [r, i] = Ui(),
+        a = Gi(t, `role`, 3, null),
+        o = Gi(t, `isOpen`, 3, !1),
+        s = Gi(t, `onClose`, 3, () => {}),
+        c = P(() => (Array.isArray(a()?.permissions) ? a().permissions : [])),
+        l = P(() => kd(a() || {})),
+        u = P(() => Od(V(c))),
+        d = P(() => {
+            if (V(l)) return [];
+            let e = new Set(V(c)),
+                t = [];
+            for (let [n, r] of Object.entries(Ed)) e.has(n) || t.push(r);
+            return t;
+        }),
+        f = P(() => {
+            if (V(l)) return [];
+            let e = new Set(V(c));
+            return Od(Object.keys(Ed).filter((t) => !e.has(t)));
+        }),
+        p = F(`allowed`);
+    async function m() {
+        a() &&
+            confirm(
+                `¿Estás seguro de eliminar el rol personalizado "${a().name}"? Los colaboradores que lo tengan deberán tener otro rol asignado.`,
+            ) &&
+            (await _s(a().id, a().name)).success &&
+            s()();
+    }
+    var h = Ir(),
+        g = cn(h),
+        _ = (e) => {
+            {
+                let t = P(() => `🛡️ Detalle de Permisos: ${a().name}`),
+                    r = P(() =>
+                        a().isSystemDefault || a().is_system_default
+                            ? `Rol oficial predeterminado del sistema`
+                            : `Rol personalizado creado para tu empresa`,
+                    );
+                il(e, {
+                    get isOpen() {
+                        return o();
+                    },
+                    get title() {
+                        return V(t);
+                    },
+                    get subtitle() {
+                        return V(r);
+                    },
+                    maxWidth: `740px`,
+                    get onClose() {
+                        return s();
+                    },
+                    children: (e, t) => {
+                        var r = im(),
+                            i = L(r),
+                            o = L(i),
+                            h = L(o),
+                            g = L(h),
+                            _ = R(g, !0),
+                            v = z(g, 2),
+                            y = R(v, !0);
+                        M(h);
+                        var b = R(z(h, 2), !0);
+                        (M(o), M(i));
+                        var x = z(i, 2),
+                            S = (e) => {
+                                W(e, qp());
+                            };
+                        K(x, (e) => {
+                            V(l) && e(S);
+                        });
+                        var C = z(x, 2),
+                            w = L(C),
+                            T = R(w),
+                            E = z(w, 2),
+                            D = R(E);
+                        M(C);
+                        var O = z(C, 2),
+                            k = (e) => {
+                                var t = Qp(),
+                                    n = L(t),
+                                    r = (e) => {
+                                        W(e, Jp());
+                                    },
+                                    i = (e) => {
+                                        var t = Zp();
+                                        (Xr(
+                                            t,
+                                            21,
+                                            () => V(u),
+                                            Kr,
+                                            (e, t) => {
+                                                var n = Xp(),
+                                                    r = L(n),
+                                                    i = L(r),
+                                                    a = R(i, !0),
+                                                    o = z(i, 2),
+                                                    s = L(o),
+                                                    c = R(s, !0),
+                                                    l = R(z(s, 2), !0);
+                                                (M(o), M(r));
+                                                var u = z(r, 2);
+                                                (Xr(
+                                                    u,
+                                                    21,
+                                                    () => V(t).permissions,
+                                                    Kr,
+                                                    (e, t) => {
+                                                        var n = Yp(),
+                                                            r = z(L(n), 2),
+                                                            i = L(r),
+                                                            a = R(i, !0),
+                                                            o = R(z(i, 2), !0);
+                                                        (M(r),
+                                                            M(n),
+                                                            B(() => {
+                                                                (G(
+                                                                    a,
+                                                                    V(t).label,
+                                                                ),
+                                                                    G(
+                                                                        o,
+                                                                        V(t)
+                                                                            .description,
+                                                                    ));
+                                                            }),
+                                                            W(e, n));
+                                                    },
+                                                ),
+                                                    M(u),
+                                                    M(n),
+                                                    B(() => {
+                                                        (G(a, V(t).icon),
+                                                            G(c, V(t).name),
+                                                            G(
+                                                                l,
+                                                                V(t)
+                                                                    .description,
+                                                            ));
+                                                    }),
+                                                    W(e, n));
+                                            },
+                                        ),
+                                            M(t),
+                                            W(e, t));
+                                    };
+                                (K(n, (e) => {
+                                    V(c).length === 0 ? e(r) : e(i, -1);
+                                }),
+                                    M(t),
+                                    W(e, t));
+                            },
+                            A = (e) => {
+                                var t = Qp(),
+                                    n = L(t),
+                                    r = (e) => {
+                                        W(e, $p());
+                                    },
+                                    i = (e) => {
+                                        var t = nm(),
+                                            n = z(cn(t), 2);
+                                        (Xr(
+                                            n,
+                                            21,
+                                            () => V(f),
+                                            Kr,
+                                            (e, t) => {
+                                                var n = tm(),
+                                                    r = L(n),
+                                                    i = L(r),
+                                                    a = R(i, !0),
+                                                    o = z(i, 2),
+                                                    s = L(o),
+                                                    c = R(s, !0),
+                                                    l = R(z(s, 2), !0);
+                                                (M(o), M(r));
+                                                var u = z(r, 2);
+                                                (Xr(
+                                                    u,
+                                                    21,
+                                                    () => V(t).permissions,
+                                                    Kr,
+                                                    (e, t) => {
+                                                        var n = em(),
+                                                            r = z(L(n), 2),
+                                                            i = L(r),
+                                                            a = R(i),
+                                                            o = R(z(i, 2), !0);
+                                                        (M(r),
+                                                            M(n),
+                                                            B(
+                                                                (e) => {
+                                                                    (G(
+                                                                        a,
+                                                                        `No puede ${e ?? ``}`,
+                                                                    ),
+                                                                        G(
+                                                                            o,
+                                                                            V(t)
+                                                                                .description,
+                                                                        ));
+                                                                },
+                                                                [
+                                                                    () =>
+                                                                        V(
+                                                                            t,
+                                                                        ).label.toLowerCase(),
+                                                                ],
+                                                            ),
+                                                            W(e, n));
+                                                    },
+                                                ),
+                                                    M(u),
+                                                    M(n),
+                                                    B(() => {
+                                                        (G(a, V(t).icon),
+                                                            G(c, V(t).name),
+                                                            G(
+                                                                l,
+                                                                V(t)
+                                                                    .description,
+                                                            ));
+                                                    }),
+                                                    W(e, n));
+                                            },
+                                        ),
+                                            M(n),
+                                            W(e, t));
+                                    };
+                                (K(n, (e) => {
+                                    V(d).length === 0 ? e(r) : e(i, -1);
+                                }),
+                                    M(t),
+                                    W(e, t));
+                            };
+                        K(O, (e) => {
+                            V(p) === `allowed` ? e(k) : e(A, -1);
+                        });
+                        var ee = z(O, 2),
+                            te = L(ee),
+                            ne = (e) => {
+                                var t = rm();
+                                (H(`click`, t, m), W(e, t));
+                            },
+                            re = P(
+                                () =>
+                                    !a().isSystemDefault &&
+                                    !a().is_system_default &&
+                                    n()(`roles:manage`),
+                            );
+                        K(te, (e) => {
+                            V(re) && e(ne);
+                        });
+                        var ie = z(te, 2);
+                        (M(ee),
+                            M(r),
+                            B(() => {
+                                (q(
+                                    g,
+                                    1,
+                                    `role-badge ${(((a().isSystemDefault || a().is_system_default) && a().id) || `custom-role`) ?? ``}`,
+                                    `svelte-nfpt9c`,
+                                ),
+                                    G(_, a().name),
+                                    q(
+                                        v,
+                                        1,
+                                        `role-nature-tag ${a().isSystemDefault || a().is_system_default ? `system` : `custom`}`,
+                                        `svelte-nfpt9c`,
+                                    ),
+                                    G(
+                                        y,
+                                        a().isSystemDefault ||
+                                            a().is_system_default
+                                            ? `🔒 Sistema (No modificable)`
+                                            : `✨ Personalizado`,
+                                    ),
+                                    G(
+                                        b,
+                                        a().description ||
+                                            `Sin descripción asignada.`,
+                                    ),
+                                    q(
+                                        w,
+                                        1,
+                                        `modal-tab-btn ${V(p) === `allowed` ? `active` : ``}`,
+                                        `svelte-nfpt9c`,
+                                    ),
+                                    G(
+                                        T,
+                                        `✅ Lo que puede hacer y ver (${V(c).length ?? ``})`,
+                                    ),
+                                    q(
+                                        E,
+                                        1,
+                                        `modal-tab-btn ${V(p) === `restricted` ? `active` : ``}`,
+                                        `svelte-nfpt9c`,
+                                    ),
+                                    G(
+                                        D,
+                                        `🚫 Restricciones (${V(d).length ?? ``})`,
+                                    ));
+                            }),
+                            H(`click`, w, () => I(p, `allowed`)),
+                            H(`click`, E, () => I(p, `restricted`)),
+                            H(`click`, ie, function (...e) {
+                                s()?.apply(this, e);
+                            }),
+                            W(e, r));
+                    },
+                    $$slots: { default: !0 },
+                });
+            }
+        };
+    (K(g, (e) => {
+        a() && e(_);
+    }),
+        W(e, h),
+        We(),
+        i());
+}
+Tr([`click`]);
+var om = U(
+        `<button type="button" class="btn btn-secondary">🛡️ Crear Rol Personalizado</button>`,
+    ),
+    sm = U(
+        `<button type="button" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Agregar Colaborador</button>`,
+    ),
+    cm = U(
+        `<div style="text-align: center; padding: 40px; color: var(--text-dim);">No hay colaboradores registrados en esta empresa.</div>`,
+    ),
+    lm = U(
+        `<button type="button" class="btn btn-outline-sm" title="Cambiar rol">Cambiar Rol</button> <button type="button" class="icon-btn delete-btn" title="Eliminar de la empresa"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>`,
+        1,
+    ),
+    um = U(
+        `<tr><td><div class="member-user-cell svelte-pumxiu"><span class="member-avatar svelte-pumxiu"> </span> <div><strong> </strong> <div style="font-size: 0.75rem; color: var(--text-dim);"> </div></div></div></td><td><div style="font-size: 0.85rem; color: var(--text-main);"> </div> <div style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);"> </div></td><td><span> </span></td><td><span style="color: #4ade80; font-size: 0.85rem; font-weight: 500;">● Activo</span></td><td style="color: var(--text-muted); font-size: 0.82rem;"> </td><td><div style="display: flex; gap: 6px;"><!></div></td></tr>`,
+    ),
+    dm = U(
+        `<div class="leads-table-container"><table class="leads-table"><thead><tr><th>Colaborador</th><th>Contacto</th><th>Rol Asignado</th><th>Estado</th><th>Fecha de Ingreso</th><th>Acciones</th></tr></thead><tbody></tbody></table></div>`,
+    ),
+    fm = U(
+        `<div class="admin-full-box svelte-pumxiu"><span class="admin-icon svelte-pumxiu">👑</span> <div class="admin-box-text svelte-pumxiu"><strong class="svelte-pumxiu">Control Total Sin Restricciones</strong> <p class="svelte-pumxiu">Puede operar WhatsApp, configurar inteligencia artificial, ver y gestionar todos los clientes, programar difusiones y administrar colaboradores.</p></div></div>`,
+    ),
+    pm = U(`<span class="friendly-perm-pill svelte-pumxiu"> </span>`),
+    mm = U(
+        `<div class="module-caps-row svelte-pumxiu"><span class="module-caps-name svelte-pumxiu"> </span> <div class="module-caps-pills svelte-pumxiu"></div></div>`,
+    ),
+    hm = U(`<div class="role-grouped-modules svelte-pumxiu"></div>`),
+    gm = U(
+        `<div><div class="role-card-header svelte-pumxiu"><div class="role-card-title-group svelte-pumxiu"><span> </span> <span> </span></div> <span> </span></div> <p class="role-card-desc svelte-pumxiu"> </p> <div class="role-capabilities-summary svelte-pumxiu"><!></div> <div class="role-card-footer svelte-pumxiu"><button type="button" class="btn-inspect-role svelte-pumxiu"> </button></div></div>`,
+    ),
+    _m = U(
+        `<section id="tab-team" class="tab-content active"><div class="content-toolbar"><div><h2>Equipo y Roles de la Empresa</h2> <p class="section-desc">Gestiona qué miembros pueden acceder a esta empresa, ver prospectos, editar flujos y enviar mensajes.</p></div> <div style="display: flex; gap: 8px;"><!> <!></div></div> <div class="team-section-card svelte-pumxiu"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"><h3 style="font-size: 1.1rem; color: #fff;"> </h3></div> <!></div> <div class="team-section-card svelte-pumxiu" style="margin-top: 32px;"><div class="roles-section-header svelte-pumxiu"><div><h3 style="font-size: 1.15rem; color: #fff; margin-bottom: 4px;">🛡️ Roles y Niveles de Acceso del Equipo</h3> <p class="section-desc" style="margin: 0; font-size: 0.85rem;">Conoce en español y lenguaje claro qué puede ver y hacer cada colaborador en tu empresa, desde ventas y atención hasta administración total.</p></div> <!></div> <div class="roles-display-grid svelte-pumxiu"></div></div> <!></section>`,
+    );
+function vm(e, t) {
+    Ue(t, !0);
+    let n = () => Z(zs, `$hasPermission`, a),
+        r = () => Z(os, `$teamMembers`, a),
+        i = () => Z(ss, `$companyRoles`, a),
+        [a, o] = Ui(),
+        s = F(null),
+        c = F(!1);
+    function l(e) {
+        (I(s, e, !0), I(c, !0));
+    }
+    function u() {
+        (I(s, null), I(c, !1));
+    }
+    function d(e) {
+        (ds.set({
+            id: e.id,
+            name: e.fullName || e.email,
+            currentRoleId: e.roleId,
+        }),
+            ls.set(!0));
+    }
+    function f(e) {
+        let t = e.fullName || e.email;
+        confirm(
+            `¿Estás seguro de eliminar a ${t} de esta empresa? Perderá el acceso de inmediato.`,
+        ) && hs(e.id, t);
+    }
+    var p = _m(),
+        m = L(p),
+        h = z(L(m), 2),
+        g = L(h),
+        _ = (e) => {
+            var t = om();
+            (H(`click`, t, () => us.set(!0)), W(e, t));
+        },
+        v = P(() => n()(`roles:manage`));
+    K(g, (e) => {
+        V(v) && e(_);
+    });
+    var y = z(g, 2),
+        b = (e) => {
+            var t = sm();
+            (H(`click`, t, () => cs.set(!0)), W(e, t));
+        },
+        x = P(() => n()(`team:manage`));
+    (K(y, (e) => {
+        V(x) && e(b);
+    }),
+        M(h),
+        M(m));
+    var S = z(m, 2),
+        C = L(S),
+        w = R(L(C));
+    M(C);
+    var T = z(C, 2),
+        E = (e) => {
+            W(e, cm());
+        },
+        D = (e) => {
+            var t = dm(),
+                i = L(t),
+                a = z(L(i));
+            (Xr(
+                a,
+                5,
+                r,
+                (e) => e.id,
+                (e, t) => {
+                    let r = P(() =>
+                        (V(t).fullName || V(t).email || `U`)
+                            .charAt(0)
+                            .toUpperCase(),
+                    );
+                    var i = um(),
+                        a = L(i),
+                        o = L(a),
+                        s = L(o),
+                        c = R(s, !0),
+                        l = z(s, 2),
+                        u = L(l),
+                        p = R(u, !0),
+                        m = R(z(u, 2));
+                    (M(l), M(o), M(a));
+                    var h = z(a),
+                        g = L(h),
+                        _ = R(g, !0),
+                        v = R(z(g, 2), !0);
+                    M(h);
+                    var y = z(h),
+                        b = L(y),
+                        x = R(b, !0);
+                    M(y);
+                    var S = z(y, 2),
+                        C = R(S, !0),
+                        w = z(S),
+                        T = L(w),
+                        E = L(T),
+                        D = (e) => {
+                            var n = lm(),
+                                r = cn(n),
+                                i = z(r, 2);
+                            (H(`click`, r, () => d(V(t))),
+                                H(`click`, i, () => f(V(t))),
+                                W(e, n));
+                        },
+                        O = P(() => n()(`team:manage`));
+                    (K(E, (e) => {
+                        V(O) && e(D);
+                    }),
+                        M(T),
+                        M(w),
+                        M(i),
+                        B(
+                            (e) => {
+                                (G(c, V(r)),
+                                    G(p, V(t).fullName || `Sin Nombre`),
+                                    G(m, `ID: ${V(t).id ?? ``}`),
+                                    G(_, V(t).email),
+                                    G(v, V(t).phone || `Sin teléfono`),
+                                    q(
+                                        b,
+                                        1,
+                                        `role-badge ${((V(t).is_system_default && V(t).roleId) || `custom-role`) ?? ``}`,
+                                        `svelte-pumxiu`,
+                                    ),
+                                    G(x, V(t).roleName || `Colaborador`),
+                                    G(C, e));
+                            },
+                            [
+                                () =>
+                                    Tl(V(t).joinedAt || V(t).createdAt, {
+                                        dateStyle: `short`,
+                                        timeStyle: void 0,
+                                    }),
+                            ],
+                        ),
+                        W(e, i));
+                },
+            ),
+                M(a),
+                M(i),
+                M(t),
+                W(e, t));
+        };
+    (K(T, (e) => {
+        r().length === 0 ? e(E) : e(D, -1);
+    }),
+        M(S));
+    var O = z(S, 2),
+        k = L(O),
+        A = z(L(k), 2),
+        ee = (e) => {
+            var t = om();
+            (H(`click`, t, () => us.set(!0)), W(e, t));
+        },
+        te = P(() => n()(`roles:manage`));
+    (K(A, (e) => {
+        V(te) && e(ee);
+    }),
+        M(k));
+    var ne = z(k, 2);
+    (Xr(
+        ne,
+        5,
+        i,
+        (e) => e.id,
+        (e, t) => {
+            let n = P(() =>
+                    Array.isArray(V(t).permissions) ? V(t).permissions : [],
+                ),
+                r = P(() => kd(V(t))),
+                i = P(() => Od(V(n))),
+                a = P(() => !!(V(t).isSystemDefault || V(t).is_system_default));
+            var o = gm(),
+                s = L(o),
+                c = L(s),
+                u = L(c),
+                d = R(u, !0),
+                f = z(u, 2),
+                p = R(f, !0);
+            M(c);
+            var m = z(c, 2),
+                h = R(m, !0);
+            M(s);
+            var g = z(s, 2),
+                _ = R(g, !0),
+                v = z(g, 2),
+                y = L(v),
+                b = (e) => {
+                    W(e, fm());
+                },
+                x = (e) => {
+                    var t = hm();
+                    (Xr(
+                        t,
+                        21,
+                        () => V(i),
+                        Kr,
+                        (e, t) => {
+                            var n = mm(),
+                                r = L(n),
+                                i = R(r),
+                                a = z(r, 2);
+                            (Xr(
+                                a,
+                                21,
+                                () => V(t).permissions,
+                                Kr,
+                                (e, t) => {
+                                    var n = pm(),
+                                        r = R(n);
+                                    (B(() => {
+                                        (Ti(n, `title`, V(t).description),
+                                            G(
+                                                r,
+                                                `${V(t).icon ?? ``} ${V(t).shortLabel ?? ``}`,
+                                            ));
+                                    }),
+                                        W(e, n));
+                                },
+                            ),
+                                M(a),
+                                M(n),
+                                B(() =>
+                                    G(
+                                        i,
+                                        `${V(t).icon ?? ``} ${V(t).name ?? ``}:`,
+                                    ),
+                                ),
+                                W(e, n));
+                        },
+                    ),
+                        M(t),
+                        W(e, t));
+                };
+            (K(y, (e) => {
+                V(r) ? e(b) : e(x, -1);
+            }),
+                M(v));
+            var S = z(v, 2),
+                C = L(S),
+                w = R(C);
+            (M(S),
+                M(o),
+                B(() => {
+                    (q(
+                        o,
+                        1,
+                        `role-card ${V(r) ? `admin-card` : ``}`,
+                        `svelte-pumxiu`,
+                    ),
+                        q(
+                            u,
+                            1,
+                            `role-badge ${((V(a) && V(t).id) || `custom-role`) ?? ``}`,
+                            `svelte-pumxiu`,
+                        ),
+                        G(d, V(t).name),
+                        q(
+                            f,
+                            1,
+                            `role-type-tag ${V(a) ? `system` : `custom`}`,
+                            `svelte-pumxiu`,
+                        ),
+                        G(p, V(a) ? `Sistema` : `Personalizado`),
+                        q(
+                            m,
+                            1,
+                            `role-perms-count-badge ${V(r) ? `admin-badge` : ``}`,
+                            `svelte-pumxiu`,
+                        ),
+                        G(
+                            h,
+                            V(r)
+                                ? `⭐ Acceso Total`
+                                : `${V(n).length} permisos`,
+                        ),
+                        G(_, V(t).description || `Sin descripción asignada.`),
+                        G(
+                            w,
+                            `🔍 Ver qué puede y qué no puede hacer (${V(n).length ?? ``})`,
+                        ));
+                }),
+                H(`click`, C, () => l(V(t))),
+                W(e, o));
+        },
+    ),
+        M(ne),
+        M(O),
+        am(z(O, 2), {
+            get role() {
+                return V(s);
+            },
+            get isOpen() {
+                return V(c);
+            },
+            onClose: u,
+        }),
+        M(p),
+        B(() => G(w, `Miembros de la Empresa (${r().length ?? ``})`)),
+        W(e, p),
+        We(),
+        o());
+}
+Tr([`click`]);
+var ym = U(
+    `<form class="form-body svelte-fit5xe"><div class="form-group"><label for="company-admin-name">Nombre de la Empresa</label> <input type="text" id="company-admin-name" placeholder="Ej: Inmobiliaria Horizonte S.A.S." required=""/></div> <div class="modal-footer-btns svelte-fit5xe"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`,
+);
+function bm(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `company`, 3, null),
+        a = F(``),
+        o = F(!1);
+    bn(() => {
+        n() && I(a, (i() && i().name) || ``, !0);
+    });
+    async function s(e) {
+        if ((e.preventDefault(), V(a).trim())) {
+            I(o, !0);
+            try {
+                (i() && i().id
+                    ? await Ma(i().id, { name: V(a).trim() })
+                    : await ja(V(a).trim()),
+                    r()());
+            } finally {
+                I(o, !1);
+            }
+        }
+    }
+    {
+        let t = P(() =>
+                i()
+                    ? `✏️ Editar Empresa: ${i().name}`
+                    : `🏢 Nueva Empresa en el Sistema`,
+            ),
+            c = P(() =>
+                i()
+                    ? `Modifica los datos globales de la empresa`
+                    : `Crea una nueva empresa con sesión de WhatsApp y flujos aislados`,
+            );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(c);
+            },
+            maxWidth: `480px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = ym(),
+                    c = L(n),
+                    l = z(L(c), 2);
+                (J(l), M(c));
+                var u = z(c, 2),
+                    d = L(u),
+                    f = z(d, 2),
+                    p = R(L(f), !0);
+                (M(f),
+                    M(u),
+                    M(n),
+                    B(
+                        (e) => {
+                            ((d.disabled = V(o)),
+                                (f.disabled = e),
+                                G(
+                                    p,
+                                    V(o)
+                                        ? `Guardando...`
+                                        : i()
+                                          ? `💾 Guardar Cambios`
+                                          : `➕ Crear Empresa`,
+                                ));
+                        },
+                        [() => V(o) || !V(a).trim()],
+                    ),
+                    wr(`submit`, n, s),
+                    Y(
+                        l,
+                        () => V(a),
+                        (e) => I(a, e),
+                    ),
+                    H(`click`, d, function (...e) {
+                        r()?.apply(this, e);
+                    }),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var xm = U(`<span class="badge badge-custom svelte-1hzx7zo"> </span>`),
+    Sm = U(
+        `<span class="badge badge-global svelte-1hzx7zo">🌐 Clave Global Compartida</span>`,
+    ),
+    Cm = U(
+        `Ingresa una clave que comience con <code class="svelte-1hzx7zo">AIzaSy...</code> de Google AI Studio.`,
+        1,
+    ),
+    wm = U(
+        `<button type="button" class="btn-clear-key svelte-1hzx7zo" title="Eliminar la clave exclusiva y volver a usar la clave global">🗑️ Eliminar Clave Exclusiva</button>`,
+    ),
+    Tm = U(
+        `<div><span class="feedback-icon svelte-1hzx7zo"> </span> <span class="feedback-text"> </span></div>`,
+    ),
+    Em = U(
+        `<div class="gemini-admin-modal svelte-1hzx7zo"><div class="status-summary-box svelte-1hzx7zo"><div class="status-summary-header svelte-1hzx7zo"><span class="status-summary-label svelte-1hzx7zo">Estado de la IA en esta empresa:</span> <!></div> <p class="status-summary-desc svelte-1hzx7zo">Como Superusuario, puedes asignarle a esta empresa su propia clave de Gemini para aislar su cuota o presupuesto de tokens.</p></div> <div class="form-group"><label for="gemini-admin-key">API Key de Google Gemini</label> <div class="input-with-action svelte-1hzx7zo"><input id="gemini-admin-key" autocomplete="off" spellcheck="false" class="svelte-1hzx7zo"/> <button type="button" class="btn-toggle-show svelte-1hzx7zo"> </button></div> <span class="field-hint svelte-1hzx7zo"><!></span></div> <div class="form-group"><label for="gemini-admin-model">Modelo de Lenguaje</label> <select id="gemini-admin-model"><option>gemini-3.5-flash-lite (Ultra Rápido y Económico - Recomendado)</option><option>gemini-2.5-flash (Equilibrado para Ventas y Soporte)</option><option>gemini-2.5-pro (Máximo Razonamiento Complejo)</option></select></div> <div class="test-row svelte-1hzx7zo"><button type="button" class="btn btn-secondary btn-sm"><span> </span></button> <!></div> <!> <div class="modal-footer-btns svelte-1hzx7zo"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-primary"><span> </span></button></div></div>`,
+    );
+function Dm(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `company`, 3, null),
+        a = F(``),
+        o = F(`gemini-3.5-flash-lite`),
+        s = F(!1),
+        c = F(!1),
+        l = F(!1),
+        u = F(null);
+    bn(() => {
+        n() &&
+            i() &&
+            (I(a, ``),
+            I(o, i().geminiModel || `gemini-3.5-flash-lite`, !0),
+            I(s, !1),
+            I(u, null));
+    });
+    async function d() {
+        (I(c, !0), I(u, null));
+        try {
+            let e = await Zs(V(a).trim() || null, V(o));
+            I(
+                u,
+                {
+                    success: !0,
+                    message:
+                        e.message ||
+                        `¡Conexión exitosa! El modelo ${V(o)} respondió correctamente.`,
+                },
+                !0,
+            );
+        } catch (e) {
+            I(
+                u,
+                {
+                    success: !1,
+                    message:
+                        e.message ||
+                        `Error al validar la clave con Google Gemini.`,
+                },
+                !0,
+            );
+        } finally {
+            I(c, !1);
+        }
+    }
+    async function f() {
+        if (i()) {
+            I(l, !0);
+            try {
+                let e = V(a).trim();
+                (!e && i().isCustomGeminiKey ? (e = void 0) : (e ||= null),
+                    await Ia(i().id, e, V(o)),
+                    r()());
+            } finally {
+                I(l, !1);
+            }
+        }
+    }
+    async function p() {
+        if (
+            i() &&
+            confirm(
+                `¿Eliminar la API Key exclusiva de "${i().name}"?\nLa empresa pasará a usar la clave global del sistema (si existe).`,
+            )
+        ) {
+            I(l, !0);
+            try {
+                (await Ia(i().id, null, V(o)), r()());
+            } finally {
+                I(l, !1);
+            }
+        }
+    }
+    {
+        let t = P(() =>
+            i()
+                ? `🤖 Configurar Gemini: ${i().name}`
+                : `🤖 Configuración de Gemini`,
+        );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            subtitle: `Configuración exclusiva de IA para esta empresa. Solo accesible por Superusuarios.`,
+            maxWidth: `540px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = Em(),
+                    m = L(n),
+                    h = L(m),
+                    g = z(L(h), 2),
+                    _ = (e) => {
+                        var t = xm(),
+                            n = R(t);
+                        (B(() =>
+                            G(
+                                n,
+                                `🔑 Clave Exclusiva (${(i().geminiApiKeyMasked || `Configurada`) ?? ``})`,
+                            ),
+                        ),
+                            W(e, t));
+                    },
+                    v = (e) => {
+                        W(e, Sm());
+                    };
+                (K(g, (e) => {
+                    i()?.isCustomGeminiKey ? e(_) : e(v, -1);
+                }),
+                    M(h),
+                    N(2),
+                    M(m));
+                var y = z(m, 2),
+                    b = z(L(y), 2),
+                    x = L(b);
+                J(x);
+                var S = z(x, 2),
+                    C = R(S, !0);
+                M(b);
+                var w = z(b, 2),
+                    T = L(w),
+                    E = (e) => {
+                        W(
+                            e,
+                            Fr(
+                                `Deja este campo en blanco si solo deseas cambiar el modelo sin modificar la clave guardada.`,
+                            ),
+                        );
+                    },
+                    D = (e) => {
+                        var t = Cm();
+                        (N(2), W(e, t));
+                    };
+                (K(T, (e) => {
+                    i()?.isCustomGeminiKey ? e(E) : e(D, -1);
+                }),
+                    M(w),
+                    M(y));
+                var O = z(y, 2),
+                    k = z(L(O), 2),
+                    A = L(k);
+                A.value = A.__value = `gemini-3.5-flash-lite`;
+                var ee = z(A);
+                ee.value = ee.__value = `gemini-2.5-flash`;
+                var te = z(ee);
+                ((te.value = te.__value = `gemini-2.5-pro`), M(k), _i(k), M(O));
+                var ne = z(O, 2),
+                    re = L(ne),
+                    ie = R(L(re), !0);
+                M(re);
+                var ae = z(re, 2),
+                    oe = (e) => {
+                        var t = wm();
+                        (B(() => (t.disabled = V(l) || V(c))),
+                            H(`click`, t, p),
+                            W(e, t));
+                    };
+                (K(ae, (e) => {
+                    i()?.isCustomGeminiKey && e(oe);
+                }),
+                    M(ne));
+                var se = z(ne, 2),
+                    ce = (e) => {
+                        var t = Tm(),
+                            n = L(t),
+                            r = R(n, !0),
+                            i = R(z(n, 2), !0);
+                        (M(t),
+                            B(() => {
+                                (q(
+                                    t,
+                                    1,
+                                    `test-feedback ${V(u).success ? `feedback-success` : `feedback-error`}`,
+                                    `svelte-1hzx7zo`,
+                                ),
+                                    G(r, V(u).success ? `✅` : `❌`),
+                                    G(i, V(u).message));
+                            }),
+                            W(e, t));
+                    };
+                K(se, (e) => {
+                    V(u) && e(ce);
+                });
+                var le = z(se, 2),
+                    ue = L(le),
+                    de = z(ue, 2),
+                    fe = R(L(de), !0);
+                (M(de),
+                    M(le),
+                    M(n),
+                    B(() => {
+                        (Ti(x, `type`, V(s) ? `text` : `password`),
+                            Ti(
+                                x,
+                                `placeholder`,
+                                i()?.isCustomGeminiKey
+                                    ? `Mantener clave actual (${i().geminiApiKeyMasked})`
+                                    : `AIzaSy... (o deja vacío para clave global)`,
+                            ),
+                            Ti(
+                                S,
+                                `title`,
+                                V(s) ? `Ocultar clave` : `Mostrar clave`,
+                            ),
+                            G(C, V(s) ? `🙈` : `👁️`),
+                            (re.disabled = V(c) || V(l)),
+                            G(
+                                ie,
+                                V(c)
+                                    ? `Validando...`
+                                    : `🧪 Probar Conexión con Gemini`,
+                            ),
+                            (ue.disabled = V(l)),
+                            (de.disabled = V(l) || V(c)),
+                            G(
+                                fe,
+                                V(l)
+                                    ? `Guardando...`
+                                    : `💾 Guardar Configuración`,
+                            ));
+                    }),
+                    Y(
+                        x,
+                        () => V(a),
+                        (e) => I(a, e),
+                    ),
+                    H(`click`, S, () => I(s, !V(s))),
+                    vi(
+                        k,
+                        () => V(o),
+                        (e) => I(o, e),
+                    ),
+                    H(`click`, re, d),
+                    H(`click`, ue, function (...e) {
+                        r()?.apply(this, e);
+                    }),
+                    H(`click`, de, f),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var Om = U(
+    `<div class="clean-modal-content svelte-al4ny0"><div class="warning-alert-card svelte-al4ny0"><div class="warning-header svelte-al4ny0"><span class="warning-icon svelte-al4ny0">⚠️</span> <h4 class="warning-title svelte-al4ny0">Acción Irreversible de Mantenimiento</h4></div> <p class="warning-desc svelte-al4ny0">Como Superusuario, tienes el privilegio de liberar espacio y resetear las conversaciones de cualquier empresa.</p> <div class="warning-details svelte-al4ny0"><div class="detail-item to-delete"><span class="detail-badge red svelte-al4ny0">Se eliminarán permanentemente:</span> <ul class="svelte-al4ny0"><li> </li> <li> </li> <li>Archivos adjuntos descargados en la carpeta temporal de esta empresa.</li></ul></div> <div class="detail-item to-keep"><span class="detail-badge green svelte-al4ny0">Se conservarán intactos:</span> <ul class="svelte-al4ny0"><li>Flujos y rutas de venta automatizadas.</li> <li>Biblioteca de documentos y conocimiento de la IA.</li> <li>Configuraciones del negocio y credenciales de Gemini.</li> <li>Usuarios vinculados y sus permisos.</li></ul></div></div></div> <div class="confirmation-input-box svelte-al4ny0"><label for="clean-confirm-input" class="svelte-al4ny0">Para confirmar esta purga, escribe la palabra <strong class="highlight-word svelte-al4ny0">LIMPIAR</strong> en mayúsculas:</label> <input type="text" id="clean-confirm-input" placeholder="Escribe LIMPIAR..." autocomplete="off" class="svelte-al4ny0"/></div> <div class="modal-footer-btns svelte-al4ny0"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="button" class="btn btn-danger svelte-al4ny0"><span> </span></button></div></div>`,
+);
+function km(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `company`, 3, null),
+        a = F(``),
+        o = F(!1);
+    bn(() => {
+        n() && I(a, ``);
+    });
+    async function s() {
+        if (i() && V(a).trim().toUpperCase() === `LIMPIAR`) {
+            I(o, !0);
+            try {
+                (await Fa(i().id), r()());
+            } finally {
+                I(o, !1);
+            }
+        }
+    }
+    {
+        let t = P(() =>
+            i() ? `🧹 Limpiar Data: ${i().name}` : `🧹 Limpieza de Data`,
+        );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            subtitle: `Purga de almacenamiento y base de datos (Solo Superusuario)`,
+            maxWidth: `520px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = Om(),
+                    c = L(n),
+                    l = z(L(c), 4),
+                    u = L(l),
+                    d = z(L(u), 2),
+                    f = L(d),
+                    p = R(f),
+                    m = R(z(f, 2));
+                (N(2), M(d), M(u), N(2), M(l), M(c));
+                var h = z(c, 2),
+                    g = z(L(h), 2);
+                (J(g), M(h));
+                var _ = z(h, 2),
+                    v = L(_),
+                    y = z(v, 2),
+                    b = R(L(y), !0);
+                (M(y),
+                    M(_),
+                    M(n),
+                    B(
+                        (e) => {
+                            (G(
+                                p,
+                                `Todos los mensajes guardados en el historial de chat (${(i()?.messagesCount || 0) ?? ``} mensajes).`,
+                            ),
+                                G(
+                                    m,
+                                    `Todos los contactos y prospectos (${(i()?.leadsCount || 0) ?? ``} prospectos).`,
+                                ),
+                                (v.disabled = V(o)),
+                                (y.disabled = e),
+                                G(
+                                    b,
+                                    V(o)
+                                        ? `Purgando Data...`
+                                        : `🧹 Purgar Mensajes y Prospectos`,
+                                ));
+                        },
+                        [() => V(o) || V(a).trim().toUpperCase() !== `LIMPIAR`],
+                    ),
+                    Y(
+                        g,
+                        () => V(a),
+                        (e) => I(a, e),
+                    ),
+                    H(`click`, v, function (...e) {
+                        r()?.apply(this, e);
+                    }),
+                    H(`click`, y, s),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var Am = U(`<option> </option>`),
+    jm = U(
+        `<div class="form-group flex-1 svelte-abzbhs" style="margin-bottom: 0;"><label for="assign-role">Rol en la Empresa</label> <select id="assign-role"><option>👑 Administrador</option><option>💼 Asesor / Agente de Ventas</option><option>✍️ Gestor de Flujos</option><option>👀 Supervisor (Solo lectura)</option></select></div>`,
+    ),
+    Mm = U(
+        `<div class="company-assign-box svelte-abzbhs"><span class="assign-box-title svelte-abzbhs">🏢 Asignar a Empresa Inicial (Opcional):</span> <div class="form-row svelte-abzbhs"><div class="form-group flex-1 svelte-abzbhs" style="margin-bottom: 0;"><label for="assign-comp">Empresa</label> <select id="assign-comp"><option>-- Ninguna (Solo usuario global) --</option><!></select></div> <!></div></div>`,
+    ),
+    Nm = U(
+        `<div class="form-group"><label for="user-admin-password">Contraseña Inicial</label> <input type="password" id="user-admin-password" placeholder="Mínimo 6 caracteres" minlength="6" required=""/></div> <div class="superadmin-checkbox-box svelte-abzbhs"><label class="checkbox-label svelte-abzbhs"><input type="checkbox" class="svelte-abzbhs"/> <span class="checkbox-text svelte-abzbhs"><strong class="svelte-abzbhs">⭐ Otorgar Rol de Superusuario Global</strong> <small class="svelte-abzbhs">Tendrá acceso al panel raíz, todas las empresas, asignación de llaves de Gemini y gestión global.</small></span></label></div> <!>`,
+        1,
+    ),
+    Pm = U(
+        `<div class="form-group"><label for="user-admin-status">Estado de la Cuenta</label> <select id="user-admin-status"><option>✅ Activo (Puede iniciar sesión)</option><option>🚫 Inactivo / Bloqueado</option></select></div>`,
+    ),
+    Fm = U(
+        `<form class="form-body svelte-abzbhs"><div class="form-group"><label for="user-admin-name">Nombre Completo</label> <input type="text" id="user-admin-name" placeholder="Ej: Laura Gómez" required=""/></div> <div class="form-row svelte-abzbhs"><div class="form-group flex-1 svelte-abzbhs"><label for="user-admin-email">Correo Electrónico</label> <input type="email" id="user-admin-email" placeholder="laura@empresa.com" required=""/></div> <div class="form-group flex-1 svelte-abzbhs"><label for="user-admin-phone">Teléfono / Móvil</label> <input type="tel" id="user-admin-phone" placeholder="+573001234567"/></div></div> <!> <div class="modal-footer-btns svelte-abzbhs"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`,
+    );
+function Im(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `user`, 3, null),
+        a = Gi(t, `companies`, 19, () => []),
+        o = F(``),
+        s = F(``),
+        c = F(``),
+        l = F(``),
+        u = F(!1),
+        d = F(!0),
+        f = F(``),
+        p = F(`role_sales_agent`),
+        m = F(!1);
+    bn(() => {
+        n() &&
+            (i()
+                ? (I(o, i().full_name || ``, !0),
+                  I(s, i().email || ``, !0),
+                  I(c, i().phone || ``, !0),
+                  I(l, ``),
+                  I(d, i().is_active ?? !0, !0),
+                  I(u, !!i().is_superadmin, !0),
+                  I(f, ``),
+                  I(p, `role_sales_agent`))
+                : (I(o, ``),
+                  I(s, ``),
+                  I(c, ``),
+                  I(l, ``),
+                  I(d, !0),
+                  I(u, !1),
+                  I(f, a().length > 0 ? a()[0].id : ``, !0),
+                  I(p, `role_sales_agent`)));
+    });
+    async function h(e) {
+        if ((e.preventDefault(), V(o).trim() && V(s).trim())) {
+            I(m, !0);
+            try {
+                if (i() && i().id)
+                    await Ra(i().id, {
+                        fullName: V(o).trim(),
+                        email: V(s).trim(),
+                        phone: V(c).trim() || null,
+                        isActive: !!V(d),
+                    });
+                else {
+                    if (!V(l) || V(l).length < 6) {
+                        alert(`La contraseña debe tener al menos 6 caracteres`);
+                        return;
+                    }
+                    await La({
+                        fullName: V(o).trim(),
+                        email: V(s).trim(),
+                        phone: V(c).trim() || null,
+                        password: V(l).trim(),
+                        isSuperadmin: !!V(u),
+                        companyId: V(f) || null,
+                        roleId: V(f) ? V(p) : null,
+                    });
+                }
+                r()();
+            } finally {
+                I(m, !1);
+            }
+        }
+    }
+    {
+        let t = P(() =>
+                i()
+                    ? `✏️ Modificar Usuario: ${i().full_name}`
+                    : `👤 Registrar Nuevo Usuario`,
+            ),
+            g = P(() =>
+                i()
+                    ? `Actualiza los datos personales y estado de la cuenta`
+                    : `Crea una cuenta de usuario global en el sistema`,
+            );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            get subtitle() {
+                return V(g);
+            },
+            maxWidth: `520px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = Fm(),
+                    g = L(n),
+                    _ = z(L(g), 2);
+                (J(_), M(g));
+                var v = z(g, 2),
+                    y = L(v),
+                    b = z(L(y), 2);
+                (J(b), M(y));
+                var x = z(y, 2),
+                    S = z(L(x), 2);
+                (J(S), M(x), M(v));
+                var C = z(v, 2),
+                    w = (e) => {
+                        var t = Nm(),
+                            n = cn(t),
+                            r = z(L(n), 2);
+                        (J(r), M(n));
+                        var i = z(n, 2),
+                            o = L(i),
+                            s = L(o);
+                        (J(s), N(2), M(o), M(i));
+                        var c = z(i, 2),
+                            d = (e) => {
+                                var t = Mm(),
+                                    n = z(L(t), 2),
+                                    r = L(n),
+                                    i = z(L(r), 2),
+                                    o = L(i);
+                                ((o.value = o.__value = ``),
+                                    Xr(z(o), 17, a, Kr, (e, t) => {
+                                        var n = Am(),
+                                            r = R(n, !0),
+                                            i = {};
+                                        (B(() => {
+                                            (G(r, V(t).name),
+                                                i !== (i = V(t).id) &&
+                                                    (n.value =
+                                                        (n.__value = i) ?? ``));
+                                        }),
+                                            W(e, n));
+                                    }),
+                                    M(i),
+                                    _i(i),
+                                    M(r));
+                                var s = z(r, 2),
+                                    c = (e) => {
+                                        var t = jm(),
+                                            n = z(L(t), 2),
+                                            r = L(n);
+                                        r.value = r.__value = `role_admin`;
+                                        var i = z(r);
+                                        i.value =
+                                            i.__value = `role_sales_agent`;
+                                        var a = z(i);
+                                        a.value =
+                                            a.__value = `role_content_manager`;
+                                        var o = z(a);
+                                        ((o.value = o.__value = `role_viewer`),
+                                            M(n),
+                                            _i(n),
+                                            M(t),
+                                            vi(
+                                                n,
+                                                () => V(p),
+                                                (e) => I(p, e),
+                                            ),
+                                            W(e, t));
+                                    };
+                                (K(s, (e) => {
+                                    V(f) && e(c);
+                                }),
+                                    M(n),
+                                    M(t),
+                                    vi(
+                                        i,
+                                        () => V(f),
+                                        (e) => I(f, e),
+                                    ),
+                                    W(e, t));
+                            };
+                        (K(c, (e) => {
+                            a().length > 0 && e(d);
+                        }),
+                            Y(
+                                r,
+                                () => V(l),
+                                (e) => I(l, e),
+                            ),
+                            ki(
+                                s,
+                                () => V(u),
+                                (e) => I(u, e),
+                            ),
+                            W(e, t));
+                    },
+                    T = (e) => {
+                        var t = Pm(),
+                            n = z(L(t), 2),
+                            r = L(n);
+                        r.value = r.__value = !0;
+                        var i = z(r);
+                        ((i.value = i.__value = !1),
+                            M(n),
+                            _i(n),
+                            M(t),
+                            vi(
+                                n,
+                                () => V(d),
+                                (e) => I(d, e),
+                            ),
+                            W(e, t));
+                    };
+                K(C, (e) => {
+                    i() ? e(T, -1) : e(w);
+                });
+                var E = z(C, 2),
+                    D = L(E),
+                    O = z(D, 2),
+                    k = R(L(O), !0);
+                (M(O),
+                    M(E),
+                    M(n),
+                    B(
+                        (e) => {
+                            ((D.disabled = V(m)),
+                                (O.disabled = e),
+                                G(
+                                    k,
+                                    V(m)
+                                        ? `Guardando...`
+                                        : i()
+                                          ? `💾 Guardar Cambios`
+                                          : `➕ Crear Usuario`,
+                                ));
+                        },
+                        [() => V(m) || !V(o).trim() || !V(s).trim()],
+                    ),
+                    wr(`submit`, n, h),
+                    Y(
+                        _,
+                        () => V(o),
+                        (e) => I(o, e),
+                    ),
+                    Y(
+                        b,
+                        () => V(s),
+                        (e) => I(s, e),
+                    ),
+                    Y(
+                        S,
+                        () => V(c),
+                        (e) => I(c, e),
+                    ),
+                    H(`click`, D, function (...e) {
+                        r()?.apply(this, e);
+                    }),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var Lm = U(
+        `<span class="must-change-hint svelte-1tcl25d">ℹ️ Se le solicitará cambiar esta contraseña obligatoriamente al iniciar sesión.</span>`,
+    ),
+    Rm = U(
+        `<div class="success-screen svelte-1tcl25d"><div class="success-icon-badge svelte-1tcl25d">✅</div> <h4 class="success-title svelte-1tcl25d">¡Contraseña Restablecida con Éxito!</h4> <p class="success-desc svelte-1tcl25d">La contraseña de <strong> </strong> fue actualizada. Puedes copiarla y enviársela de forma segura:</p> <div class="password-display-card svelte-1tcl25d"><code class="temp-password svelte-1tcl25d"> </code> <button type="button" class="btn-copy-pass svelte-1tcl25d" title="Copiar contraseña">📋 Copiar</button></div> <!> <div class="modal-footer-btns svelte-1tcl25d" style="margin-top: 16px;"><button type="button" class="btn btn-primary">Listo / Cerrar</button></div></div>`,
+    ),
+    zm = U(
+        `<form class="form-body svelte-1tcl25d"><div class="user-target-info svelte-1tcl25d"><span class="target-name svelte-1tcl25d"> </span> <span class="target-email svelte-1tcl25d"> </span></div> <div class="form-group"><label for="reset-pass-input">Nueva Contraseña Provisoria</label> <div class="input-with-tools svelte-1tcl25d"><input id="reset-pass-input" placeholder="Escribe o genera una clave" minlength="6" required="" class="svelte-1tcl25d"/> <button type="button" class="btn-tool svelte-1tcl25d"> </button> <button type="button" class="btn-tool svelte-1tcl25d" title="Generar otra clave aleatoria">🎲</button></div></div> <div class="require-change-box svelte-1tcl25d"><label class="checkbox-label svelte-1tcl25d"><input type="checkbox" class="svelte-1tcl25d"/> <span class="checkbox-text svelte-1tcl25d"><strong class="svelte-1tcl25d">Exigir cambio de contraseña en el próximo inicio de sesión</strong> <small class="svelte-1tcl25d">El usuario verá un aviso obligatorio para definir su propia clave personal al ingresar.</small></span></label></div> <div class="modal-footer-btns svelte-1tcl25d"><button type="button" class="btn btn-secondary">Cancelar</button> <button type="submit" class="btn btn-primary"><span> </span></button></div></form>`,
+    );
+function Bm(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `user`, 3, null),
+        a = F(``),
+        o = F(!0),
+        s = F(!0),
+        c = F(!1),
+        l = F(null);
+    bn(() => {
+        n() && (I(a, u(), !0), I(o, !0), I(s, !0), I(l, null));
+    });
+    function u() {
+        let e = ``;
+        for (let t = 0; t < 10; t++)
+            e +=
+                `ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$`.charAt(
+                    Math.floor(Math.random() * 60),
+                );
+        return e;
+    }
+    function d() {
+        (I(a, u(), !0), I(s, !0));
+    }
+    async function f(e) {
+        if ((e.preventDefault(), i() && V(a).trim())) {
+            if (V(a).trim().length < 6)
+                alert(`La contraseña debe tener al menos 6 caracteres`);
+            else {
+                I(c, !0);
+                try {
+                    let e = await Ba(i().id, V(a).trim(), V(o));
+                    e.success && I(l, e.temporaryPassword || V(a).trim(), !0);
+                } finally {
+                    I(c, !1);
+                }
+            }
+        }
+    }
+    function p(e) {
+        (navigator.clipboard.writeText(e),
+            $(`Contraseña copiada al portapapeles`, `info`));
+    }
+    {
+        let t = P(() =>
+            i()
+                ? `🔑 Resetear Clave: ${i().full_name}`
+                : `🔑 Restablecer Contraseña`,
+        );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            subtitle: `Proceso administrativo de recuperación y cambio de credenciales`,
+            maxWidth: `480px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = Ir(),
+                    u = cn(n),
+                    m = (e) => {
+                        var t = Rm(),
+                            n = z(L(t), 4),
+                            a = R(z(L(n)), !0);
+                        (N(), M(n));
+                        var s = z(n, 2),
+                            c = L(s),
+                            u = R(c, !0),
+                            d = z(c, 2);
+                        M(s);
+                        var f = z(s, 2),
+                            m = (e) => {
+                                W(e, Lm());
+                            };
+                        K(f, (e) => {
+                            V(o) && e(m);
+                        });
+                        var h = R(z(f, 2));
+                        (M(t),
+                            B(() => {
+                                (G(a, i()?.email), G(u, V(l)));
+                            }),
+                            H(`click`, d, () => p(V(l))),
+                            H(`click`, h, function (...e) {
+                                r()?.apply(this, e);
+                            }),
+                            W(e, t));
+                    },
+                    h = (e) => {
+                        var t = zm(),
+                            n = L(t),
+                            l = L(n),
+                            u = R(l),
+                            p = R(z(l, 2));
+                        M(n);
+                        var m = z(n, 2),
+                            h = z(L(m), 2),
+                            g = L(h);
+                        J(g);
+                        var _ = z(g, 2),
+                            v = R(_, !0),
+                            y = z(_, 2);
+                        (M(h), M(m));
+                        var b = z(m, 2),
+                            x = L(b),
+                            S = L(x);
+                        (J(S), N(2), M(x), M(b));
+                        var C = z(b, 2),
+                            w = L(C),
+                            T = z(w, 2),
+                            E = R(L(T), !0);
+                        (M(T),
+                            M(C),
+                            M(t),
+                            B(
+                                (e) => {
+                                    (G(u, `👤 ${i()?.full_name ?? ``}`),
+                                        G(p, `✉️ ${i()?.email ?? ``}`),
+                                        Ti(
+                                            g,
+                                            `type`,
+                                            V(s) ? `text` : `password`,
+                                        ),
+                                        Ti(
+                                            _,
+                                            `title`,
+                                            V(s) ? `Ocultar` : `Mostrar`,
+                                        ),
+                                        G(v, V(s) ? `🙈` : `👁️`),
+                                        (w.disabled = V(c)),
+                                        (T.disabled = e),
+                                        G(
+                                            E,
+                                            V(c)
+                                                ? `Guardando...`
+                                                : `🔑 Establecer Nueva Contraseña`,
+                                        ));
+                                },
+                                [() => V(c) || !V(a).trim()],
+                            ),
+                            wr(`submit`, t, f),
+                            Y(
+                                g,
+                                () => V(a),
+                                (e) => I(a, e),
+                            ),
+                            H(`click`, _, () => I(s, !V(s))),
+                            H(`click`, y, d),
+                            ki(
+                                S,
+                                () => V(o),
+                                (e) => I(o, e),
+                            ),
+                            H(`click`, w, function (...e) {
+                                r()?.apply(this, e);
+                            }),
+                            W(e, t));
+                    };
+                (K(u, (e) => {
+                    V(l) ? e(m) : e(h, -1);
+                }),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var Vm = U(
+        `<div class="empty-memberships svelte-11m6znh"><span>Este usuario no está vinculado a ninguna empresa actualmente.</span></div>`,
+    ),
+    Hm = U(`<span class="owner-badge svelte-11m6znh">Propietario</span>`),
+    Um = U(
+        `<div class="membership-item svelte-11m6znh"><div class="comp-info svelte-11m6znh"><span class="comp-name svelte-11m6znh"> </span> <div class="comp-badges svelte-11m6znh"><span class="role-badge svelte-11m6znh"> </span> <!></div></div> <button type="button" class="btn-remove-membership svelte-11m6znh" title="Desvincular usuario de esta empresa">✕ Desvincular</button></div>`,
+    ),
+    Wm = U(`<div class="memberships-list svelte-11m6znh"></div>`),
+    Gm = U(
+        `<p class="all-assigned-msg svelte-11m6znh">El usuario ya está vinculado a todas las empresas registradas en el sistema.</p>`,
+    ),
+    Km = U(`<option> </option>`),
+    qm = U(
+        `<form class="assign-form svelte-11m6znh"><div class="form-row svelte-11m6znh"><div class="form-group flex-1 svelte-11m6znh"><label for="modal-assign-comp">Seleccionar Empresa</label> <select id="modal-assign-comp" required=""></select></div> <div class="form-group flex-1 svelte-11m6znh"><label for="modal-assign-role">Rol Asignado</label> <select id="modal-assign-role"><option>👑 Administrador</option><option>💼 Asesor / Agente</option><option>✍️ Gestor de Flujos</option><option>👀 Supervisor (Lectura)</option></select></div></div> <div class="owner-checkbox-row"><label class="owner-checkbox svelte-11m6znh"><input type="checkbox" class="svelte-11m6znh"/> <span>Marcar como Propietario (Owner) de esta empresa</span></label></div> <div class="form-actions-row svelte-11m6znh"><button type="submit" class="btn btn-primary btn-sm"><span> </span></button></div></form>`,
+    ),
+    Jm = U(
+        `<div class="user-companies-container svelte-11m6znh"><div class="section-block svelte-11m6znh"><span class="block-title svelte-11m6znh">Empresas en las que participa:</span> <!></div> <div class="section-block add-block svelte-11m6znh"><span class="block-title svelte-11m6znh">➕ Vincular a otra empresa:</span> <!></div> <div class="modal-footer-btns svelte-11m6znh"><button type="button" class="btn btn-secondary">Cerrar</button></div></div>`,
+    );
+function Ym(e, t) {
+    Ue(t, !0);
+    let n = Gi(t, `isOpen`, 3, !1),
+        r = Gi(t, `onClose`, 3, () => {}),
+        i = Gi(t, `user`, 7, null),
+        a = Gi(t, `allCompanies`, 19, () => []),
+        o = F(``),
+        s = F(`role_sales_agent`),
+        c = F(!1),
+        l = F(!1),
+        u = P(() => {
+            if (!i() || !i().memberships) return a();
+            let e = new Set(i().memberships.map((e) => e.companyId));
+            return a().filter((t) => !e.has(t.id));
+        });
+    bn(() => {
+        n() &&
+            (I(s, `role_sales_agent`),
+            I(c, !1),
+            V(u).length > 0 ? I(o, V(u)[0].id, !0) : I(o, ``));
+    });
+    async function d(e) {
+        if ((e.preventDefault(), i() && V(o))) {
+            I(l, !0);
+            try {
+                if ((await Ha(i().id, V(o), V(s), V(c))).success) {
+                    let e = a().find((e) => e.id === V(o)),
+                        t = {
+                            role_admin: `👑 Administrador`,
+                            role_sales_agent: `💼 Asesor / Agente de Ventas`,
+                            role_content_manager: `✍️ Gestor de Flujos`,
+                            role_viewer: `👀 Supervisor`,
+                        };
+                    i().memberships = [
+                        ...(i().memberships || []),
+                        {
+                            companyId: V(o),
+                            companyName: e ? e.name : `Empresa`,
+                            roleId: V(s),
+                            roleName: t[V(s)] || V(s),
+                            isOwner: !!V(c),
+                            status: `active`,
+                        },
+                    ];
+                    let n = V(u).filter((e) => e.id !== V(o));
+                    I(o, n.length > 0 ? n[0].id : ``, !0);
+                }
+            } finally {
+                I(l, !1);
+            }
+        }
+    }
+    async function f(e, t) {
+        if (
+            i() &&
+            confirm(`¿Desvincular a "${i().full_name}" de la empresa "${t}"?`)
+        ) {
+            I(l, !0);
+            try {
+                (await Ua(i().id, e)).success &&
+                    (i().memberships = (i().memberships || []).filter(
+                        (t) => t.companyId !== e,
+                    ));
+            } finally {
+                I(l, !1);
+            }
+        }
+    }
+    {
+        let t = P(() =>
+            i()
+                ? `🏢 Empresas de: ${i().full_name}`
+                : `🏢 Membresías de Empresas`,
+        );
+        il(e, {
+            get isOpen() {
+                return n();
+            },
+            get title() {
+                return V(t);
+            },
+            subtitle: `Vincula o desvincula a este usuario de las empresas y gestiona su rol específico`,
+            maxWidth: `540px`,
+            get onClose() {
+                return r();
+            },
+            children: (e, t) => {
+                var n = Jm(),
+                    a = L(n),
+                    p = z(L(a), 2),
+                    m = (e) => {
+                        W(e, Vm());
+                    },
+                    h = (e) => {
+                        var t = Wm();
+                        (Xr(
+                            t,
+                            21,
+                            () => i().memberships,
+                            Kr,
+                            (e, t) => {
+                                var n = Um(),
+                                    r = L(n),
+                                    i = L(r),
+                                    a = R(i),
+                                    o = z(i, 2),
+                                    s = L(o),
+                                    c = R(s, !0),
+                                    u = z(s, 2),
+                                    d = (e) => {
+                                        W(e, Hm());
+                                    };
+                                (K(u, (e) => {
+                                    V(t).isOwner && e(d);
+                                }),
+                                    M(o),
+                                    M(r));
+                                var p = z(r, 2);
+                                (M(n),
+                                    B(() => {
+                                        (G(a, `🏢 ${V(t).companyName ?? ``}`),
+                                            G(c, V(t).roleName || V(t).roleId),
+                                            (p.disabled = V(l)));
+                                    }),
+                                    H(`click`, p, () =>
+                                        f(V(t).companyId, V(t).companyName),
+                                    ),
+                                    W(e, n));
+                            },
+                        ),
+                            M(t),
+                            W(e, t));
+                    };
+                (K(p, (e) => {
+                    !i()?.memberships || i().memberships.length === 0
+                        ? e(m)
+                        : e(h, -1);
+                }),
+                    M(a));
+                var g = z(a, 2),
+                    _ = z(L(g), 2),
+                    v = (e) => {
+                        W(e, Gm());
+                    },
+                    y = (e) => {
+                        var t = qm(),
+                            n = L(t),
+                            r = L(n),
+                            i = z(L(r), 2);
+                        (Xr(
+                            i,
+                            21,
+                            () => V(u),
+                            Kr,
+                            (e, t) => {
+                                var n = Km(),
+                                    r = R(n, !0),
+                                    i = {};
+                                (B(() => {
+                                    (G(r, V(t).name),
+                                        i !== (i = V(t).id) &&
+                                            (n.value = (n.__value = i) ?? ``));
+                                }),
+                                    W(e, n));
+                            },
+                        ),
+                            M(i),
+                            _i(i),
+                            M(r));
+                        var a = z(r, 2),
+                            f = z(L(a), 2),
+                            p = L(f);
+                        p.value = p.__value = `role_admin`;
+                        var m = z(p);
+                        m.value = m.__value = `role_sales_agent`;
+                        var h = z(m);
+                        h.value = h.__value = `role_content_manager`;
+                        var g = z(h);
+                        ((g.value = g.__value = `role_viewer`),
+                            M(f),
+                            _i(f),
+                            M(a),
+                            M(n));
+                        var _ = z(n, 2),
+                            v = L(_),
+                            y = L(v);
+                        (J(y), N(2), M(v), M(_));
+                        var b = z(_, 2),
+                            x = L(b),
+                            S = R(L(x), !0);
+                        (M(x),
+                            M(b),
+                            M(t),
+                            B(() => {
+                                ((x.disabled = V(l) || !V(o)),
+                                    G(
+                                        S,
+                                        V(l)
+                                            ? `Vinculando...`
+                                            : `➕ Vincular a la Empresa`,
+                                    ));
+                            }),
+                            wr(`submit`, t, d),
+                            vi(
+                                i,
+                                () => V(o),
+                                (e) => I(o, e),
+                            ),
+                            vi(
+                                f,
+                                () => V(s),
+                                (e) => I(s, e),
+                            ),
+                            ki(
+                                y,
+                                () => V(c),
+                                (e) => I(c, e),
+                            ),
+                            W(e, t));
+                    };
+                (K(_, (e) => {
+                    V(u).length === 0 ? e(v) : e(y, -1);
+                }),
+                    M(g));
+                var b = R(z(g, 2));
+                (M(n),
+                    H(`click`, b, function (...e) {
+                        r()?.apply(this, e);
+                    }),
+                    W(e, n));
+            },
+            $$slots: { default: !0 },
+        });
+    }
+    We();
+}
+Tr([`click`]);
+var Xm = U(
+        `<button type="button" class="btn-clear-search svelte-kldx70">✕</button>`,
+    ),
+    Zm = U(
+        `<button type="button" class="btn btn-primary btn-add svelte-kldx70"><span>➕ Nueva Empresa</span></button>`,
+    ),
+    Qm = U(
+        `<button type="button" class="btn btn-primary btn-add svelte-kldx70"><span>➕ Nuevo Usuario</span></button>`,
+    ),
+    $m = U(
+        `<tr class="svelte-kldx70"><td colspan="7" class="empty-table-row svelte-kldx70">No se encontraron empresas con el término de búsqueda.</td></tr>`,
+    ),
+    eh = U(`<span class="status-pill ready svelte-kldx70">● Conectado</span>`),
+    th = U(`<span class="status-pill qr svelte-kldx70">● Esperando QR</span>`),
+    nh = U(
+        `<span class="status-pill idle svelte-kldx70">● Desconectado</span>`,
+    ),
+    rh = U(
+        `<span class="gemini-pill custom svelte-kldx70" title="Clave exclusiva configurada"> </span>`,
+    ),
+    ih = U(
+        `<span class="gemini-pill global svelte-kldx70" title="Usa la clave global del servidor"> </span>`,
+    ),
+    ah = U(
+        `<span class="gemini-pill no-key svelte-kldx70">⚠️ Sin clave</span>`,
+    ),
+    oh = U(
+        `<tr class="svelte-kldx70"><td class="svelte-kldx70"><div class="comp-cell-name svelte-kldx70"><strong> </strong> <code class="cell-id svelte-kldx70"> </code></div></td><td class="svelte-kldx70"><span class="text-secondary"> </span></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><span class="badge-counter svelte-kldx70"> </span></td><td class="svelte-kldx70"><div class="stats-mini-cell svelte-kldx70"><span> </span> <span class="dot-separator svelte-kldx70">•</span> <span> </span></div></td><td class="svelte-kldx70"><!></td><td class="text-right svelte-kldx70"><div class="actions-row svelte-kldx70"><button type="button" class="btn-action-icon gemini-action svelte-kldx70" title="Configurar API Key de Gemini exclusiva para esta empresa">🔑 Gemini</button> <button type="button" class="btn-action-icon disconnect-action svelte-kldx70" title="Desvincular WhatsApp (cierra sesión y borra credenciales en disco)">🔌 WhatsApp</button> <button type="button" class="btn-action-icon clean-action svelte-kldx70" title="Limpiar Data (Purgar mensajes y prospectos)">🧹 Limpiar</button> <button type="button" class="btn-action-icon edit-action svelte-kldx70" title="Editar nombre de la empresa">✏️</button> <button type="button" class="btn-action-icon delete-action svelte-kldx70" title="Eliminar empresa definitivamente">🗑️</button></div></td></tr>`,
+    ),
+    sh = U(
+        `<div class="data-table-container svelte-kldx70"><table class="data-table svelte-kldx70"><thead><tr><th class="svelte-kldx70">Empresa / Marca</th><th class="svelte-kldx70">Propietario / Creador</th><th class="svelte-kldx70">Estado WhatsApp</th><th class="svelte-kldx70">Equipo</th><th class="svelte-kldx70">Flujos & Leads</th><th class="svelte-kldx70">Inteligencia Artificial</th><th class="text-right svelte-kldx70">Acciones de Superadmin</th></tr></thead><tbody><!><!></tbody></table></div>`,
+    ),
+    ch = U(
+        `<tr class="svelte-kldx70"><td colspan="6" class="empty-table-row svelte-kldx70">No se encontraron usuarios con el término de búsqueda.</td></tr>`,
+    ),
+    lh = U(
+        `<span class="global-role-pill superadmin svelte-kldx70" title="Tiene acceso total al sistema como superusuario">⭐ Superusuario</span>`,
+    ),
+    uh = U(
+        `<span class="global-role-pill normal svelte-kldx70">👤 Normal</span>`,
+    ),
+    dh = U(`<span class="status-pill ready svelte-kldx70">Activo</span>`),
+    fh = U(`<span class="status-pill idle svelte-kldx70">Inactivo</span>`),
+    ph = U(
+        `<span class="no-memberships-tag svelte-kldx70">Sin empresas</span>`,
+    ),
+    mh = U(
+        `<span class="chip-owner-star svelte-kldx70" title="Propietario">👑</span>`,
+    ),
+    hh = U(`<span class="company-chip svelte-kldx70"> <!></span>`),
+    gh = U(
+        `<tr class="svelte-kldx70"><td class="svelte-kldx70"><div class="user-cell-info svelte-kldx70"><strong> </strong> <span class="cell-email svelte-kldx70"> </span></div></td><td class="svelte-kldx70"><span class="text-secondary"> </span></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><!></td><td class="svelte-kldx70"><div class="memberships-chips svelte-kldx70"><!></div></td><td class="text-right svelte-kldx70"><div class="actions-row svelte-kldx70"><button type="button"> </button> <button type="button" class="btn-action-icon comp-action svelte-kldx70" title="Vincular o desvincular empresas">🏢 Empresas</button> <button type="button" class="btn-action-icon pass-action svelte-kldx70" title="Restablecer o generar contraseña">🔑 Clave</button> <button type="button" class="btn-action-icon edit-action svelte-kldx70" title="Editar datos del usuario">✏️</button> <button type="button" class="btn-action-icon delete-action svelte-kldx70">🗑️</button></div></td></tr>`,
+    ),
+    _h = U(
+        `<div class="data-table-container svelte-kldx70"><table class="data-table svelte-kldx70"><thead><tr><th class="svelte-kldx70">Usuario</th><th class="svelte-kldx70">Contacto</th><th class="svelte-kldx70">Rol Global</th><th class="svelte-kldx70">Estado</th><th class="svelte-kldx70">Empresas Vinculadas</th><th class="text-right svelte-kldx70">Acciones de Superadmin</th></tr></thead><tbody><!><!></tbody></table></div>`,
+    ),
+    vh = U(
+        `<section id="tab-superadmin" class="tab-content active superadmin-view svelte-kldx70"><div class="superadmin-header-card svelte-kldx70"><div class="header-left svelte-kldx70"><div class="crown-badge-icon svelte-kldx70">👑</div> <div><div class="header-title-row svelte-kldx70"><h2 class="svelte-kldx70">Panel de Superusuario Global</h2> <span class="badge-root svelte-kldx70">SISTEMA ROOT</span></div> <p class="section-desc svelte-kldx70">Centro de administración técnica y programación para todas las empresas, cuentas globales, credenciales de Gemini y mantenimiento del servidor.</p></div></div> <div class="header-actions"><button type="button" class="btn btn-secondary btn-refresh svelte-kldx70" title="Recargar todos los datos del sistema"><span> </span></button></div></div> <div class="stats-grid svelte-kldx70"><div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper comp-icon svelte-kldx70">🏢</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Empresas Registradas</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper user-icon svelte-kldx70">👥</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Usuarios Globales</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper super-icon svelte-kldx70">⭐</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Superadministradores</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper bot-icon svelte-kldx70">🤖</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Bots WhatsApp Activos</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper leads-icon svelte-kldx70">🎯</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Prospectos en Sistema</span></div></div> <div class="stat-card svelte-kldx70"><div class="stat-icon-wrapper msg-icon svelte-kldx70">💬</div> <div class="stat-info svelte-kldx70"><span class="stat-value svelte-kldx70"> </span> <span class="stat-label svelte-kldx70">Mensajes Registrados</span></div></div></div> <div class="subtabs-bar svelte-kldx70"><div class="tabs-group svelte-kldx70"><button type="button"><span> </span></button> <button type="button"><span> </span></button></div> <div class="subtabs-actions svelte-kldx70"><div class="search-box svelte-kldx70"><span class="search-icon svelte-kldx70">🔍</span> <input type="text" class="svelte-kldx70"/> <!></div> <!></div></div> <!> <!></section> <!> <!> <!> <!> <!> <!>`,
+        1,
+    );
+function yh(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Rs, `$isSuperadmin`, c),
+        r = () => Z(Ca, `$adminCompanies`, c),
+        i = () => Z(wa, `$adminUsers`, c),
+        a = () => Z(Ms, `$currentUser`, c),
+        o = () => Z(Ta, `$isSuperadminLoading`, c),
+        s = () => Z(Sa, `$adminStats`, c),
+        [c, l] = Ui(),
+        u = F(`companies`),
+        d = F(``),
+        f = F(!1),
+        p = F(null),
+        m = F(!1),
+        h = F(null),
+        g = F(!1),
+        _ = F(null),
+        v = F(!1),
+        y = F(null),
+        b = F(!1),
+        x = F(null),
+        S = F(!1),
+        C = F(null);
+    (bn(() => {
+        n() || sa.set(`tab-rules`);
+    }),
+        Ki(() => {
+            n() ? Aa() : sa.set(`tab-rules`);
+        }));
+    let w = P(() => {
+            let e = V(d).toLowerCase().trim();
+            return e
+                ? r().filter(
+                      (t) =>
+                          (t.name || ``).toLowerCase().includes(e) ||
+                          (t.id || ``).toLowerCase().includes(e) ||
+                          (t.creatorEmail || ``).toLowerCase().includes(e),
+                  )
+                : r();
+        }),
+        T = P(() => {
+            let e = V(d).toLowerCase().trim();
+            return e
+                ? i().filter(
+                      (t) =>
+                          (t.full_name || ``).toLowerCase().includes(e) ||
+                          (t.email || ``).toLowerCase().includes(e) ||
+                          (t.phone || ``).toLowerCase().includes(e),
+                  )
+                : i();
+        });
+    function E() {
+        (I(p, null), I(f, !0));
+    }
+    function D(e) {
+        (I(p, e, !0), I(f, !0));
+    }
+    function O(e) {
+        (I(h, e, !0), I(m, !0));
+    }
+    function k(e) {
+        (I(_, e, !0), I(g, !0));
+    }
+    async function A(e) {
+        confirm(
+            `¿Desvincular WhatsApp de "${e.name}"?\nEl bot quedará desconectado y esperará un nuevo escaneo de código QR.`,
+        ) && (await Pa(e.id));
+    }
+    async function ee(e) {
+        r().length <= 1
+            ? alert(`No puedes eliminar la única empresa activa en el sistema.`)
+            : confirm(
+                  `⚠️ ¿ELIMINAR DEFINITIVAMENTE la empresa "${e.name}"?\nSe borrarán sus flujos, biblioteca, contactos y mensajes de la base de datos.`,
+              ) && (await Na(e.id));
+    }
+    function te() {
+        (I(y, null), I(v, !0));
+    }
+    function ne(e) {
+        (I(y, e, !0), I(v, !0));
+    }
+    function re(e) {
+        (I(x, e, !0), I(b, !0));
+    }
+    function ie(e) {
+        (I(C, e, !0), I(S, !0));
+    }
+    async function ae(e) {
+        let t = !e.is_superadmin;
+        confirm(
+            `¿Estás seguro de ${t ? `promover a SUPERUSUARIO` : `quitar privilegios de Superusuario a`} ${e.full_name || e.email}?`,
+        ) && (await Va(e.id, t));
+    }
+    async function oe(e) {
+        a()?.id === e.id
+            ? alert(`No puedes eliminar tu propia cuenta de usuario en uso.`)
+            : confirm(
+                  `¿Eliminar al usuario ${e.full_name} (${e.email}) del sistema?\nEsta acción es irreversible.`,
+              ) && (await za(e.id));
+    }
+    var se = Ir(),
+        ce = cn(se),
+        le = (e) => {
+            var t = vh(),
+                n = cn(t),
+                c = L(n),
+                l = z(L(c), 2),
+                se = L(l),
+                ce = R(L(se), !0);
+            (M(se), M(l), M(c));
+            var le = z(c, 2),
+                ue = L(le),
+                de = z(L(ue), 2),
+                fe = R(L(de), !0);
+            (N(2), M(de), M(ue));
+            var pe = z(ue, 2),
+                me = z(L(pe), 2),
+                he = R(L(me), !0);
+            (N(2), M(me), M(pe));
+            var ge = z(pe, 2),
+                _e = z(L(ge), 2),
+                j = R(L(_e), !0);
+            (N(2), M(_e), M(ge));
+            var ve = z(ge, 2),
+                ye = z(L(ve), 2),
+                be = R(L(ye), !0);
+            (N(2), M(ye), M(ve));
+            var xe = z(ve, 2),
+                Se = z(L(xe), 2),
+                Ce = R(L(Se), !0);
+            (N(2), M(Se), M(xe));
+            var we = z(xe, 2),
+                Te = z(L(we), 2),
+                Ee = R(L(Te), !0);
+            (N(2), M(Te), M(we), M(le));
+            var De = z(le, 2),
+                Oe = L(De),
+                ke = L(Oe),
+                Ae = R(L(ke));
+            M(ke);
+            var je = z(ke, 2),
+                Me = R(L(je));
+            (M(je), M(Oe));
+            var Ne = z(Oe, 2),
+                Pe = L(Ne),
+                Fe = z(L(Pe), 2);
+            J(Fe);
+            var Ie = z(Fe, 2),
+                Le = (e) => {
+                    var t = Xm();
+                    (H(`click`, t, () => I(d, ``)), W(e, t));
+                };
+            (K(Ie, (e) => {
+                V(d) && e(Le);
+            }),
+                M(Pe));
+            var Re = z(Pe, 2),
+                ze = (e) => {
+                    var t = Zm();
+                    (H(`click`, t, E), W(e, t));
+                },
+                Be = (e) => {
+                    var t = Qm();
+                    (H(`click`, t, te), W(e, t));
+                };
+            (K(Re, (e) => {
+                V(u) === `companies` ? e(ze) : e(Be, -1);
+            }),
+                M(Ne),
+                M(De));
+            var Ve = z(De, 2),
+                He = (e) => {
+                    var t = sh(),
+                        n = L(t),
+                        r = z(L(n)),
+                        i = L(r),
+                        a = (e) => {
+                            W(e, $m());
+                        };
+                    (K(i, (e) => {
+                        V(w).length === 0 && e(a);
+                    }),
+                        Xr(
+                            z(i),
+                            17,
+                            () => V(w),
+                            Kr,
+                            (e, t) => {
+                                var n = oh(),
+                                    r = L(n),
+                                    i = L(r),
+                                    a = L(i),
+                                    o = R(a, !0),
+                                    s = R(z(a, 2), !0);
+                                (M(i), M(r));
+                                var c = z(r),
+                                    l = R(L(c), !0);
+                                M(c);
+                                var u = z(c),
+                                    d = L(u),
+                                    f = (e) => {
+                                        W(e, eh());
+                                    },
+                                    p = (e) => {
+                                        W(e, th());
+                                    },
+                                    m = (e) => {
+                                        W(e, nh());
+                                    };
+                                (K(d, (e) => {
+                                    V(t).whatsappStatus === `ready`
+                                        ? e(f)
+                                        : V(t).whatsappStatus === `qr_ready`
+                                          ? e(p, 1)
+                                          : e(m, -1);
+                                }),
+                                    M(u));
+                                var h = z(u),
+                                    g = R(L(h));
+                                M(h);
+                                var _ = z(h),
+                                    v = L(_),
+                                    y = L(v),
+                                    b = R(y),
+                                    x = R(z(y, 4));
+                                (M(v), M(_));
+                                var S = z(_),
+                                    C = L(S),
+                                    w = (e) => {
+                                        var n = rh(),
+                                            r = R(n);
+                                        (B(() =>
+                                            G(
+                                                r,
+                                                `🔑 Exclusiva (${V(t).geminiApiKeyMasked ?? ``})`,
+                                            ),
+                                        ),
+                                            W(e, n));
+                                    },
+                                    T = (e) => {
+                                        var n = ih(),
+                                            r = R(n);
+                                        (B(() =>
+                                            G(
+                                                r,
+                                                `🌐 Global (${(V(t).geminiModel || `Flash Lite`) ?? ``})`,
+                                            ),
+                                        ),
+                                            W(e, n));
+                                    },
+                                    E = (e) => {
+                                        W(e, ah());
+                                    };
+                                (K(C, (e) => {
+                                    V(t).isCustomGeminiKey
+                                        ? e(w)
+                                        : V(t).hasGlobalKey
+                                          ? e(T, 1)
+                                          : e(E, -1);
+                                }),
+                                    M(S));
+                                var te = z(S),
+                                    ne = L(te),
+                                    re = L(ne),
+                                    ie = z(re, 2),
+                                    ae = z(ie, 2),
+                                    oe = z(ae, 2),
+                                    se = z(oe, 2);
+                                (M(ne),
+                                    M(te),
+                                    M(n),
+                                    B(() => {
+                                        (G(o, V(t).name),
+                                            G(s, V(t).id),
+                                            G(
+                                                l,
+                                                V(t).creatorEmail ||
+                                                    V(t).creatorName ||
+                                                    `Sistema`,
+                                            ),
+                                            G(
+                                                g,
+                                                `${(V(t).memberCount || 0) ?? ``} usuarios`,
+                                            ),
+                                            G(
+                                                b,
+                                                `${(V(t).rulesCount || 0) ?? ``} rutas`,
+                                            ),
+                                            G(
+                                                x,
+                                                `${(V(t).leadsCount || 0) ?? ``} prospectos`,
+                                            ));
+                                    }),
+                                    H(`click`, re, () => O(V(t))),
+                                    H(`click`, ie, () => A(V(t))),
+                                    H(`click`, ae, () => k(V(t))),
+                                    H(`click`, oe, () => D(V(t))),
+                                    H(`click`, se, () => ee(V(t))),
+                                    W(e, n));
+                            },
+                        ),
+                        M(r),
+                        M(n),
+                        M(t),
+                        W(e, t));
+                };
+            K(Ve, (e) => {
+                V(u) === `companies` && e(He);
+            });
+            var Ue = z(Ve, 2),
+                We = (e) => {
+                    var t = _h(),
+                        n = L(t),
+                        r = z(L(n)),
+                        i = L(r),
+                        o = (e) => {
+                            W(e, ch());
+                        };
+                    (K(i, (e) => {
+                        V(T).length === 0 && e(o);
+                    }),
+                        Xr(
+                            z(i),
+                            17,
+                            () => V(T),
+                            Kr,
+                            (e, t) => {
+                                var n = gh(),
+                                    r = L(n),
+                                    i = L(r),
+                                    o = L(i),
+                                    s = R(o, !0),
+                                    c = R(z(o, 2), !0);
+                                (M(i), M(r));
+                                var l = z(r),
+                                    u = R(L(l), !0);
+                                M(l);
+                                var d = z(l),
+                                    f = L(d),
+                                    p = (e) => {
+                                        W(e, lh());
+                                    },
+                                    m = (e) => {
+                                        W(e, uh());
+                                    };
+                                (K(f, (e) => {
+                                    V(t).is_superadmin ? e(p) : e(m, -1);
+                                }),
+                                    M(d));
+                                var h = z(d),
+                                    g = L(h),
+                                    _ = (e) => {
+                                        W(e, dh());
+                                    },
+                                    v = (e) => {
+                                        W(e, fh());
+                                    };
+                                (K(g, (e) => {
+                                    V(t).is_active ? e(_) : e(v, -1);
+                                }),
+                                    M(h));
+                                var y = z(h),
+                                    b = L(y),
+                                    x = L(b),
+                                    S = (e) => {
+                                        W(e, ph());
+                                    },
+                                    C = (e) => {
+                                        var n = Ir();
+                                        (Xr(
+                                            cn(n),
+                                            17,
+                                            () => V(t).memberships,
+                                            Kr,
+                                            (e, t) => {
+                                                var n = hh(),
+                                                    r = L(n),
+                                                    i = z(r),
+                                                    a = (e) => {
+                                                        W(e, mh());
+                                                    };
+                                                (K(i, (e) => {
+                                                    V(t).isOwner && e(a);
+                                                }),
+                                                    M(n),
+                                                    B(() => {
+                                                        (Ti(
+                                                            n,
+                                                            `title`,
+                                                            `${V(t).roleName || V(t).roleId}${V(t).isOwner ? ` (Owner)` : ``}`,
+                                                        ),
+                                                            G(
+                                                                r,
+                                                                `🏢 ${V(t).companyName ?? ``} `,
+                                                            ));
+                                                    }),
+                                                    W(e, n));
+                                            },
+                                        ),
+                                            W(e, n));
+                                    };
+                                (K(x, (e) => {
+                                    !V(t).memberships ||
+                                    V(t).memberships.length === 0
+                                        ? e(S)
+                                        : e(C, -1);
+                                }),
+                                    M(b),
+                                    M(y));
+                                var w = z(y),
+                                    T = L(w),
+                                    E = L(T),
+                                    D = R(E, !0),
+                                    O = z(E, 2),
+                                    k = z(O, 2),
+                                    A = z(k, 2),
+                                    ee = z(A, 2);
+                                (M(T),
+                                    M(w),
+                                    M(n),
+                                    B(() => {
+                                        (G(s, V(t).full_name || `Sin Nombre`),
+                                            G(c, V(t).email),
+                                            G(u, V(t).phone || `No registrado`),
+                                            q(
+                                                E,
+                                                1,
+                                                `btn-action-icon ${V(t).is_superadmin ? `demote-action` : `promote-action`}`,
+                                                `svelte-kldx70`,
+                                            ),
+                                            Ti(
+                                                E,
+                                                `title`,
+                                                V(t).is_superadmin
+                                                    ? `Quitar privilegios de Superusuario`
+                                                    : `Hacer Superusuario global`,
+                                            ),
+                                            G(
+                                                D,
+                                                V(t).is_superadmin
+                                                    ? `Quitar ⭐`
+                                                    : `Hacer ⭐`,
+                                            ),
+                                            (ee.disabled = a()?.id === V(t).id),
+                                            Ti(
+                                                ee,
+                                                `title`,
+                                                a()?.id === V(t).id
+                                                    ? `No puedes eliminarte a ti mismo`
+                                                    : `Eliminar usuario`,
+                                            ));
+                                    }),
+                                    H(`click`, E, () => ae(V(t))),
+                                    H(`click`, O, () => ie(V(t))),
+                                    H(`click`, k, () => re(V(t))),
+                                    H(`click`, A, () => ne(V(t))),
+                                    H(`click`, ee, () => oe(V(t))),
+                                    W(e, n));
+                            },
+                        ),
+                        M(r),
+                        M(n),
+                        M(t),
+                        W(e, t));
+                };
+            (K(Ue, (e) => {
+                V(u) === `users` && e(We);
+            }),
+                M(n));
+            var Ge = z(n, 2);
+            bm(Ge, {
+                get isOpen() {
+                    return V(f);
+                },
+                get company() {
+                    return V(p);
+                },
+                onClose: () => {
+                    (I(f, !1), I(p, null));
+                },
+            });
+            var Ke = z(Ge, 2);
+            Dm(Ke, {
+                get isOpen() {
+                    return V(m);
+                },
+                get company() {
+                    return V(h);
+                },
+                onClose: () => {
+                    (I(m, !1), I(h, null));
+                },
+            });
+            var qe = z(Ke, 2);
+            km(qe, {
+                get isOpen() {
+                    return V(g);
+                },
+                get company() {
+                    return V(_);
+                },
+                onClose: () => {
+                    (I(g, !1), I(_, null));
+                },
+            });
+            var Je = z(qe, 2);
+            Im(Je, {
+                get isOpen() {
+                    return V(v);
+                },
+                get user() {
+                    return V(y);
+                },
+                get companies() {
+                    return r();
+                },
+                onClose: () => {
+                    (I(v, !1), I(y, null));
+                },
+            });
+            var Ye = z(Je, 2);
+            (Bm(Ye, {
+                get isOpen() {
+                    return V(b);
+                },
+                get user() {
+                    return V(x);
+                },
+                onClose: () => {
+                    (I(b, !1), I(x, null));
+                },
+            }),
+                Ym(z(Ye, 2), {
+                    get isOpen() {
+                        return V(S);
+                    },
+                    get user() {
+                        return V(C);
+                    },
+                    get allCompanies() {
+                        return r();
+                    },
+                    onClose: () => {
+                        (I(S, !1), I(C, null));
+                    },
+                }),
+                B(() => {
+                    ((se.disabled = o()),
+                        G(
+                            ce,
+                            o() ? `⏳ Actualizando...` : `🔄 Actualizar Datos`,
+                        ),
+                        G(fe, s().companiesCount || 0),
+                        G(he, s().usersCount || 0),
+                        G(j, s().superadminsCount || 0),
+                        G(be, s().activeBotsCount || 0),
+                        G(Ce, s().leadsCount || 0),
+                        G(Ee, s().messagesCount || 0),
+                        q(
+                            ke,
+                            1,
+                            `subtab-btn ${V(u) === `companies` ? `active` : ``}`,
+                            `svelte-kldx70`,
+                        ),
+                        G(Ae, `🏢 Empresas del Sistema (${r().length ?? ``})`),
+                        q(
+                            je,
+                            1,
+                            `subtab-btn ${V(u) === `users` ? `active` : ``}`,
+                            `svelte-kldx70`,
+                        ),
+                        G(Me, `👥 Usuarios Globales (${i().length ?? ``})`),
+                        Ti(
+                            Fe,
+                            `placeholder`,
+                            V(u) === `companies`
+                                ? `Buscar empresa por nombre...`
+                                : `Buscar usuario por nombre o correo...`,
+                        ));
+                }),
+                H(`click`, se, () => Aa()),
+                H(`click`, ke, () => {
+                    (I(u, `companies`), I(d, ``));
+                }),
+                H(`click`, je, () => {
+                    (I(u, `users`), I(d, ``));
+                }),
+                Y(
+                    Fe,
+                    () => V(d),
+                    (e) => I(d, e),
+                ),
+                W(e, t));
+        };
+    (K(ce, (e) => {
+        n() && e(le);
+    }),
+        W(e, se),
+        We(),
+        l());
+}
+Tr([`click`]);
+var bh = U(
+        `<div class="app-root svelte-1n46o8q"><!> <div class="app-body-layout svelte-1n46o8q"><!> <main class="app-content-viewport svelte-1n46o8q"><!></main></div> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!> <!></div>`,
+    ),
+    xh = U(`<!> <!>`, 1);
+function Sh(e, t) {
+    Ue(t, !0);
+    let n = () => Z(Ls, `$isAuthenticated`, o),
+        r = () => Z(Rs, `$isSuperadmin`, o),
+        i = () => Z(fa, `$currentCompanyId`, o),
+        a = () => Z(sa, `$activeTab`, o),
+        [o, s] = Ui();
+    async function c() {
+        await Promise.all([
+            Es(),
+            qa(),
+            Ho(),
+            Eo(),
+            so(),
+            $a(),
+            es(),
+            Js(),
+            fs(),
+        ]);
+    }
+    (Ki(async () => {
+        (await Bs()) && (await _a(), Ds(3500), await c());
+    }),
+        qi(() => {
+            (Os(), To());
+        }),
+        bn(() => {
+            n()
+                ? (_a().then((e) => {
+                      e && e.length > 0 ? c() : r() && sa.set(`tab-superadmin`);
+                  }),
+                  Ds(3500))
+                : (Os(), To());
+        }),
+        bn(() => {
+            n() && i() && wo(i());
+        }),
+        bn(() => {
+            !r() && a() === `tab-superadmin` && sa.set(`tab-rules`);
+        }));
+    var l = Ir(),
+        u = cn(l),
+        d = (e) => {
+            var t = bh(),
+                n = L(t);
+            oc(n, { onCompanySwitched: c });
+            var i = z(n, 2),
+                o = L(i);
+            Vc(o, {});
+            var s = z(o, 2),
+                l = L(s),
+                u = (e) => {
+                    Xd(e, {});
+                },
+                d = (e) => {
+                    bf(e, {});
+                },
+                f = (e) => {
+                    Mf(e, {});
+                },
+                p = (e) => {
+                    Gf(e, {});
+                },
+                m = (e) => {
+                    gp(e, {});
+                },
+                h = (e) => {
+                    Dp(e, {});
+                },
+                g = (e) => {
+                    Kp(e, {});
+                },
+                _ = (e) => {
+                    vm(e, {});
+                },
+                v = (e) => {
+                    yh(e, {});
+                };
+            (K(l, (e) => {
+                a() === `tab-rules`
+                    ? e(u)
+                    : a() === `tab-scheduler`
+                      ? e(d, 1)
+                      : a() === `tab-simulator`
+                        ? e(f, 2)
+                        : a() === `tab-quick-send`
+                          ? e(p, 3)
+                          : a() === `tab-leads`
+                            ? e(m, 4)
+                            : a() === `tab-library`
+                              ? e(h, 5)
+                              : a() === `tab-settings`
+                                ? e(g, 6)
+                                : a() === `tab-team`
+                                  ? e(_, 7)
+                                  : a() === `tab-superadmin` && r() && e(v, 8);
+            }),
+                M(s),
+                M(i));
+            var y = z(i, 2);
+            sl(y, {});
+            var b = z(y, 2);
+            yl(b, {});
+            var x = z(b, 2);
+            Cl(x, {});
+            var S = z(x, 2);
+            Hl(S, {});
+            var C = z(S, 2);
+            ru(C, {});
+            var w = z(C, 2);
+            pu(w, {});
+            var T = z(w, 2);
+            Nu(T, {});
+            var E = z(T, 2);
+            Vu(E, {});
+            var D = z(E, 2);
+            dd(D, {});
+            var O = z(D, 2);
+            hd(O, {});
+            var k = z(O, 2);
+            vd(k, {});
+            var A = z(k, 2);
+            xd(A, {});
+            var ee = z(A, 2);
+            wd(ee, {});
+            var te = z(ee, 2);
+            (Nd(te, {}), Wc(z(te, 2), {}), M(t), W(e, t));
+        },
+        f = (e) => {
+            var t = xh(),
+                n = cn(t);
+            (Qc(n, {}), Wc(z(n, 2), {}), W(e, t));
+        };
+    (K(u, (e) => {
+        n() ? e(d) : e(f, -1);
+    }),
+        W(e, l),
+        We(),
+        s());
+}
+Vr(Sh, { target: document.getElementById(`app`) });
