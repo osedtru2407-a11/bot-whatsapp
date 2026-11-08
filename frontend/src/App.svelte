@@ -114,55 +114,59 @@
     });
 </script>
 
-<div class="app-root">
-    <Header onCompanySwitched={refreshAllCompanyData} />
+{#if $isAuthenticated}
+    <div class="app-root">
+        <Header onCompanySwitched={refreshAllCompanyData} />
 
-    <div class="app-body-layout">
-        <Sidebar />
+        <div class="app-body-layout">
+            <Sidebar />
 
-        <main class="app-content-viewport">
-            {#if $activeTab === 'tab-rules'}
-                <RulesTab />
-            {:else if $activeTab === 'tab-scheduler'}
-                <SchedulerTab />
-            {:else if $activeTab === 'tab-simulator'}
-                <SimulatorTab />
-            {:else if $activeTab === 'tab-quick-send'}
-                <QuickSendTab />
-            {:else if $activeTab === 'tab-leads'}
-                <LeadsTab />
-            {:else if $activeTab === 'tab-library'}
-                <LibraryTab />
-            {:else if $activeTab === 'tab-settings'}
-                <SettingsTab />
-            {:else if $activeTab === 'tab-team'}
-                <TeamTab />
-            {:else if $activeTab === 'tab-superadmin' && $isSuperadmin}
-                <SuperAdminTab />
-            {/if}
-        </main>
+            <main class="app-content-viewport">
+                {#if $activeTab === 'tab-rules'}
+                    <RulesTab />
+                {:else if $activeTab === 'tab-scheduler'}
+                    <SchedulerTab />
+                {:else if $activeTab === 'tab-simulator'}
+                    <SimulatorTab />
+                {:else if $activeTab === 'tab-quick-send'}
+                    <QuickSendTab />
+                {:else if $activeTab === 'tab-leads'}
+                    <LeadsTab />
+                {:else if $activeTab === 'tab-library'}
+                    <LibraryTab />
+                {:else if $activeTab === 'tab-settings'}
+                    <SettingsTab />
+                {:else if $activeTab === 'tab-team'}
+                    <TeamTab />
+                {:else if $activeTab === 'tab-superadmin' && $isSuperadmin}
+                    <SuperAdminTab />
+                {/if}
+            </main>
+        </div>
+
+        <!-- Modales Operativos (Solo existen con sesión iniciada) -->
+        <ChangePasswordModal />
+        <QrModal />
+        <CompanyModal />
+        <RuleModal />
+        <ScheduleModal />
+        <LeadFilesModal />
+        <LeadChatModal />
+        <ImportContactsModal />
+        <GroupsModal />
+        <LibraryUploadModal />
+        <LibraryViewModal />
+        <InviteUserModal />
+        <EditRoleModal />
+        <CustomRoleModal />
+
+        <ToastContainer />
     </div>
-
-    <!-- Modales Globales Modulares -->
+{:else}
+    <!-- Pantalla completa de Inicio de Sesión / Registro: NINGÚN componente ni dato del dashboard se monta -->
     <LoginModal />
-    <ChangePasswordModal />
-    <QrModal />
-    <CompanyModal />
-    <RuleModal />
-    <ScheduleModal />
-    <LeadFilesModal />
-    <LeadChatModal />
-    <ImportContactsModal />
-    <GroupsModal />
-    <LibraryUploadModal />
-    <LibraryViewModal />
-    <InviteUserModal />
-    <EditRoleModal />
-    <CustomRoleModal />
-
-    <!-- Toast Floating Container -->
     <ToastContainer />
-</div>
+{/if}
 
 <style>
     .app-root {

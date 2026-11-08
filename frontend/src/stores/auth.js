@@ -4,6 +4,15 @@ import { api, getStoredToken, setStoredToken, setStoredCompanyId, setUnauthorize
 import { showToast } from './toast';
 import { activeTab } from './ui';
 import { clearSuperadminStores } from './superadmin';
+import { clearCompanyStores } from './company';
+import { rules } from './rules';
+import { leads, selectedLead, selectedChatLead, chatMessages, stopCompanyRealtimeEvents } from './leads';
+import { contacts } from './contacts';
+import { groups } from './groups';
+import { schedules } from './schedules';
+import { documents, libraryStats } from './library';
+import { teamMembers, companyRoles } from './team';
+import { botStatus, stopStatusPolling } from './botStatus';
 
 export const currentUser = writable(null);
 export const userMembership = writable(null);
@@ -38,14 +47,7 @@ setUnauthorizedHandler(() => {
 export async function checkAuth() {
   const token = getStoredToken();
   if (!token) {
-    currentUser.set(null);
-    userMembership.set(null);
-    permissions.set(new Set());
-    clearSuperadminStores();
-    if (get(activeTab) === 'tab-superadmin') {
-      activeTab.set('tab-rules');
-    }
-    isAuthModalOpen.set(true);
+    clearAllUserData();
     return false;
   }
 
@@ -66,16 +68,7 @@ export async function checkAuth() {
     isAuthModalOpen.set(false);
     return true;
   } catch (err) {
-    setStoredToken(null);
-    authToken.set(null);
-    currentUser.set(null);
-    userMembership.set(null);
-    permissions.set(new Set());
-    clearSuperadminStores();
-    if (get(activeTab) === 'tab-superadmin') {
-      activeTab.set('tab-rules');
-    }
-    isAuthModalOpen.set(true);
+    clearAllUserData();
     return false;
   }
 }
@@ -149,26 +142,57 @@ export async function register(fullName, email, password, companyName) {
   }
 }
 
-export function logout(notify = true) {
-  setStoredToken(null);
-  authToken.set(null);
-  currentUser.set(null);
-  userMembership.set(null);
-  permissions.set(new Set());
-  clearSuperadminStores();
-  activeTab.set('tab-rules');
-  isAuthModalOpen.set(true);
-  if (notify) {
-    showToast('Sesión cerrada correctamente', 'info');
-  }
-}
+  export function clearAllUserData() {
+    setStoredToken(null);
+    authToken.set(null);
+    currentUser.set(null);
+    userMembership.set(null);
+    permissions.set(new Set());
+    clearSuperadminStores();
 
-export async function changePassword(currentPassword, newPassword) {
-  try {
-    await api.post('/api/auth/change-password', { currentPassword, newPassword });
-    showToast('Contraseña actualizada exitosamente', 'success');
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
+    // Limpiar stores de datos del usuario y empresa para que nada quede en memoria ni en DOM
+    clearCompanyStores();
+    rules.set([]);
+    leads.set([]);
+    selectedLead.set(null);
+    selectedChatLead.set(null);
+    chatMessages.set([]);
+    contacts.set([]);
+    groups.set([]);
+    schedules.set([]);
+    documents.set([]);
+    libraryStats.set({ activeDocuments: 0, totalWords: 0 });
+    teamMembers.set([]);
+    companyRoles.set([]);
+    botStatus.set({
+      status: 'disconnected',
+      phone: '',
+      qrCode: null,
+      botEnabled: false,
+      companyName: '',
+      pendingSchedulesCount: 0
+    });
+
+    stopStatusPolling();
+    stopCompanyRealtimeEvents();
+
+    activeTab.set('tab-rules');
+    isAuthModalOpen.set(true);
   }
-}
+
+  export function logout(notify = true) {
+    clearAllUserData();
+    if (notify) {
+      showToast('Sesión cerrada correctamente', 'info');
+    }
+  }
+
+  export async function changePassword(currentPassword, newPassword) {
+    try {
+      await api.post('/api/auth/change-password', { currentPassword, newPassword });
+      showToast('Contraseña actualizada exitosamente', 'success');
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }

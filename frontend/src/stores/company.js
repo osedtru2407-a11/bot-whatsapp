@@ -8,6 +8,12 @@ export const currentCompanyId = writable(getStoredCompanyId());
 export const isCompanyModalOpen = writable(false);
 export const companyModalMode = writable('create'); // 'create' | 'edit'
 
+export function clearCompanyStores() {
+  companies.set([]);
+  currentCompanyId.set(null);
+  setStoredCompanyId(null);
+}
+
 export const activeCompany = derived(
   [companies, currentCompanyId],
   ([$companies, $id]) => $companies.find(c => c.id === $id) || $companies[0] || null

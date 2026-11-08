@@ -8,6 +8,7 @@ export const libraryStats = writable({ activeDocuments: 0, totalWords: 0 });
 export const viewingDoc = writable(null); // { id, name, originalFilename, wordCount, content }
 export const isLibraryViewModalOpen = writable(false);
 export const isLibraryUploadModalOpen = writable(false);
+export const pendingUploadFile = writable(null);
 
 export async function loadLibrary() {
   try {

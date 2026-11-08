@@ -6,10 +6,35 @@
     toggleLibraryDoc, 
     deleteLibraryDoc, 
     getLibraryDocDetails,
-    loadLibrary 
+    loadLibrary,
+    pendingUploadFile
   } from '../../stores/library';
   import { hasPermission } from '../../stores/auth';
   import { formatBytes, formatDate } from '../../utils/formatters';
+
+  let isTabDragging = $state(false);
+
+  function handleTabDragOver(e) {
+    if (e.dataTransfer?.types?.includes('Files')) {
+      e.preventDefault();
+      isTabDragging = true;
+    }
+  }
+
+  function handleTabDragLeave(e) {
+    e.preventDefault();
+    isTabDragging = false;
+  }
+
+  function handleTabDrop(e) {
+    e.preventDefault();
+    isTabDragging = false;
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      pendingUploadFile.set(file);
+      isLibraryUploadModalOpen.set(true);
+    }
+  }
 
   function handleDelete(id, name) {
     if (confirm(`¿Deseas eliminar el documento "${name}" de la biblioteca? Gemini ya no tendrá acceso a esta información.`)) {
@@ -18,7 +43,24 @@
   }
 </script>
 
-<section id="tab-library" class="tab-content active">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<section 
+  id="tab-library" 
+  class="tab-content active lib-tab-section"
+  ondragover={handleTabDragOver}
+  ondragleave={handleTabDragLeave}
+  ondrop={handleTabDrop}
+>
+  {#if isTabDragging}
+    <div class="library-drag-overlay">
+      <div class="library-drag-card">
+        <div style="font-size: 46px; margin-bottom: 8px;">📥</div>
+        <h3>Suelta tu documento aquí</h3>
+        <p>Se abrirá para integrarlo a la memoria de Gemini (.docx, .txt, .md)</p>
+      </div>
+    </div>
+  {/if}
+
   <div class="content-toolbar">
     <div>
       <h2>Biblioteca de Conocimiento (Contexto IA)</h2>
@@ -59,12 +101,18 @@
   {/if}
 
   {#if $documents.length === 0}
-    <div class="empty-library-state">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div 
+      class="empty-library-state dropzone-interactive"
+      onclick={() => isLibraryUploadModalOpen.set(true)}
+      title="Haz clic o arrastra un archivo aquí para subirlo a la biblioteca"
+    >
       <div style="font-size: 40px; margin-bottom: 12px;">📚</div>
       <h3>La biblioteca de conocimiento está vacía</h3>
-      <p>Sube tus documentos Word (.docx) o notas para que Gemini aprenda sobre tus productos, servicios, precios y políticas sin dar información falsa.</p>
+      <p>Arrastra aquí tus documentos Word (.docx), Markdown (.md) o texto (.txt), o haz clic para subirlos y entrenar las respuestas de Gemini.</p>
       {#if $hasPermission('library:upload')}
-        <button type="button" class="btn btn-primary" style="margin-top: 16px;" onclick={() => isLibraryUploadModalOpen.set(true)}>
+        <button type="button" class="btn btn-primary" style="margin-top: 16px;" onclick={(e) => { e.stopPropagation(); isLibraryUploadModalOpen.set(true); }}>
           Subir Primer Documento
         </button>
       {/if}
@@ -275,5 +323,58 @@
     align-items: center;
     padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .lib-tab-section {
+    position: relative;
+  }
+
+  .library-drag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 20, 26, 0.9);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px dashed var(--wa-primary);
+    border-radius: var(--radius-lg);
+    pointer-events: none;
+    animation: fadeIn 0.15s ease-out;
+  }
+
+  .library-drag-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(37, 211, 102, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(37, 211, 102, 0.2);
+    border-radius: var(--radius-md);
+    padding: 36px 48px;
+    text-align: center;
+    transform: scale(1.02);
+  }
+
+  .library-drag-card h3 {
+    margin: 0 0 6px 0;
+    color: var(--text-main);
+    font-size: 1.25rem;
+  }
+
+  .library-drag-card p {
+    margin: 0;
+    color: var(--wa-teal);
+    font-size: 0.9rem;
+  }
+
+  .empty-library-state.dropzone-interactive {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+  }
+
+  .empty-library-state.dropzone-interactive:hover {
+    border-color: var(--wa-primary);
+    background: rgba(37, 211, 102, 0.04);
+    box-shadow: 0 0 20px rgba(37, 211, 102, 0.08);
   }
 </style>

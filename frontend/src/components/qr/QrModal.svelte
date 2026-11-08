@@ -110,6 +110,23 @@
         </div>
       </div>
 
+    {:else if $botStatus.status === 'disconnected'}
+      <!-- Vista Desconectado / Sin vincular -->
+      <div class="qr-view-box">
+        <div class="qr-loading-box">
+          <div style="font-size: 42px; margin-bottom: 12px;">📱</div>
+          <h4>WhatsApp no está vinculado</h4>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+            El bot de WhatsApp para "{$activeCompany?.name || 'esta empresa'}" no está vinculado. Haz clic en el botón de abajo para generar un código QR y conectar tu teléfono móvil.
+          </p>
+          <div style="margin-top: 20px;">
+            <button type="button" class="btn btn-primary" onclick={() => restartBot(false)}>
+              ⚡ Generar Código QR
+            </button>
+          </div>
+        </div>
+      </div>
+
     {:else}
       <!-- Vista Cargando / Generando -->
       <div class="qr-view-box">
@@ -132,22 +149,28 @@
   {#snippet actions()}
     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; flex-wrap: wrap;">
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-secondary" onclick={() => restartBot(false)}>
-          🔄 Regenerar QR
-        </button>
-        {#if $botStatus.status !== 'ready'}
-          <button 
-            type="button" 
-            class="btn btn-secondary" 
-            style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" 
-            onclick={handleForceClean}
-            title="Borra la sesión local y genera un nuevo QR de cero"
-          >
-            🗑️ Limpiar y Forzar QR
+        {#if $botStatus.status === 'disconnected'}
+          <button type="button" class="btn btn-primary" onclick={() => restartBot(false)}>
+            ⚡ Generar Código QR
           </button>
+        {:else}
+          <button type="button" class="btn btn-secondary" onclick={() => restartBot(false)}>
+            🔄 Regenerar QR
+          </button>
+          {#if $botStatus.status !== 'ready'}
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" 
+              onclick={handleForceClean}
+              title="Borra la sesión local y genera un nuevo QR de cero"
+            >
+              🗑️ Limpiar y Forzar QR
+            </button>
+          {/if}
         {/if}
       </div>
-      <button type="button" class="btn btn-primary" onclick={handleClose}>
+      <button type="button" class="btn btn-secondary" onclick={handleClose}>
         Cerrar
       </button>
     </div>

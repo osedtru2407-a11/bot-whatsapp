@@ -245,9 +245,19 @@ function initCompanyWhatsAppClient(companyId) {
     state.client = clientInstance;
 
     let authTimeout = null;
+    let qrCount = 0;
 
     clientInstance.on('qr', async (qr) => {
-        console.log(`[Empresa: ${company.name}] Nuevo código QR recibido`);
+        qrCount++;
+        if (qrCount > 5) {
+            console.log(`[Empresa: ${company.name}] ⏱️ Código QR expiró sin ser escaneado tras 5 intentos. Deteniendo proceso para ahorrar recursos.`);
+            state.status = 'disconnected';
+            state.qrCode = null;
+            await stopCompanyWhatsAppClient(companyId);
+            return;
+        }
+
+        console.log(`[Empresa: ${company.name}] Nuevo código QR recibido (#${qrCount}/5)`);
         state.status = 'qr_ready';
         try {
             state.qrCode = await QRCode.toDataURL(qr, {
@@ -261,6 +271,7 @@ function initCompanyWhatsAppClient(companyId) {
     });
 
     clientInstance.on('authenticated', () => {
+        qrCount = 0;
         console.log(`[Empresa: ${company.name}] Autenticado correctamente`);
         state.status = 'authenticated';
         state.qrCode = null;
@@ -376,26 +387,26 @@ async function stopCompanyWhatsAppClient(companyId) {
     }
 }
 
-// Desvincular completamente WhatsApp de una empresa y reiniciar cliente limpio
+// Desvincular completamente WhatsApp de una empresa
 async function unlinkCompanyWhatsApp(companyId) {
     if (companyClients.has(companyId)) {
         const holder = companyClients.get(companyId);
         if (holder && holder.client) {
             try {
                 await holder.client.destroy();
-        } catch (e) {
-            console.warn(`Aviso cerrando cliente de ${companyId}:`, e.message);
+            } catch (e) {
+                console.warn(`Aviso cerrando cliente de ${companyId}:`, e.message);
+            }
         }
+        companyClients.delete(companyId);
     }
-    companyClients.delete(companyId);
-}
 
 // Pausa preventiva para que Chromium y Windows/OneDrive liberen descriptores de archivos
 await new Promise(r => setTimeout(r, 600));
 
-const authClientId = (companyId === 'default') ? null : companyId;
-const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
-if (fs.existsSync(sessionDir)) {
+    const authClientId = (companyId === 'default') ? null : companyId;
+    const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
+    if (fs.existsSync(sessionDir)) {
         for (let attempt = 1; attempt <= 4; attempt++) {
             try {
                 fs.rmSync(sessionDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 200 });
@@ -409,12 +420,31 @@ if (fs.existsSync(sessionDir)) {
             }
         }
     }
-    initCompanyWhatsAppClient(companyId);
+
+    // Limpiar teléfono de la empresa desvinculada
+    const comp = appData.companies.find(c => c.id === companyId);
+    if (comp) {
+        comp.phone = null;
+        saveData(appData);
+    }
+}
+
+function hasSavedSession(companyId) {
+    const authClientId = (companyId === 'default') ? null : companyId;
+    const sessionDir = path.join(__dirname, '.wwebjs_auth', authClientId ? `session-${authClientId}` : 'session');
+    if (!fs.existsSync(sessionDir)) return false;
+    const defaultDir = path.join(sessionDir, 'Default');
+    return fs.existsSync(defaultDir);
 }
 
 function initAllCompanyClients() {
     for (const comp of appData.companies) {
-        initCompanyWhatsAppClient(comp.id);
+        if (hasSavedSession(comp.id)) {
+            console.log(`[Empresa: ${comp.name}] Sesión vinculada encontrada. Iniciando cliente WhatsApp...`);
+            initCompanyWhatsAppClient(comp.id);
+        } else {
+            console.log(`[Empresa: ${comp.name}] Sin sesión activa. En espera de solicitud de vinculación.`);
+        }
     }
 }
 
@@ -1577,9 +1607,9 @@ app.post('/api/bot/restart', resolveCompany, async (req, res) => {
             await unlinkCompanyWhatsApp(req.companyId);
         } else {
             await stopCompanyWhatsAppClient(req.companyId);
-            initCompanyWhatsAppClient(req.companyId);
         }
-        res.json({ success: true, message: `Reiniciando cliente de WhatsApp para ${req.company.name}...` });
+        initCompanyWhatsAppClient(req.companyId);
+        res.json({ success: true, message: `Iniciando cliente de WhatsApp para ${req.company.name}...` });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -1589,7 +1619,7 @@ app.post('/api/bot/restart', resolveCompany, async (req, res) => {
 app.post('/api/bot/disconnect', resolveCompany, async (req, res) => {
     try {
         await unlinkCompanyWhatsApp(req.companyId);
-        res.json({ success: true, message: `Sesión de WhatsApp cerrada para ${req.company.name}. Generando nuevo código QR...` });
+        res.json({ success: true, message: `Sesión de WhatsApp desvinculada para ${req.company.name}.` });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
