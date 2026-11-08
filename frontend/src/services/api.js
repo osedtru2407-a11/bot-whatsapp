@@ -17,7 +17,7 @@ export function setStoredToken(token) {
 }
 
 export function getStoredCompanyId() {
-    return localStorage.getItem(COMPANY_KEY) || 'default';
+    return localStorage.getItem(COMPANY_KEY) || null;
 }
 
 export function setStoredCompanyId(id) {
@@ -58,15 +58,22 @@ export async function apiRequest(endpoint, options = {}) {
         options.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    if (!options.headers['x-company-id']) {
-        options.headers['x-company-id'] = companyId;
-    }
-
-    // Ensure companyId query parameter in /api/ calls
     let url = endpoint;
-    if (url.startsWith('/api/') && !url.includes('companyId=')) {
-        const separator = url.includes('?') ? '&' : '?';
-        url = `${url}${separator}companyId=${encodeURIComponent(companyId)}`;
+    const isGlobalEndpoint =
+        url.startsWith('/api/auth/') ||
+        url === '/api/companies' ||
+        url.startsWith('/api/superadmin/');
+
+    if (companyId && companyId !== 'null' && companyId !== 'undefined') {
+        if (!isGlobalEndpoint && !options.headers['x-company-id']) {
+            options.headers['x-company-id'] = companyId;
+        }
+
+        // Ensure companyId query parameter in company-scoped /api/ calls
+        if (!isGlobalEndpoint && url.startsWith('/api/') && !url.includes('companyId=')) {
+            const separator = url.includes('?') ? '&' : '?';
+            url = `${url}${separator}companyId=${encodeURIComponent(companyId)}`;
+        }
     }
 
     const response = await fetch(url, options);

@@ -4,7 +4,7 @@ import { api, getStoredToken, setStoredToken, setStoredCompanyId, setUnauthorize
 import { showToast } from './toast';
 import { activeTab } from './ui';
 import { clearSuperadminStores } from './superadmin';
-import { clearCompanyStores } from './company';
+import { clearCompanyStores, companies, currentCompanyId } from './company';
 import { rules } from './rules';
 import { leads, selectedLead, selectedChatLead, chatMessages, stopCompanyRealtimeEvents } from './leads';
 import { contacts } from './contacts';
@@ -58,6 +58,19 @@ export async function checkAuth() {
     const permsList = data.membership?.permissions || [];
     permissions.set(new Set(permsList));
 
+    if (data.companies) {
+      companies.set(data.companies);
+    }
+
+    const currentId = get(currentCompanyId) || getStoredCompanyId();
+    const userComps = data.companies || [];
+    const isValid = userComps.some(c => c.id === currentId);
+    const activeCompId = isValid ? currentId : (data.activeCompany?.id || (userComps[0]?.id || null));
+    if (activeCompId) {
+      currentCompanyId.set(activeCompId);
+      setStoredCompanyId(activeCompId);
+    }
+
     if (!data.user?.isSuperadmin) {
       clearSuperadminStores();
       if (get(activeTab) === 'tab-superadmin') {
@@ -83,8 +96,14 @@ export async function login(identifier, password) {
     currentUser.set(data.user);
     userMembership.set(data.membership || null);
 
-    if (data.activeCompany?.id) {
-      setStoredCompanyId(data.activeCompany.id);
+    if (data.companies) {
+      companies.set(data.companies);
+    }
+
+    const activeCompId = data.activeCompany?.id || (data.companies && data.companies[0]?.id) || null;
+    if (activeCompId) {
+      currentCompanyId.set(activeCompId);
+      setStoredCompanyId(activeCompId);
     }
 
     const permsList = data.membership?.permissions || [];
@@ -123,7 +142,11 @@ export async function register(fullName, email, password, companyName) {
     userMembership.set(data.membership || null);
 
     const compId = data.activeCompanyId || data.company?.id;
+    if (data.companies) {
+      companies.set(data.companies);
+    }
     if (compId) {
+      currentCompanyId.set(compId);
       setStoredCompanyId(compId);
     }
 

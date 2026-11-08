@@ -71,6 +71,9 @@
         {#if $companies.length === 0}
           <option value="">(Sin empresas vinculadas)</option>
         {:else}
+          {#if !$companies.some((c) => c.id === $currentCompanyId)}
+            <option value="" disabled selected>(Selecciona una empresa...)</option>
+          {/if}
           {#each $companies as comp (comp.id)}
             <option value={comp.id}>
               {comp.name}{comp.phone ? ` (+${comp.phone})` : (comp.status === 'ready' ? ' (Conectado)' : ' (Sin vincular)')}

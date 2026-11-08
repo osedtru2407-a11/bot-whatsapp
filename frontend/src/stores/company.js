@@ -1,5 +1,5 @@
 // frontend/src/stores/company.js
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { api, getStoredCompanyId, setStoredCompanyId } from '../services/api';
 import { showToast } from './toast';
 
@@ -14,6 +14,24 @@ export function clearCompanyStores() {
   setStoredCompanyId(null);
 }
 
+// Sincronización reactiva: asegura que si la lista de empresas cambia (ej: cambio de usuario),
+// la empresa seleccionada pertenezca estrictamente a las empresas del usuario actual.
+companies.subscribe(($comps) => {
+  if (Array.isArray($comps) && $comps.length > 0) {
+    const currentId = get(currentCompanyId);
+    if (!currentId || !$comps.some((c) => c.id === currentId)) {
+      const fallbackId = $comps[0].id;
+      currentCompanyId.set(fallbackId);
+      setStoredCompanyId(fallbackId);
+    }
+  } else if (Array.isArray($comps) && $comps.length === 0) {
+    if (get(currentCompanyId) !== null) {
+      currentCompanyId.set(null);
+      setStoredCompanyId(null);
+    }
+  }
+});
+
 export const activeCompany = derived(
   [companies, currentCompanyId],
   ([$companies, $id]) => $companies.find(c => c.id === $id) || $companies[0] || null
@@ -26,13 +44,19 @@ export async function loadCompanies() {
     companies.set(compList);
 
     const storedId = getStoredCompanyId();
-    const exists = compList.some(c => c.id === storedId);
+    const currentIdInStore = get(currentCompanyId);
 
-    if (!exists && compList.length > 0) {
-      const fallbackId = compList[0].id;
-      currentCompanyId.set(fallbackId);
-      setStoredCompanyId(fallbackId);
+    let targetId = null;
+    if (storedId && compList.some((c) => c.id === storedId)) {
+      targetId = storedId;
+    } else if (currentIdInStore && compList.some((c) => c.id === currentIdInStore)) {
+      targetId = currentIdInStore;
+    } else if (compList.length > 0) {
+      targetId = compList[0].id;
     }
+
+    currentCompanyId.set(targetId);
+    setStoredCompanyId(targetId);
 
     return compList;
   } catch (err) {
@@ -46,7 +70,8 @@ export async function selectCompany(id, onSwitchCallback) {
     currentCompanyId.set(id);
     setStoredCompanyId(id);
     await api.post(`/api/companies/${id}/select`, {});
-    showToast(`Empresa cambiada a ${id}`, 'info');
+    const comp = get(companies).find((c) => c.id === id);
+    showToast(`Empresa cambiada a ${comp?.name || id}`, 'info');
 
     if (onSwitchCallback) {
       await onSwitchCallback(id);
