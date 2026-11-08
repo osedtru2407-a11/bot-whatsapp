@@ -1786,6 +1786,40 @@ app.get('/api/companies/:id/team', requireAuth, async (req, res) => {
     }
 });
 
+app.get('/api/companies/:id/team/check-user', requireAuth, async (req, res) => {
+    try {
+        const email = (req.query.email || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return res.json({ exists: false, user: null, isAlreadyInCompany: false });
+        }
+        const userRes = await pool.query(
+            'SELECT id, email, full_name, phone FROM users WHERE LOWER(email) = $1',
+            [email]
+        );
+        if (userRes.rows.length === 0) {
+            return res.json({ exists: false, user: null, isAlreadyInCompany: false });
+        }
+        const user = userRes.rows[0];
+        const memberRes = await pool.query(
+            'SELECT cu.role_id, r.name as role_name FROM company_users cu JOIN roles r ON r.id = cu.role_id WHERE cu.company_id = $1 AND cu.user_id = $2 AND cu.status = $3',
+            [req.params.id, user.id, 'active']
+        );
+        res.json({
+            exists: true,
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.full_name,
+                phone: user.phone || ''
+            },
+            isAlreadyInCompany: memberRes.rows.length > 0,
+            currentRole: memberRes.rows[0]?.role_name || null
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/companies/:id/team/members', requireAuth, async (req, res) => {
     try {
         const result = await authService.addTeamMember(

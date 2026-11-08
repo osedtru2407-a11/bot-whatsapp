@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -88,6 +89,14 @@ export class CompaniesController {
     const members = await this.companiesService.getTeamMembers(companyId);
     const roles = await this.companiesService.getCompanyRoles(companyId);
     return { success: true, members, roles };
+  }
+
+  @Get(':id/team/check-user')
+  async checkUser(
+    @Param('id') companyId: string,
+    @Query('email') email: string,
+  ) {
+    return this.companiesService.checkUserByEmail(companyId, email);
   }
 
   @Post(':id/team/members')

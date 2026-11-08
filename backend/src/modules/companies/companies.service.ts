@@ -265,6 +265,39 @@ export class CompaniesService {
     }));
   }
 
+  async checkUserByEmail(companyId: string, email: string) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { exists: false, user: null, isAlreadyInCompany: false };
+    }
+
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('LOWER(u.email) = :email', { email: cleanEmail })
+      .getOne();
+
+    if (!user) {
+      return { exists: false, user: null, isAlreadyInCompany: false };
+    }
+
+    const membership = await this.companyUserRepository.findOne({
+      where: { companyId, userId: user.id, status: 'active' },
+      relations: ['role'],
+    });
+
+    return {
+      exists: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        phone: user.phone || '',
+      },
+      isAlreadyInCompany: Boolean(membership),
+      currentRole: membership?.role?.name || null,
+    };
+  }
+
   async addTeamMember(companyId: string, adminUserId: string, memberData: AddTeamMemberDto) {
     const cleanEmail = memberData.email.trim().toLowerCase();
     const cleanName = memberData.fullName.trim();
@@ -300,7 +333,10 @@ export class CompaniesService {
     }
 
     // Buscar si el usuario ya existe en el sistema
-    let user = await this.userRepository.findOne({ where: { email: cleanEmail } });
+    let user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('LOWER(u.email) = :email', { email: cleanEmail })
+      .getOne();
     let isExistingUser = false;
 
     if (user) {

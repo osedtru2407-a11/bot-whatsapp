@@ -270,12 +270,8 @@ function verifyToken(token) {
         const cleanPass = (temporaryPassword || password || '').trim();
         const cleanRole = (roleId || '').trim();
 
-        if (!cleanEmail || !cleanName || !cleanPass || !cleanRole) {
-            throw new Error('Todos los campos son obligatorios: Nombre, correo, contraseña temporal y rol.');
-        }
-
-        if (cleanPass.length < 4) {
-            throw new Error('La contraseña temporal debe tener al menos 4 caracteres.');
+        if (!cleanEmail || !cleanName || !cleanRole) {
+            throw new Error('Nombre, correo electrónico y rol son obligatorios.');
         }
 
         // Verificar que el usuario administrador tenga permiso en la empresa
@@ -315,17 +311,11 @@ function verifyToken(token) {
 
             if (userExistRes.rows.length > 0) {
                 targetUserId = userExistRes.rows[0].id;
-                // Actualizar nombre si era placeholder y establecer la contraseña temporal
-                const passwordHash = await hashPassword(cleanPass);
-                await client.query(`
-                UPDATE users SET 
-                    password_hash = $1,
-                    full_name = COALESCE($2, full_name),
-                    must_change_password = TRUE,
-                    updated_at = NOW()
-                WHERE id = $3
-            `, [passwordHash, cleanName, targetUserId]);
+                // Si el usuario ya existe en el sistema, NO se altera su contraseña.
             } else {
+                if (!cleanPass || cleanPass.length < 4) {
+                    throw new Error('La contraseña temporal debe tener al menos 4 caracteres.');
+                }
                 // Crear nuevo usuario con contraseña temporal
                 targetUserId = 'usr_' + Date.now();
                 const passwordHash = await hashPassword(cleanPass);
@@ -333,6 +323,7 @@ function verifyToken(token) {
                 INSERT INTO users (id, email, password_hash, full_name, is_active, must_change_password)
                 VALUES ($1, $2, $3, $4, TRUE, TRUE)
             `, [targetUserId, cleanEmail, passwordHash, cleanName]);
+            }
             }
 
             // Crear o actualizar membresía en esta empresa

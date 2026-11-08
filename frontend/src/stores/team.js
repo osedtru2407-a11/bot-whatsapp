@@ -26,6 +26,22 @@ export async function loadTeamData() {
   }
 }
 
+export async function checkTeamUserByEmail(email) {
+  const compId = get(currentCompanyId);
+  const cleanEmail = (email || '').trim().toLowerCase();
+  if (!compId || !cleanEmail || !cleanEmail.includes('@')) {
+    return { exists: false, user: null, isAlreadyInCompany: false };
+  }
+
+  try {
+    const res = await api.get(`/api/companies/${compId}/team/check-user?email=${encodeURIComponent(cleanEmail)}`);
+    return res;
+  } catch (err) {
+    console.error('Error verificando usuario por correo:', err);
+    return { exists: false, user: null, isAlreadyInCompany: false };
+  }
+}
+
 export async function inviteMember(memberData) {
   const compId = get(currentCompanyId);
   try {

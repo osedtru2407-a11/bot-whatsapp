@@ -1,9 +1,4 @@
-Pasar todo el backend a nestjs para tener un sistema más modular
 
-Se requiere corregir el estilo del botón de subir archivos de la biblioteca 
-Validar que si una empresa  queda con un único usuario este no se puede borrar así mismo y dejar la empresa sola
 Al momento de que un admin de empresa quiera vincular a otro usuario, si el correo del usuario ya existe en el sistema él no puede asignarle nuevo password, simplemente se le asigna el rol, sin nuevo password. 
 Vincular un correo para enviar códigos de recuperación de contraseñas (crear una sección de recuperación de contraseñas)
-Crear una sección de perfil de usuario donde él pueda modificar sus datos y contraseñas
-al cambiar de usuario el select de empresa se queda con el de la empresa anterior por ejemplo pasar del usuario de oscar al de ruben me aparece el select en blanco vinculado al id de la empresa de oscar
 crear tunel para accederr a la página desde otro equipo
