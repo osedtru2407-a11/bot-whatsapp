@@ -2,6 +2,7 @@
 import { writable } from 'svelte/store';
 
 export const activeTab = writable('tab-rules');
+export const isProfileModalOpen = writable(false);
 export const isChangePasswordModalOpen = writable(false);
 export const quickSendInitialPhone = writable('');
 

@@ -9,7 +9,8 @@
     deleteMember, 
     loadTeamData 
   } from '../../stores/team';
-  import { hasPermission } from '../../stores/auth';
+  import { hasPermission, currentUser } from '../../stores/auth';
+  import { showToast } from '../../stores/toast';
   import { formatDate } from '../../utils/formatters';
   import { 
     getPermissionMeta, 
@@ -32,8 +33,9 @@
   }
 
   function openEditRole(member) {
+    const memberId = member.id || member.userId;
     editingMember.set({
-      id: member.id,
+      id: memberId,
       name: member.fullName || member.email,
       currentRoleId: member.roleId
     });
@@ -41,9 +43,26 @@
   }
 
   function handleDeleteMember(member) {
+    const memberId = member.id || member.userId;
     const name = member.fullName || member.email;
+
+    if ($teamMembers.length <= 1) {
+      showToast('No es posible eliminar al único usuario de la empresa. La empresa no puede quedar sin miembros.', 'error');
+      return;
+    }
+
+    if (memberId === $currentUser?.id) {
+      showToast('No puedes eliminarte a ti mismo de la empresa.', 'error');
+      return;
+    }
+
+    if (member.isOwner) {
+      showToast('No se puede eliminar al propietario original de la empresa.', 'error');
+      return;
+    }
+
     if (confirm(`¿Estás seguro de eliminar a ${name} de esta empresa? Perderá el acceso de inmediato.`)) {
-      deleteMember(member.id, name);
+      deleteMember(memberId, name);
     }
   }
 </script>
@@ -86,6 +105,17 @@
       <h3 style="font-size: 1.1rem; color: #fff;">Miembros de la Empresa ({$teamMembers.length})</h3>
     </div>
 
+    {#if $teamMembers.length === 1}
+      <div class="sole-member-alert">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span><strong>Empresa con único usuario:</strong> Esta empresa solo tiene un colaborador registrado. No se puede eliminar ni dejar la empresa sin miembros administradores.</span>
+      </div>
+    {/if}
+
     {#if $teamMembers.length === 0}
       <div style="text-align: center; padding: 40px; color: var(--text-dim);">
         No hay colaboradores registrados en esta empresa.
@@ -104,15 +134,33 @@
             </tr>
           </thead>
           <tbody>
-            {#each $teamMembers as member (member.id)}
+            {#each $teamMembers as member (member.id || member.userId)}
               {@const initial = (member.fullName || member.email || 'U').charAt(0).toUpperCase()}
+              {@const memberId = member.id || member.userId}
+              {@const isOnlyMember = $teamMembers.length <= 1}
+              {@const isSelf = memberId === $currentUser?.id}
+              {@const isOwner = Boolean(member.isOwner)}
+              {@const cannotDelete = isOnlyMember || isSelf || isOwner}
+              {@const deleteTooltip = isOnlyMember 
+                ? 'No se puede eliminar al único usuario de la empresa (la empresa no puede quedar sin miembros)' 
+                : isSelf 
+                  ? 'No puedes eliminarte a ti mismo de la empresa' 
+                  : isOwner 
+                    ? 'No se puede eliminar al propietario original de la empresa' 
+                    : 'Eliminar de la empresa'}
               <tr>
                 <td>
                   <div class="member-user-cell">
                     <span class="member-avatar">{initial}</span>
                     <div>
                       <strong>{member.fullName || 'Sin Nombre'}</strong>
-                      <div style="font-size: 0.75rem; color: var(--text-dim);">ID: {member.id}</div>
+                      {#if isSelf}
+                        <span class="self-tag">(Tú)</span>
+                      {/if}
+                      {#if isOwner}
+                        <span class="owner-tag">Propietario</span>
+                      {/if}
+                      <div style="font-size: 0.75rem; color: var(--text-dim);">ID: {memberId}</div>
                     </div>
                   </div>
                 </td>
@@ -147,8 +195,9 @@
                       <button 
                         type="button" 
                         class="icon-btn delete-btn" 
+                        disabled={cannotDelete}
                         onclick={() => handleDeleteMember(member)} 
-                        title="Eliminar de la empresa"
+                        title={deleteTooltip}
                       >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <polyline points="3 6 5 6 21 6"></polyline>
@@ -470,5 +519,56 @@
     background: rgba(56, 189, 248, 0.15);
     border-color: #38bdf8;
     color: #fff;
+  }
+
+  /* Aviso de único usuario y protección de borrado */
+  .sole-member-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    border-radius: var(--radius-sm);
+    color: #fef08a;
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+  .sole-member-alert .alert-icon {
+    flex-shrink: 0;
+    color: #f59e0b;
+  }
+  .self-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .owner-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .delete-btn:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+    pointer-events: auto !important;
+    filter: grayscale(1);
+  }
+  .delete-btn:disabled:hover {
+    background: transparent !important;
+    color: inherit !important;
   }
 </style>

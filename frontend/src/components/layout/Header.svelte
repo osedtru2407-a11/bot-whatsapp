@@ -19,7 +19,7 @@
     isSuperadmin,
     logout 
   } from '../../stores/auth';
-  import { isChangePasswordModalOpen, activeTab } from '../../stores/ui';
+  import { isProfileModalOpen, isChangePasswordModalOpen, activeTab } from '../../stores/ui';
 
   let { onCompanySwitched } = $props();
 
@@ -202,7 +202,13 @@
     <!-- User Profile & Session -->
     {#if $currentUser}
       <div class="user-header-profile">
-        <div class="user-badge" title="Usuario activo">
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div 
+          class="user-badge" 
+          onclick={() => isProfileModalOpen.set(true)} 
+          title="Ver y editar mi perfil"
+        >
           <span class="user-avatar">
             {($currentUser.fullName || $currentUser.username || 'U').charAt(0).toUpperCase()}
           </span>
@@ -212,18 +218,29 @@
               {$userMembership?.roleName || ($isSuperadmin ? '⭐ Superusuario' : '👑 Administrador')}
             </span>
           </div>
+          {#if $currentUser?.mustChangePassword}
+            <span class="header-pwd-alert-dot" title="¡Debes cambiar tu contraseña temporal!">!</span>
+          {/if}
         </div>
 
         <button 
           type="button" 
-          class="btn btn-outline-sm btn-icon-only" 
-          onclick={() => isChangePasswordModalOpen.set(true)}
-          title="Cambiar mi contraseña"
+          class="btn btn-outline-sm btn-icon-only {$currentUser?.mustChangePassword ? 'btn-pwd-alert' : ''}" 
+          onclick={() => isProfileModalOpen.set(true)}
+          title={$currentUser?.mustChangePassword ? '¡Debes cambiar tu contraseña temporal!' : 'Mi Perfil y Contraseña'}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
+          {#if $currentUser?.mustChangePassword}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          {:else}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          {/if}
         </button>
 
         <button 
@@ -345,5 +362,33 @@
   .header-crown-icon {
     font-size: 0.95rem;
     line-height: 1;
+  }
+
+  .header-pwd-alert-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    margin-left: 4px;
+    animation: pulseAlert 1.5s infinite;
+  }
+
+  .btn-pwd-alert {
+    border-color: #ef4444 !important;
+    color: #f87171 !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    animation: pulseAlert 1.5s infinite;
+  }
+
+  @keyframes pulseAlert {
+    0% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+    100% { transform: scale(1); opacity: 0.9; }
   }
 </style>

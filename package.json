@@ -14,6 +14,9 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "prepare": "is-ci || husky",
+        "backend:dev": "npm --prefix backend run start:dev",
+        "backend:build": "npm --prefix backend run build",
+        "backend:start": "npm --prefix backend run start:prod",
         "frontend:dev": "npm --prefix frontend run dev",
         "frontend:build": "npm --prefix frontend run build"
     },

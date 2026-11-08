@@ -191,7 +191,21 @@ export async function register(fullName, email, password, companyName) {
     try {
       await api.post('/api/auth/change-password', { currentPassword, newPassword });
       showToast('Contraseña actualizada exitosamente', 'success');
+      currentUser.update(curr => curr ? { ...curr, mustChangePassword: false } : null);
       return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  export async function updateProfile(profileData) {
+    try {
+      const res = await api.put('/api/auth/profile', profileData);
+      if (res.user) {
+        currentUser.update(curr => ({ ...curr, ...res.user }));
+      }
+      showToast('Perfil actualizado exitosamente', 'success');
+      return { success: true, user: res.user };
     } catch (err) {
       return { success: false, error: err.message };
     }

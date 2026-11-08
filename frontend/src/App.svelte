@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
-    import { isAuthenticated, checkAuth, isSuperadmin } from './stores/auth';
+    import { isAuthenticated, checkAuth, isSuperadmin, currentUser } from './stores/auth';
     import { loadCompanies, currentCompanyId } from './stores/company';
     import {
         startStatusPolling,
@@ -19,7 +19,7 @@
     import { loadLibrary } from './stores/library';
     import { loadSettings } from './stores/settings';
     import { loadTeamData } from './stores/team';
-    import { activeTab } from './stores/ui';
+    import { activeTab, isProfileModalOpen } from './stores/ui';
 
     // Layout Components
     import Header from './components/layout/Header.svelte';
@@ -28,6 +28,7 @@
 
     // Modals
     import LoginModal from './components/auth/LoginModal.svelte';
+    import ProfileModal from './components/auth/ProfileModal.svelte';
     import ChangePasswordModal from './components/auth/ChangePasswordModal.svelte';
     import QrModal from './components/qr/QrModal.svelte';
     import CompanyModal from './components/company/CompanyModal.svelte';
@@ -106,6 +107,13 @@
         }
     });
 
+    // Detección automática de contraseña temporal / primer ingreso
+    $effect(() => {
+        if ($isAuthenticated && $currentUser?.mustChangePassword) {
+            isProfileModalOpen.set(true);
+        }
+    });
+
     // Bloquear acceso a tab-superadmin si el usuario no es superadmin
     $effect(() => {
         if (!$isSuperadmin && $activeTab === 'tab-superadmin') {
@@ -145,6 +153,7 @@
         </div>
 
         <!-- Modales Operativos (Solo existen con sesión iniciada) -->
+        <ProfileModal />
         <ChangePasswordModal />
         <QrModal />
         <CompanyModal />

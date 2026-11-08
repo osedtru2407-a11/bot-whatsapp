@@ -388,6 +388,7 @@ function verifyToken(token) {
     `, [companyId]);
 
         return res.rows.map(row => ({
+            id: row.user_id,
             userId: row.user_id,
             email: row.email,
             fullName: row.full_name,
@@ -429,6 +430,14 @@ function verifyToken(token) {
     async function removeTeamMember(companyId, adminUserId, targetUserId) {
         if (adminUserId === targetUserId) {
             throw new Error('No puedes eliminarte a ti mismo de la empresa.');
+        }
+
+        const activeCountRes = await pool.query(
+            "SELECT COUNT(*)::int as count FROM company_users WHERE company_id = $1 AND status = 'active'",
+            [companyId]
+        );
+        if (activeCountRes.rows[0].count <= 1) {
+            throw new Error('No es posible eliminar al único usuario de la empresa. La empresa no puede quedar sin miembros.');
         }
 
         const check = await pool.query(
@@ -526,14 +535,20 @@ function verifyToken(token) {
             throw new Error('La nueva contraseña debe tener al menos 6 caracteres.');
         }
 
-        const userRes = await pool.query('SELECT password_hash FROM users WHERE id = $1', [userId]);
+        const userRes = await pool.query('SELECT password_hash, must_change_password FROM users WHERE id = $1', [userId]);
         if (userRes.rows.length === 0) {
             throw new Error('Usuario no encontrado.');
         }
 
-        const currentMatches = await comparePassword(currentPassword, userRes.rows[0].password_hash);
-        if (!currentMatches) {
-            throw new Error('La contraseña actual es incorrecta.');
+        const user = userRes.rows[0];
+        if (!user.must_change_password || currentPassword) {
+            if (!currentPassword) {
+                throw new Error('Debes ingresar tu contraseña actual.');
+            }
+            const currentMatches = await comparePassword(currentPassword, user.password_hash);
+            if (!currentMatches) {
+                throw new Error('La contraseña actual es incorrecta.');
+            }
         }
 
         const newHash = await hashPassword(newPassword);
@@ -543,6 +558,41 @@ function verifyToken(token) {
     `, [newHash, userId]);
 
         return { success: true };
+    }
+
+    /**
+     * Actualizar perfil de usuario (nombre y teléfono)
+     */
+    async function updateProfile(userId, { fullName, phone }) {
+        if (!fullName || !fullName.trim()) {
+            throw new Error('El nombre completo no puede estar vacío.');
+        }
+        const cleanName = fullName.trim();
+        const cleanPhone = phone ? phone.trim() : null;
+
+        const res = await pool.query(
+            `UPDATE users 
+             SET full_name = $1, phone = $2, updated_at = NOW() 
+             WHERE id = $3 
+             RETURNING id, email, full_name, phone, must_change_password, is_superadmin`,
+            [cleanName, cleanPhone, userId]
+        );
+
+        if (res.rows.length === 0) {
+            throw new Error('Usuario no encontrado.');
+        }
+
+        const u = res.rows[0];
+        return {
+            user: {
+                id: u.id,
+                email: u.email,
+                fullName: u.full_name,
+                phone: u.phone,
+                mustChangePassword: Boolean(u.must_change_password),
+                isSuperadmin: Boolean(u.is_superadmin)
+            }
+        };
     }
 
     /**
@@ -578,6 +628,7 @@ function verifyToken(token) {
         createCustomRole,
         deleteCustomRole,
         changePassword,
+        updateProfile,
         hashPassword,
         authenticateToken,
         generateToken,
