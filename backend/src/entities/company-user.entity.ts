@@ -44,6 +44,9 @@ export class CompanyUser {
   @Column({ type: 'varchar', length: 50, default: 'active' })
   status: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  phone: string;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;
 }

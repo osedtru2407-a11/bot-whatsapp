@@ -327,14 +327,17 @@ function verifyToken(token) {
             }
 
             // Crear o actualizar membresía en esta empresa
+            // Crear o actualizar la membresía en la empresa con el teléfono corporativo
+            const cleanPhone = (memberData.phone || '').trim();
             const membershipId = `cu_${companyId}_${targetUserId}`;
             await client.query(`
-            INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status)
-            VALUES ($1, $2, $3, $4, FALSE, 'active')
+            INSERT INTO company_users (id, user_id, company_id, role_id, is_owner, status, phone)
+            VALUES ($1, $2, $3, $4, FALSE, 'active', $5)
             ON CONFLICT (user_id, company_id) DO UPDATE SET
                 role_id = EXCLUDED.role_id,
-                status = 'active';
-        `, [membershipId, targetUserId, companyId, cleanRole]);
+                status = 'active',
+                phone = COALESCE(EXCLUDED.phone, company_users.phone);
+        `, [membershipId, targetUserId, companyId, cleanRole, cleanPhone || null]);
 
             await client.query('COMMIT');
 
@@ -342,6 +345,7 @@ function verifyToken(token) {
                 userId: targetUserId,
                 email: cleanEmail,
                 fullName: cleanName,
+                phone: cleanPhone || null,
                 roleId: cleanRole,
                 roleName: roleCheck.rows[0].name,
                 temporaryPassword: cleanPass
@@ -363,7 +367,7 @@ function verifyToken(token) {
             u.id as user_id,
             u.email,
             u.full_name,
-            u.phone,
+            COALESCE(cu.phone, u.phone) as phone,
             u.is_active,
             cu.is_owner,
             cu.status,

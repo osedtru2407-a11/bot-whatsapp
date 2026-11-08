@@ -37,7 +37,8 @@
     editingMember.set({
       id: memberId,
       name: member.fullName || member.email,
-      currentRoleId: member.roleId
+      currentRoleId: member.roleId,
+      currentPhone: member.phone || ''
     });
     isEditRoleModalOpen.set(true);
   }

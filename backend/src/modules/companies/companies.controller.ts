@@ -120,7 +120,7 @@ export class CompaniesController {
       companyId,
       user.id,
       targetUserId,
-      updateDto.roleId,
+      updateDto,
     );
     return { success: true, member: result };
   }

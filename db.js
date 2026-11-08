@@ -172,9 +172,11 @@ async function initDb() {
                 role_id VARCHAR(100) NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
                 is_owner BOOLEAN DEFAULT FALSE,
                 status VARCHAR(50) DEFAULT 'active',
+                phone VARCHAR(50),
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                 UNIQUE(user_id, company_id)
             );
+            ALTER TABLE company_users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
         `);
 
         // 5. Configuración de Empresa

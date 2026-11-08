@@ -56,11 +56,11 @@ export async function inviteMember(memberData) {
   }
 }
 
-export async function updateMemberRole(userId, roleId) {
+export async function updateMemberRole(userId, roleId, phone) {
   const compId = get(currentCompanyId);
   try {
-    await api.put(`/api/companies/${compId}/team/members/${userId}`, { roleId });
-    showToast('Rol de colaborador actualizado', 'success');
+    await api.put(`/api/companies/${compId}/team/members/${userId}`, { roleId, phone });
+    showToast('Datos de colaborador actualizados', 'success');
     isEditRoleModalOpen.set(false);
     editingMember.set(null);
     await loadTeamData();

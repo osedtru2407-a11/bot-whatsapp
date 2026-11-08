@@ -15,6 +15,10 @@ export class AddTeamMemberDto {
 
   @IsOptional()
   @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
   temporaryPassword?: string;
 
   @IsOptional()

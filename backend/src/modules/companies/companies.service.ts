@@ -18,6 +18,7 @@ import { Schedule } from '../../entities/schedule.entity';
 import { LibraryDocument } from '../../entities/library-document.entity';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
+import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 
 @Injectable()
@@ -254,7 +255,7 @@ export class CompaniesService {
       userId: cu.user.id,
       email: cu.user.email,
       fullName: cu.user.fullName,
-      phone: cu.user.phone,
+      phone: cu.phone || cu.user.phone || null,
       isActive: Boolean(cu.user.isActive),
       isOwner: Boolean(cu.isOwner),
       status: cu.status,
@@ -291,9 +292,9 @@ export class CompaniesService {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        phone: user.phone || '',
       },
       isAlreadyInCompany: Boolean(membership),
+      companyPhone: membership?.phone || null,
       currentRole: membership?.role?.name || null,
     };
   }
@@ -302,6 +303,7 @@ export class CompaniesService {
     const cleanEmail = memberData.email.trim().toLowerCase();
     const cleanName = memberData.fullName.trim();
     const cleanRole = memberData.roleId.trim();
+    const cleanPhone = (memberData.phone || '').trim();
     const passCandidate = (memberData.temporaryPassword || memberData.password || '').trim();
 
     // Validar permisos del administrador
@@ -356,6 +358,7 @@ export class CompaniesService {
         email: cleanEmail,
         passwordHash,
         fullName: cleanName,
+        phone: cleanPhone || null,
         isActive: true,
         mustChangePassword: true,
         isSuperadmin: false,
@@ -363,7 +366,7 @@ export class CompaniesService {
       await this.userRepository.save(user);
     }
 
-    // Crear o actualizar la membresía en la empresa
+    // Crear o actualizar la membresía en la empresa con el teléfono corporativo asignado
     let membership = await this.companyUserRepository.findOne({
       where: { companyId, userId: user.id },
     });
@@ -371,6 +374,9 @@ export class CompaniesService {
     if (membership) {
       membership.roleId = cleanRole;
       membership.status = 'active';
+      if (cleanPhone) {
+        membership.phone = cleanPhone;
+      }
       await this.companyUserRepository.save(membership);
     } else {
       membership = this.companyUserRepository.create({
@@ -378,6 +384,7 @@ export class CompaniesService {
         userId: user.id,
         companyId,
         roleId: cleanRole,
+        phone: cleanPhone || null,
         isOwner: false,
         status: 'active',
       });
@@ -388,6 +395,7 @@ export class CompaniesService {
       userId: user.id,
       email: user.email,
       fullName: user.fullName,
+      phone: membership.phone || user.phone || null,
       roleId: cleanRole,
       roleName: role.name,
       alreadyExisted: isExistingUser,
@@ -395,7 +403,12 @@ export class CompaniesService {
     };
   }
 
-  async updateTeamMemberRole(companyId: string, adminUserId: string, targetUserId: string, newRoleId: string) {
+  async updateTeamMemberRole(
+    companyId: string,
+    adminUserId: string,
+    targetUserId: string,
+    updateDto: UpdateTeamMemberDto,
+  ) {
     if (adminUserId === targetUserId) {
       throw new BadRequestException('No puedes cambiar tu propio rol en la empresa.');
     }
@@ -408,7 +421,12 @@ export class CompaniesService {
       throw new NotFoundException('Miembro no encontrado en esta empresa.');
     }
 
-    membership.roleId = newRoleId;
+    if (updateDto.roleId) {
+      membership.roleId = updateDto.roleId;
+    }
+    if (updateDto.phone !== undefined) {
+      membership.phone = updateDto.phone ? updateDto.phone.trim() : null;
+    }
     await this.companyUserRepository.save(membership);
 
     return membership;

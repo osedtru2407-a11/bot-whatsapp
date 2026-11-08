@@ -75,9 +75,7 @@
       if (res && res.exists && res.user) {
         isExistingUser = true;
         fullName = res.user.fullName || fullName;
-        if (res.user.phone && !phone) {
-          phone = res.user.phone;
-        }
+        phone = res.companyPhone || '';
         isAlreadyInCompany = Boolean(res.isAlreadyInCompany);
         currentRoleInCompany = res.currentRole || '';
       } else {
@@ -192,15 +190,21 @@
       />
     </div>
 
-    <!-- 3. TELÉFONO / WHATSAPP -->
+    <!-- 3. TELÉFONO CORPORATIVO EN ESTA EMPRESA -->
     <div class="form-group">
-      <label for="inv-phone">Teléfono / WhatsApp (Opcional)</label>
+      <div class="field-label-row">
+        <label for="inv-phone">Teléfono Corporativo en esta Empresa (Opcional)</label>
+        <span class="badge-readonly">Exclusivo de esta empresa</span>
+      </div>
       <input 
         type="tel" 
         id="inv-phone" 
-        placeholder="573001234567" 
+        placeholder="Ej: 573001234567" 
         bind:value={phone} 
       />
+      <span class="field-helper-note">
+        📱 Línea corporativa asignada para atender a esta empresa (no afectará el número personal del usuario ni el de otras empresas).
+      </span>
     </div>
 
     <!-- 4. ROL Y PERMISOS -->
@@ -333,6 +337,14 @@
     line-height: 1.4;
     margin-bottom: 16px;
     animation: fadeIn 0.25s ease;
+  }
+
+  .field-helper-note {
+    font-size: 0.76rem;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 5px;
+    display: block;
+    line-height: 1.35;
   }
 
   .password-section {
