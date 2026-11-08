@@ -44,6 +44,18 @@ export class CompanySetting {
   @Column({ name: 'gemini_model', type: 'varchar', length: 100, default: 'gemini-3.5-flash-lite' })
   geminiModel: string;
 
+  @Column({ name: 'bot_tone', type: 'text', nullable: true })
+  botTone: string;
+
+  @Column({ name: 'business_info', type: 'text', nullable: true })
+  businessInfo: string;
+
+  @Column({ name: 'faq_text', type: 'text', nullable: true })
+  faqText: string;
+
+  @Column({ name: 'never_do', type: 'text', nullable: true })
+  neverDo: string;
+
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz', default: () => 'NOW()' })
   updatedAt: Date;
 }

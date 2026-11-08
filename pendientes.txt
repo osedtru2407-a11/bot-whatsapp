@@ -1,3 +1,225 @@
+# Contexto Global del Sistema (Ficha de Arquitectura)
 
-Vincular un correo para enviar códigos de recuperación de contraseñas (crear una sección de recuperación de contraseñas)
-[HECHO] crear tunel para acceder a la página desde otro equipo (Script creado: iniciar-tunel.bat con Cloudflare Tunnel)
+* **Propósito:** Plataforma SaaS de chatbot para WhatsApp orientada a pequeños comercios y negocios independientes sin conocimientos técnicos ni de embudos de venta.
+* **Core Tecnológico:** Node.js con `whatsapp-web.js` (conexión por código QR, atención orgánica/receptiva), base de datos relacional y modelo de lenguaje Gemini para procesamiento conversacional.
+* **Modelo Comercial:** Suscripción mensual plana (~$5 USD/mes) con cupo mensual controlado (ej. 2.500 respuestas/mes) para garantizar rentabilidad.
+* **Módulos de Conocimiento:**
+1. *Identidad y Políticas:* Formulario web simple (cómo habla, datos del negocio, preguntas frecuentes, reglas de lo que nunca debe hacer).
+2. *Catálogo de Productos:* Archivo Word (.docx) con tabla obligatoria `[Código, Nombre, Descripción, Precio, Observaciones]`.
+3. *Promociones:* Archivos con vigencia obligatoria (*Fecha Inicio* y *Fecha Fin*), máximo 2 activas a la vez.
+
+
+* **Regla de Memoria (Summary-Buffer):** El asesor humano ve todo el chat histórico. Gemini solo recibe: ficha de resumen previo + últimos 6 mensajes literales. El resumen se actualiza tras >1 hora de inactividad.
+* **Gestión Visual:** Al subir el catálogo, se generan tarjetas interactivas en la misma pantalla para adjuntar hasta 4 fotos por producto. El bot despacha fotos por WhatsApp únicamente si el cliente las pide o pregunta por la apariencia de un producto disponible con imágenes.
+
+---
+
+## Tarea 1: Formulario Web de Configuración Básica del Negocio
+
+* **Objetivo Funcional:** Reemplazar archivos de Word para la identidad y reglas de atención por una pantalla web limpia de solo 4 campos de texto libre con placeholders descriptivos que orienten al comerciante sin peligro de guardar ejemplos ajenos.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador fullstack. Necesitamos implementar el módulo web de 'Configuración de Identidad y Reglas del Negocio' para nuestro chatbot de WhatsApp.
+> Requisitos funcionales:
+> 1. Crea una pantalla simple y responsiva con 4 áreas de texto libre:
+> * Campo 1: '¿Cómo debe hablarle el bot a tus clientes?' (Placeholder: Ejemplos de trato formal/tú/vos/su merced, nivel de emojis, tono y si los clientes reciben algún apodo especial como 'moteros' o 'dinoclientes').
+> * Campo 2: 'Datos clave de tu negocio' (Placeholder: Horarios, ciudad o cobertura de envíos, formas de pago aceptadas, tiempos de entrega).
+> * Campo 3: 'Preguntas que siempre te hacen tus clientes' (Placeholder: Preguntas frecuentes con sus respuestas directas).
+> * Campo 4: 'Lo que el bot NUNCA debe hacer' (Placeholder: Prohibiciones estrictas como no otorgar descuentos no autorizados, no dar cuentas no oficiales, etc.).
+> 
+> 
+> 2. Los placeholders deben ser textos fantasma estándar que desaparezcan al escribir para no contaminar la base de datos con datos de ejemplo.
+> 3. Al guardar, persiste estos datos asociados a la empresa para que puedan ser consultados de inmediato al ensamblar el contexto del bot."
+> 
+> 
+
+---
+
+## Tarea 2: Procesamiento del Catálogo en Word y Validación de Códigos Únicos
+
+* **Objetivo Funcional:** Validar la subida del archivo Word en la sección de Catálogo, verificar que contenga la tabla requerida, que los códigos de producto no se repitan y extraer los datos para alimentar el panel interactivo.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend en Node.js. Necesitamos el procesador de catálogos en Word (.docx) para la plataforma.
+> Requisitos funcionales:
+> 1. Implementa la lectura del archivo .docx extrayendo las tablas sin recurrir a IA.
+> 2. Valida obligatoriamente que exista una tabla con las columnas: 'Código', 'Nombre / Producto', 'Descripción', 'Precio' y 'Observaciones'.
+> 3. Valida que el campo 'Código' esté presente en todas las filas y que sea estrictamente único dentro del documento. Si hay códigos duplicados, rechaza el archivo y emite una alerta indicando qué código se repite.
+> 4. Si el archivo es válido, extrae los datos y prepáralos para la sincronización con el inventario del sistema."
+> 
+> 
+
+---
+
+## Tarea 3: Panel Unificado de Catálogo y Carga de Fotos
+
+* **Objetivo Funcional:** En la misma pantalla donde se sube el catálogo, desplegar tarjetas visuales por producto que permitan subir hasta 4 fotos y alternar el estado de disponibilidad (Disponible / No disponible).
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador fullstack. Necesitamos construir la vista unificada de Catálogo y Fotografías de Producto.
+> Requisitos funcionales:
+> 1. En la misma pantalla tras procesar el Word, renderiza tarjetas para cada producto extraído con: Código, Nombre, Precio, un interruptor visual de estado ('Disponible' / 'No disponible') y un contador de fotos (X/4).
+> 2. En cada tarjeta debe haber un botón para adjuntar fotos (máximo 4 por producto). La subida debe ser asíncrona: al seleccionar una imagen, se guarda de inmediato y se muestra su miniatura con un botón para eliminarla si hubo error.
+> 3. El usuario no debe preocuparse por nombrar los archivos; el sistema asocia internamente las fotos a la tarjeta del producto correspondiente.
+> 4. El borrado de productos está restringido únicamente a esta interfaz web, mostrando una advertencia disuasoria que sugiera marcarlo como 'No disponible' en lugar de eliminarlo definitivamente."
+> 
+> 
+
+---
+
+## Tarea 4: Sincronización Inteligente de Catálogos Nuevos
+
+* **Objetivo Funcional:** Gestionar la actualización del catálogo cuando el comerciante sube un nuevo archivo Word, preservando las fotos existentes y consultando el estado de los productos ausentes.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend/frontend. Necesitamos la lógica de sincronización cuando un usuario sube una nueva versión de su catálogo en Word.
+> Requisitos funcionales:
+> 1. Compara los productos del archivo nuevo contra los ya guardados usando el 'Código' de producto como clave:
+> * Si el código ya existe: actualiza precios, nombres o descripciones modificadas, manteniendo intactas las fotos y el estado que ya tenía ese producto.
+> * Si el código es nuevo: crea la tarjeta del producto lista para que el usuario le asocie fotos.
+> * Si un producto que existía previamente NO viene en el nuevo Word: el sistema no lo borra. Muestra una ventana emergente de confirmación: 'El producto con código [CODIGO] - [NOMBRE] no figura en este catálogo nuevo. ¿Ya no está disponible?' con opciones: [Ya no está disponible] o [Sigue disponible].
+> 
+> 
+> 2. Si elige 'Ya no está disponible', el producto pasa al estado no disponible (desactivado para WhatsApp, pero conservando su ficha y fotos en el sistema)."
+> 
+> 
+
+---
+
+## Tarea 5: Módulo de Promociones con Vigencia Automática
+
+* **Objetivo Funcional:** Permitir al usuario subir promociones temporales exigiendo rango de fechas, limitando a un máximo de 2 activas a la vez y desactivándolas automáticamente cuando expiren.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador fullstack. Necesitamos implementar el módulo de Campañas y Promociones Temporales.
+> Requisitos funcionales:
+> 1. Al cargar un documento de promoción, solicita obligatoriamente: Nombre de la campaña, Fecha de inicio y Fecha de fin.
+> 2. Valida que no haya más de 2 promociones con fechas coincidentes activas simultáneamente. Si el usuario intenta programar una tercera que traslape en fechas, emite una advertencia indicando que debe ajustar los días o apagar una antes.
+> 3. El sistema debe evaluar dinámicamente la fecha actual: las promociones cuya fecha de fin ya expiró se desactivan solas y pasan al historial sin que el usuario tenga que acordarse de borrarlas o apagarlas."
+> 
+> 
+
+---
+
+## Tarea 6: Motor de Ensamble de Contexto y Manejo de Stock
+
+* **Objetivo Funcional:** Construir el bloque de información para Gemini optimizando tokens, inyectando las directivas del negocio, las promociones vigentes, los productos disponibles con fotos y una lista compacta de solo nombres para los agotados.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend de IA. Necesitamos construir la función que ensambla el contexto de información que se envía a Gemini para responder chats de WhatsApp.
+> Requisitos funcionales:
+> 1. Extrae los datos del negocio (tono, horarios, pagos, preguntas frecuentes y prohibiciones del Módulo 1).
+> 2. Extrae las promociones que estén vigentes el día de hoy (máximo 2).
+> 3. En el catálogo:
+> * Lista los productos con estado 'Disponible' con sus detalles: código, nombre, precio, descripción corta y si cuenta con fotos disponibles.
+> * Lista los productos con estado 'No disponible' ÚNICAMENTE como una lista plana de nombres separados por comas (ej: 'Pechuga, Lomo, Costilla'), sin precios ni detalles.
+> 
+> 
+> 4. Inyecta la directiva de stock en las instrucciones del bot:
+> * Si preguntan por un producto disponible: dar detalles y ofrecer fotos si tiene.
+> * Si preguntan por un producto de la lista de no disponibles: informar amablemente que suele manejarse pero que actualmente está agotado.
+> * Si preguntan por algo que no existe en ninguna lista: indicar con naturalidad que el negocio no vende ese tipo de productos y mencionar qué rubro sí atiende."
+> 
+> 
+> 
+> 
+
+---
+
+## Tarea 7: Memoria Resumida (Summary-Buffer) y Control de Historial
+
+* **Objetivo Funcional:** Mantener todo el historial de chat accesible para los asesores humanos, pero enviar a Gemini únicamente un resumen consolidado más los últimos 6 mensajes, recalculando el resumen tras 1 hora de inactividad.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend de IA. Necesitamos implementar la memoria de conversación para optimizar la latencia y los tokens de entrada de Gemini.
+> Requisitos funcionales:
+> 1. Asegura que todos los mensajes intercambiados (cliente, bot, asesor) se guarden íntegramente en la base de datos para que el asesor humano pueda auditar la conversación completa cuando lo requiera.
+> 2. Al recibir un nuevo mensaje de WhatsApp:
+> * Verifica el tiempo transcurrido desde el último mensaje del chat. Si han pasado más de 60 minutos, ejecuta una llamada de actualización de resumen que consolide los acuerdos y dudas previas en una ficha breve (máximo 5 líneas).
+> 
+> 
+> 3. Para la respuesta del bot al cliente, envía a Gemini exclusivamente: la ficha de resumen consolidado + los últimos 6 mensajes literales de la conversación."
+> 
+> 
+
+---
+
+## Tarea 8: Despacho Inteligente de Fotografías por WhatsApp
+
+* **Objetivo Funcional:** Hacer que el bot envíe fotos mediante `whatsapp-web.js` solo cuando el cliente lo pida o pregunte por la apariencia de un artículo disponible con imágenes.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend con experiencia en `whatsapp-web.js`. Necesitamos implementar el envío automatizado de imágenes de producto a demanda.
+> Requisitos funcionales:
+> 1. Instruye a Gemini para que, si el cliente solicita ver fotos o pregunta cómo luce un artículo y dicho artículo tiene fotos disponibles, incluya al final de su respuesta la directiva: `[ENVIAR_FOTOS: CODIGO_PRODUCTO]`.
+> 2. En el manejador de mensajes de WhatsApp, intercepta esa directiva mediante expresión regular, límpiala del texto visible y envía primero la respuesta de texto.
+> 3. Inmediatamente después, consulta las fotos asociadas a ese código en la base de datos y despáchalas secuencialmente al chat de WhatsApp usando `MessageMedia`."
+> 
+> 
+
+---
+
+## Tarea 9: Control de Límite Mensual del Plan ($5 USD)
+
+* **Objetivo Funcional:** Proteger los costos de API limitando el número de respuestas automáticas mensuales por negocio y cortar las llamadas a Gemini cuando se alcance el tope.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend. Necesitamos implementar el control de cuota mensual para las empresas registradas.
+> Requisitos funcionales:
+> 1. Lleva el conteo de respuestas emitidas por el bot para cada empresa. El contador debe reiniciarse automáticamente a cero al comenzar un nuevo mes calendario.
+> 2. Si una empresa alcanza su límite mensual (ej. 2.500 mensajes):
+> * El sistema NO debe ejecutar llamadas a la API de Gemini (evitando cobros adicionales).
+> * Responde en WhatsApp con un mensaje predeterminado indicando que el límite de respuestas automáticas se completó y que un asesor continuará la atención.
+> 
+> 
+> 3. En el panel de control del cliente, muestra una barra de progreso que refleje cuántos mensajes lleva consumidos de su cupo mensual."
+> 
+> 
+
+---
+
+## Tarea 10: Detección de Intención de Compra y Alertas en Línea Única
+
+* **Objetivo Funcional:** Detectar cuando un cliente concreta un pedido o manifiesta intención explícita de pago, pausar la intervención del bot en esa conversación y disparar alertas inmediatas dentro del mismo WhatsApp (auto-mensaje al chat propio y marcado de chat como no leído) y en el panel web para que el comerciante no pierda la venta.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend y frontend en Node.js con `whatsapp-web.js`. Necesitamos implementar el sistema de detección de ventas y alertas operando sobre una única línea de WhatsApp compartida entre el bot y el comerciante.
+> Requisitos funcionales:
+> 1. **Directiva de IA:** Instruye a Gemini para que, cuando identifique que el cliente confirma un pedido, solicita datos de transferencia/pago o envía un comprobante, agregue al final de su mensaje la directiva: `[ALERTA_VENTA: RESUMEN_DEL_PEDIDO]`.
+> 2. **Procesamiento y Limpieza:** En el manejador de mensajes entrantes, intercepta la directiva con expresiones regulares, bórrala del texto que verá el cliente y envía la respuesta normal por WhatsApp (ej. confirmando que un asesor tomará el pedido para coordinar el pago/entrega).
+> 3. **Alertas en WhatsApp (Sin números adicionales):**
+> * Envía inmediatamente un mensaje al chat propio del negocio (el chat consigo mismo) con el formato:
+> `🚨 ¡VENTA PENDIENTE! \nCliente: [Número/Nombre]\nResumen: [RESUMEN_DEL_PEDIDO]\nIr al chat: [https://wa.me/](https://wa.me/)[NUMERO_CLIENTE]`.
+> * Ejecuta la función para marcar la conversación del cliente como no leída (`chat.markUnread()`) en el WhatsApp del comerciante, asegurando que quede visualmente resaltada con el punto verde de pendiente.
+> 
+> 
+> 4. **Pausa del Bot en ese Chat:** Coloca un flag temporal en base de datos para ese chat (`atencion_humana: true`) durante 120 minutos, evitando que el bot siga respondiendo automáticamente en esa conversación mientras el comerciante cierra la venta.
+> 5. **Alerta en Panel Web:** Emite un evento por WebSockets hacia el panel web del comerciante para reproducir un aviso sonoro y mostrar una notificación emergente con el pedido listo."
+> 
+> 
+
+---
+
+## Tarea 11: Discriminación de Mensajes Personales y Manejo de Ráfagas (Debounce)
+
+* **Objetivo Funcional:** Evitar que el bot responda a familiares o conversaciones privadas en cuentas de WhatsApp de uso mixto, agrupando ráfagas cortas de mensajes antes de procesar y permitiendo a la IA clasificar la conversación como personal para auto-silenciarse de forma permanente en ese chat.
+* **Prompt para el Agente:**
+
+> "Actúa como desarrollador backend en Node.js con `whatsapp-web.js`. Necesitamos implementar la discriminación entre chats comerciales y personales para WhatsApp de uso mixto, junto con un mecanismo de captura de mensajes en ráfaga.
+> Requisitos funcionales:
+> 1. **Filtro de Grupos:** Descarta inmediatamente cualquier mensaje entrante originado en grupos (`msg.from.endsWith('@g.us')`). El bot solo opera en chats directos individuales.
+> 2. **Manejo de Ráfagas (Debounce):** Al recibir un mensaje en un chat inactivo, espera una ventana de 8 a 10 segundos antes de invocar a Gemini. Si el remitente envía mensajes adicionales dentro de ese intervalo, acumúlalos y envíalos concatenados como un solo bloque de texto.
+> 3. **Clasificación Semántica en Gemini:** En el prompt del sistema, entrena al modelo con las siguientes pautas:
+> * Si el mensaje contiene lenguaje inequívocamente familiar, doméstico, afectivo o ajeno al negocio (ej. 'Hijo, la bendición', 'Amor, ¿ya vienes?', 'Tío, llámeme'): Gemini **no debe generar texto de respuesta** y debe emitir únicamente la directiva `[MARCAR_PERSONAL: MOTIVO]`.
+> * Si el mensaje es un saludo formal, neutro o ambiguo (ej. 'Hola, ¿cómo estás?'): Gemini debe responder cordialmente en su rol comercial presentándose y preguntando en qué puede colaborar al cliente.
+> 
+> 
+> 4. **Persistencia del Silenciado:** Al interceptar la directiva `[MARCAR_PERSONAL]`:
+> * Registra en la base de datos el remitente con el estado `es_personal: true`.
+> * No envíes ningún mensaje de respuesta a WhatsApp.
+> * Cancela de forma permanente llamadas futuras a la API para ese número telefónico, delegando la conversación 100% al usuario humano.
+> 
+> 
+> 5. **Reactivación Manual:** En la sección de conversaciones del panel web, agrega una vista de 'Chats Silenciados / Personales' con un botón de 'Reactivar Bot' por si el usuario necesita reintegrar al flujo comercial a un contacto clasificado erróneamente."
+> 
+>

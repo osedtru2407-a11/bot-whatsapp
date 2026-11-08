@@ -1,7 +1,7 @@
 // frontend/src/stores/ui.js
 import { writable } from 'svelte/store';
 
-export const activeTab = writable('tab-rules');
+export const activeTab = writable('tab-library');
 export const isProfileModalOpen = writable(false);
 export const isChangePasswordModalOpen = writable(false);
 export const quickSendInitialPhone = writable('');

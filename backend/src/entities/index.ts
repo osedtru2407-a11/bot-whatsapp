@@ -12,3 +12,5 @@ export * from './contact-group.entity';
 export * from './lead-group-member.entity';
 export * from './contact.entity';
 export * from './password-reset.entity';
+export * from './product.entity';
+export * from './promotion.entity';

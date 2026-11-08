@@ -45,7 +45,33 @@
       </div>
     {/if}
 
-    <!-- Grupo 1: Operación & Mensajes -->
+    <!-- Grupo 1: Mi Negocio (Primer ítem en el menú) -->
+    {#if $hasPermission('library:view')}
+      <div class="nav-section">
+        {#if !$isSidebarCollapsed}
+          <span class="nav-section-title">Tu Negocio</span>
+        {/if}
+
+        <button 
+          type="button" 
+          class="sidebar-nav-item {$activeTab === 'tab-library' ? 'active' : ''}" 
+          onclick={() => setTab('tab-library')}
+          title="Mi negocio (Indicaciones, Catálogo y Promociones)"
+        >
+          <div class="nav-icon-box business-icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          {#if !$isSidebarCollapsed}
+            <span class="nav-label">Mi negocio</span>
+          {/if}
+        </button>
+      </div>
+    {/if}
+
+    <!-- Grupo 2: Operación & Mensajes -->
     <div class="nav-section">
       {#if !$isSidebarCollapsed}
         <span class="nav-section-title">Comunicación & Ventas</span>
@@ -160,36 +186,7 @@
       {/if}
     </div>
 
-    <!-- Grupo 3: Inteligencia Artificial -->
-    <div class="nav-section">
-      {#if !$isSidebarCollapsed}
-        <span class="nav-section-title">Inteligencia Artificial</span>
-      {/if}
 
-      {#if $hasPermission('library:view')}
-        <button 
-          type="button" 
-          class="sidebar-nav-item {$activeTab === 'tab-library' ? 'active' : ''}" 
-          onclick={() => setTab('tab-library')}
-          title="Biblioteca de Conocimiento de la IA"
-        >
-          <div class="nav-icon-box">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-          </div>
-          {#if !$isSidebarCollapsed}
-            <span class="nav-label">Biblioteca IA</span>
-            {#if ($libraryStats.activeDocuments || 0) > 0}
-              <span class="sidebar-badge library">{$libraryStats.activeDocuments}</span>
-            {/if}
-          {:else if ($libraryStats.activeDocuments || 0) > 0}
-            <span class="collapsed-dot library" title={`${$libraryStats.activeDocuments} docs activos`}></span>
-          {/if}
-        </button>
-      {/if}
-    </div>
 
     <!-- Grupo 4: Configuración & Equipo -->
     <div class="nav-section">
@@ -433,10 +430,6 @@
     background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
   }
-  .sidebar-badge.library {
-    background: rgba(168, 85, 247, 0.2);
-    color: #c084fc;
-  }
   .sidebar-badge.team {
     background: rgba(16, 185, 129, 0.2);
     color: #34d399;
@@ -548,7 +541,6 @@
     border-radius: 50%;
   }
   .collapsed-dot.schedules { background: #38bdf8; }
-  .collapsed-dot.library { background: #c084fc; }
   .collapsed-dot.team { background: #34d399; }
   .collapsed-dot.superadmin-dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 

@@ -9,6 +9,8 @@ import { Lead } from '../../entities/lead.entity';
 import { Schedule } from '../../entities/schedule.entity';
 import { Message } from '../../entities/message.entity';
 import { LibraryDocument } from '../../entities/library-document.entity';
+import { Product } from '../../entities/product.entity';
+import { Promotion } from '../../entities/promotion.entity';
 import { RulesModule } from '../rules/rules.module';
 import { AiAgentModule } from '../ai-agent/ai-agent.module';
 
@@ -22,6 +24,8 @@ import { AiAgentModule } from '../ai-agent/ai-agent.module';
       Schedule,
       Message,
       LibraryDocument,
+      Product,
+      Promotion,
     ]),
     forwardRef(() => RulesModule),
     forwardRef(() => AiAgentModule),

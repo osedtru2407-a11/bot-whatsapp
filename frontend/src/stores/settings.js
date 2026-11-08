@@ -10,6 +10,10 @@ export const settings = writable({
   typingDelaySeconds: 2,
   ignoreGroups: true,
   fallbackMessage: '',
+  botTone: '',
+  businessInfo: '',
+  faqText: '',
+  neverDo: '',
   geminiApiKeyMasked: null,
   isCustomGeminiKey: false,
   geminiModel: 'gemini-3.5-flash-lite'
@@ -34,6 +38,10 @@ export async function loadSettings() {
       typingDelaySeconds: data.typingDelaySeconds || 2,
       ignoreGroups: data.ignoreGroups ?? true,
       fallbackMessage: data.fallbackMessage || '',
+      botTone: data.botTone || '',
+      businessInfo: data.businessInfo || '',
+      faqText: data.faqText || '',
+      neverDo: data.neverDo || '',
       geminiApiKeyMasked: data.geminiApiKeyMasked || null,
       isCustomGeminiKey: data.isCustomGeminiKey ?? false,
       geminiModel: data.geminiModel || 'gemini-3.5-flash-lite'

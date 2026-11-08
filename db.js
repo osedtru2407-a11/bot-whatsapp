@@ -279,6 +279,43 @@ async function initDb() {
             );
         `);
 
+        // 10.1 Tabla de Productos del Catálogo
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS products (
+                id VARCHAR(100) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                code VARCHAR(100) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                price VARCHAR(100),
+                observations TEXT,
+                is_available BOOLEAN DEFAULT TRUE,
+                images JSONB DEFAULT '[]'::jsonb,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                CONSTRAINT uq_company_product_code UNIQUE (company_id, code)
+            );
+        `);
+
+        // 10.2 Tabla de Campañas y Promociones Temporales (Tarea 5)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS promotions (
+                id VARCHAR(100) PRIMARY KEY,
+                company_id VARCHAR(100) NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                original_filename VARCHAR(255),
+                content TEXT NOT NULL,
+                start_date DATE NOT NULL,
+                end_date DATE NOT NULL,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_promotions_company ON promotions(company_id);
+            CREATE INDEX IF NOT EXISTS idx_promotions_dates ON promotions(company_id, start_date, end_date);
+        `);
+
         // 11. Grupos Personalizados de Difusión
         await client.query(`
             CREATE TABLE IF NOT EXISTS contact_groups (
@@ -360,6 +397,10 @@ async function initDb() {
         await client.query(`
             ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS gemini_api_key TEXT;
             ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS gemini_model VARCHAR(100) DEFAULT 'gemini-3.5-flash-lite';
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS bot_tone TEXT;
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS business_info TEXT;
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS faq_text TEXT;
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS never_do TEXT;
             UPDATE company_settings SET gemini_model = 'gemini-3.5-flash-lite' WHERE gemini_model = 'gemini-2.5-flash' OR gemini_model IS NULL;
         `);
 
@@ -551,9 +592,23 @@ async function initDb() {
     }
 }
 
+async function getCompanyProducts(companyId) {
+    try {
+        const res = await pool.query(
+            'SELECT * FROM products WHERE company_id = $1 ORDER BY code ASC',
+            [companyId]
+        );
+        return res.rows || [];
+    } catch (err) {
+        console.warn(`Aviso consultando productos de empresa ${companyId}: ${err.message}`);
+        return [];
+    }
+}
+
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
     initDb,
+    getCompanyProducts,
     DEFAULT_SYSTEM_ROLES,
 };

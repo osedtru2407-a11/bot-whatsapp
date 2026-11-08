@@ -22,6 +22,8 @@ import { Lead } from '../../entities/lead.entity';
 import { Message } from '../../entities/message.entity';
 import { Rule } from '../../entities/rule.entity';
 import { LibraryDocument } from '../../entities/library-document.entity';
+import { Product } from '../../entities/product.entity';
+import { Promotion } from '../../entities/promotion.entity';
 import { RulesService } from '../rules/rules.service';
 import { GeminiService } from '../ai-agent/gemini.service';
 
@@ -57,6 +59,10 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     private readonly ruleRepository: Repository<Rule>,
     @InjectRepository(LibraryDocument)
     private readonly libraryRepository: Repository<LibraryDocument>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    @InjectRepository(Promotion)
+    private readonly promotionRepository: Repository<Promotion>,
     @Inject(forwardRef(() => RulesService))
     private readonly rulesService: RulesService,
     @Inject(forwardRef(() => GeminiService))
@@ -77,13 +83,28 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     }
     this.authDir = resolvedAuth;
 
+    const candidateRoots = [
+      process.cwd(),
+      path.resolve(process.cwd(), '..'),
+      path.resolve(__dirname, '..', '..', '..'),
+      path.resolve(__dirname, '..', '..'),
+    ];
+    const rootDir =
+      candidateRoots.find(
+        (dir) =>
+          fs.existsSync(path.join(dir, 'server.js')) ||
+          fs.existsSync(path.join(dir, 'pendientes.txt')) ||
+          fs.existsSync(path.join(dir, 'public')),
+      ) || process.cwd();
+
     const potentialUploads = [
       process.env.UPLOADS_DIR,
-      path.resolve(process.cwd(), 'public', 'uploads'),
+      path.resolve(rootDir, 'public', 'uploads'),
       path.resolve(process.cwd(), '..', 'public', 'uploads'),
+      path.resolve(process.cwd(), 'public', 'uploads'),
     ].filter(Boolean) as string[];
 
-    let resolvedUploads = path.resolve(process.cwd(), 'public', 'uploads');
+    let resolvedUploads = path.resolve(rootDir, 'public', 'uploads');
     for (const p of potentialUploads) {
       if (fs.existsSync(p)) {
         resolvedUploads = p;
@@ -450,6 +471,101 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
         };
       }
 
+  /**
+   * Tarea 8: Despacho inteligente y secuencial de fotografías de producto por WhatsApp
+   */
+  async sendProductPhotos(companyId: string, phone: string, productCode: string): Promise<number> {
+    const holder = this.companyClients.get(companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+      this.logger.warn(`Cliente WhatsApp no está listo para enviar fotos a ${phone}`);
+      return 0;
+    }
+
+    const { chatId, cleanDigits } = this.resolveChatId(phone);
+    if (!chatId) return 0;
+
+    // Buscar producto por código insensible a mayúsculas
+    const allProducts = await this.productRepository.find({ where: { companyId } });
+    const product = allProducts.find(
+      (p) => p.code.trim().toUpperCase() === productCode.trim().toUpperCase(),
+    );
+
+    if (!product || !Array.isArray(product.images) || product.images.length === 0) {
+      this.logger.log(`No hay fotografías registradas en base de datos para el código "${productCode}"`);
+      return 0;
+    }
+
+    this.logger.log(
+      `📸 Despachando ${product.images.length} foto(s) secuenciales de "${product.name}" (${product.code}) a ${cleanDigits || phone}`,
+    );
+
+    let sentCount = 0;
+    for (let i = 0; i < product.images.length; i++) {
+      const imgUrl = product.images[i];
+      try {
+        let mediaInstance: any = null;
+        const relPath = imgUrl.startsWith('/') ? imgUrl.slice(1) : imgUrl;
+        const fullPath = path.resolve(this.uploadsDir, '..', relPath);
+
+        if (fs.existsSync(fullPath)) {
+          mediaInstance = MessageMedia.fromFilePath(fullPath);
+        } else if (imgUrl.startsWith('http')) {
+          mediaInstance = await MessageMedia.fromUrl(imgUrl);
+        }
+
+        if (mediaInstance) {
+          // Pausa breve entre fotos para garantizar orden secuencial en WhatsApp
+          if (i > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+          }
+
+          const caption = i === 0 ? `📷 ${product.name} (${product.code})` : undefined;
+          const result = await holder.client.sendMessage(chatId, mediaInstance, { caption });
+
+          const msgSerializedId = result?.id?._serialized || null;
+          const textCaption = caption || `📷 Foto de ${product.name}`;
+
+          await this.saveMessage(
+            companyId,
+            cleanDigits || phone,
+            true,
+            textCaption,
+            imgUrl,
+            'image/jpeg',
+            'image',
+            msgSerializedId,
+          );
+
+          this.broadcastChatMessage(companyId, cleanDigits || phone, {
+            id: msgSerializedId || `photo_${Date.now()}_${i}`,
+            fromMe: true,
+            body: textCaption,
+            timestamp: Date.now(),
+            type: 'image',
+            hasMedia: true,
+            mediaUrl: imgUrl,
+          });
+
+          sentCount++;
+        } else {
+          this.logger.warn(`No se pudo resolver archivo de imagen para: ${imgUrl}`);
+        }
+      } catch (err: any) {
+        this.logger.error(`Error enviando foto ${i + 1} de ${product.code}: ${err?.message}`);
+      }
+    }
+
+    if (sentCount > 0) {
+      await this.updateLeadLastMessage(
+        companyId,
+        cleanDigits || phone,
+        `📷 [${sentCount} fotos enviadas: ${product.name}]`,
+      );
+    }
+
+    return sentCount;
+  }
+
   private async handleIncomingMessage(companyId: string, msg: any) {
     const settings = await this.companySettingRepository.findOne({ where: { companyId } });
     if (!settings || !settings.botEnabled) return;
@@ -600,6 +716,18 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     if (settings.geminiEnabled && this.geminiService.isConfigured(settings.geminiApiKey)) {
       try {
         const docs = await this.libraryRepository.find({ where: { companyId, active: true } });
+        const catalogProducts = await this.productRepository.find({ where: { companyId } });
+        const todayStr = new Date().toISOString().split('T')[0];
+        const activePromotions = await this.promotionRepository
+          .createQueryBuilder('p')
+          .where('p.company_id = :companyId', { companyId })
+          .andWhere('p.is_active = :isActive', { isActive: true })
+          .andWhere('p.start_date <= :today', { today: todayStr })
+          .andWhere('p.end_date >= :today', { today: todayStr })
+          .orderBy('p.start_date', 'ASC')
+          .take(2)
+          .getMany();
+
         const reply = await this.geminiService.sendMessage(
           senderPhone,
           displayMsg,
@@ -607,15 +735,46 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
           docs,
           settings.geminiApiKey,
           settings.geminiModel,
+          {
+            botTone: settings.botTone,
+            businessInfo: settings.businessInfo,
+            faqText: settings.faqText,
+            neverDo: settings.neverDo,
+          },
+          catalogProducts,
+          activePromotions,
         );
 
         if (reply) {
           this.logger.log(`🤖 [Empresa ${companyId}] Respuesta generada por Gemini IA para ${senderPhone}`);
+
+          // Tarea 8: Interceptar directiva [ENVIAR_FOTOS: CODIGO_PRODUCTO] mediante expresión regular
+          const photoDirectiveRegex = /\[ENVIAR_FOTOS:\s*([A-Za-z0-9_\-\.]+)\s*\]/gi;
+          const photoMatches = [...reply.matchAll(photoDirectiveRegex)];
+
+          // Limpiar la directiva del texto visible que recibe el cliente
+          const cleanTextReply = reply.replace(photoDirectiveRegex, '').trim();
+
           const typingDelay = (settings.simulateTyping && settings.typingDelaySeconds ? settings.typingDelaySeconds : 0) * 1000;
           if (typingDelay > 0) {
             await new Promise((r) => setTimeout(r, Math.min(typingDelay, 4000)));
           }
-          await this.sendMessage(companyId, senderPhone, reply);
+
+          // Enviar primero la respuesta de texto limpio
+          if (cleanTextReply) {
+            await this.sendMessage(companyId, senderPhone, cleanTextReply);
+          }
+
+          // Inmediatamente después, si hubo solicitud de fotos, despacharlas secuencialmente usando MessageMedia
+          if (photoMatches.length > 0) {
+            for (const match of photoMatches) {
+              const productCode = match[1]?.trim();
+              if (productCode) {
+                await this.sendProductPhotos(companyId, senderPhone, productCode);
+              }
+            }
+          }
+
           return;
         }
       } catch (err: any) {

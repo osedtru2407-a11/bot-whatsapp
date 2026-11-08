@@ -35,17 +35,32 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Resolver directorios estáticos de forma resiliente
-  const rootDir = fs.existsSync(path.resolve(process.cwd(), 'public'))
-    ? process.cwd()
-    : path.resolve(__dirname, '..', '..');
+  // Resolver directorios estáticos de forma resiliente apuntando a la raíz del proyecto
+  const candidateRoots = [
+    process.cwd(),
+    path.resolve(process.cwd(), '..'),
+    path.resolve(__dirname, '..', '..'),
+    path.resolve(__dirname, '..', '..', '..'),
+  ];
+  const rootDir =
+    candidateRoots.find(
+      (dir) =>
+        fs.existsSync(path.join(dir, 'server.js')) ||
+        fs.existsSync(path.join(dir, 'pendientes.txt')) ||
+        fs.existsSync(path.join(dir, 'public', 'index.html')),
+    ) || process.cwd();
+
   const publicDir = path.resolve(rootDir, 'public');
   const uploadsDir = path.resolve(publicDir, 'uploads');
+
+  logger.log(`📁 Directorio raíz resuelto: ${rootDir}`);
+  logger.log(`📁 Directorio público resuelto: ${publicDir} (index.html: ${fs.existsSync(path.join(publicDir, 'index.html'))})`);
+  logger.log(`📁 Directorio uploads resuelto: ${uploadsDir}`);
 
   app.use('/uploads', expressStatic(uploadsDir));
   app.use(expressStatic(publicDir));
 
-  // Fallback SPA (Single Page Application): para que refrescar rutas del frontend no dé 404
+  // Fallback SPA (Single Page Application): para que refrescar rutas o entrar a '/' sirva siempre index.html
   app.use((req: any, res: any, next: any) => {
     if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
       const indexPath = path.join(publicDir, 'index.html');

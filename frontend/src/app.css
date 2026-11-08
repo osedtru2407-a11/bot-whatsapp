@@ -818,6 +818,7 @@ input[type="password"],
 input[type="search"],
 input[type="number"],
 input[type="datetime-local"],
+input[type="date"],
 select,
 textarea {
   width: 100%;
@@ -830,6 +831,7 @@ textarea {
   border-radius: var(--radius-md);
   outline: none;
   transition: all 0.2s ease;
+  color-scheme: dark;
 }
 
 input:focus,

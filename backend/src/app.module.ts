@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AppController } from './app.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
@@ -11,6 +12,8 @@ import { ContactsModule } from './modules/contacts/contacts.module';
 import { AiAgentModule } from './modules/ai-agent/ai-agent.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MailModule } from './modules/mail/mail.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
+import { PromotionsModule } from './modules/promotions/promotions.module';
 
 @Module({
     imports: [
@@ -29,6 +32,9 @@ import { MailModule } from './modules/mail/mail.module';
         ContactsModule,
         AiAgentModule,
         SchedulerModule,
+        CatalogModule,
+        PromotionsModule,
     ],
+    controllers: [AppController],
 })
 export class AppModule {}

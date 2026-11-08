@@ -145,7 +145,13 @@ export const api = {
             method: 'PUT',
             body: body instanceof FormData ? body : JSON.stringify(body),
         }),
-    delete: (url, options) => apiRequest(url, { ...options, method: 'DELETE' }),
+    delete: (url, body, options) => {
+        const opts = options || {};
+        if (body && !(body instanceof Event)) {
+            opts.body = body instanceof FormData ? body : JSON.stringify(body);
+        }
+        return apiRequest(url, { ...opts, method: 'DELETE' });
+    },
     upload: async (file, category = 'rules') => {
         if (file.size > 50 * 1024 * 1024) {
             throw new Error(

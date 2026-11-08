@@ -245,6 +245,10 @@ export class AiAgentController {
     if (body.typingDelaySeconds !== undefined) s.typingDelaySeconds = parseInt(body.typingDelaySeconds, 10) || 2;
     if (body.ignoreGroups !== undefined) s.ignoreGroups = Boolean(body.ignoreGroups);
     if (body.fallbackMessage !== undefined) s.fallbackMessage = body.fallbackMessage;
+    if (body.botTone !== undefined) s.botTone = body.botTone;
+    if (body.businessInfo !== undefined) s.businessInfo = body.businessInfo;
+    if (body.faqText !== undefined) s.faqText = body.faqText;
+    if (body.neverDo !== undefined) s.neverDo = body.neverDo;
     if (body.businessName !== undefined) {
       s.businessName = body.businessName;
       await this.companyRepository.update(companyId, { name: body.businessName });

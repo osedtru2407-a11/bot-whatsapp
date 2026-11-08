@@ -415,6 +415,16 @@ function initCompanyWhatsAppClient(companyId) {
         try {
             // Detectar mensajes enviados desde el teléfono físico u otro cliente WhatsApp
             if (msg.fromMe) {
+                // Ignorar mensajes salientes antiguos sincronizados al reconectar
+                if (msg.timestamp) {
+                    const msgTimeSec =
+                        msg.timestamp > 1e11
+                            ? Math.floor(msg.timestamp / 1000)
+                            : msg.timestamp;
+                    const nowSec = Math.floor(Date.now() / 1000);
+                    if (nowSec - msgTimeSec > 120) return;
+                }
+
                 const toId = msg.to || '';
                 const recipientPhone = toId
                     .replace('@c.us', '')
@@ -644,6 +654,23 @@ async function handleIncomingMessage(companyId, msg) {
 
     const senderPhone = fromId.replace('@c.us', '').replace('@g.us', '');
     if (!senderPhone || senderPhone === 'status@broadcast') return;
+
+    // Ignorar mensajes antiguos sincronizados al reconectar o con más de 2 minutos (120s) de antigüedad
+    if (msg.timestamp) {
+        const msgTimeSec =
+            msg.timestamp > 1e11
+                ? Math.floor(msg.timestamp / 1000)
+                : msg.timestamp;
+        const nowSec = Math.floor(Date.now() / 1000);
+        const ageSec = nowSec - msgTimeSec;
+        if (ageSec > 120) {
+            console.log(
+                `[${company.name}] ⏩ Mensaje antiguo ignorado de ${senderPhone} (antigüedad: ${ageSec}s)`,
+            );
+            return;
+        }
+    }
+
     const cleanText = getCleanCaption(msg.body);
     const text = cleanText.toLowerCase();
 
@@ -930,6 +957,11 @@ async function handleIncomingMessage(companyId, msg) {
 
             // Sesión de Gemini aislada por empresa y remitente
             const sessionKey = `${companyId}_${senderPhone}`;
+            let catalogProducts = [];
+            try {
+                catalogProducts = await db.getCompanyProducts(companyId);
+            } catch (e) {}
+
             const aiReply = await geminiService.sendMessage(
                 sessionKey,
                 geminiInput,
@@ -937,6 +969,7 @@ async function handleIncomingMessage(companyId, msg) {
                 company.library || [],
                 company.settings.geminiApiKey,
                 company.settings.geminiModel,
+                catalogProducts,
             );
 
             if (chat) {
@@ -946,35 +979,52 @@ async function handleIncomingMessage(companyId, msg) {
             }
 
             if (aiReply) {
-                await msg.reply(aiReply);
-                console.log(
-                    `[${company.name}] ✅ Respuesta de Gemini enviada a ${senderPhone}`,
-                );
-                dataStore.saveMessageInDb(
-                    companyId,
-                    senderPhone,
-                    true,
-                    aiReply,
-                    null,
-                    null,
-                    'chat',
-                );
-                broadcastChatMessage(companyId, senderPhone, {
-                    id: `gemini_${Date.now()}`,
-                    fromMe: true,
-                    body: aiReply,
-                    timestamp: Date.now(),
-                    type: 'chat',
-                    hasMedia: false,
-                });
+                // Tarea 8: Interceptar directiva [ENVIAR_FOTOS: CODIGO_PRODUCTO] mediante expresión regular
+                const photoDirectiveRegex = /\[ENVIAR_FOTOS:\s*([A-Za-z0-9_\-\.]+)\s*\]/gi;
+                const photoMatches = [...aiReply.matchAll(photoDirectiveRegex)];
+                const cleanReply = aiReply.replace(photoDirectiveRegex, '').trim();
 
-                if (lead) {
-                    lead.lastMessage = isAudioMsg
-                        ? `🎤 [Nota de voz]: "${aiReply.replace(/\n/g, ' ').slice(0, 70)}..."`
-                        : aiReply.replace(/\n/g, ' ').slice(0, 70);
-                    lead.lastInteraction = new Date().toISOString();
-                    lead.lastSentRuleId = 'gemini';
-                    persistLead(companyId, lead);
+                if (cleanReply) {
+                    await msg.reply(cleanReply);
+                    console.log(
+                        `[${company.name}] ✅ Respuesta de Gemini enviada a ${senderPhone}`,
+                    );
+                    dataStore.saveMessageInDb(
+                        companyId,
+                        senderPhone,
+                        true,
+                        cleanReply,
+                        null,
+                        null,
+                        'chat',
+                    );
+                    broadcastChatMessage(companyId, senderPhone, {
+                        id: `gemini_${Date.now()}`,
+                        fromMe: true,
+                        body: cleanReply,
+                        timestamp: Date.now(),
+                        type: 'chat',
+                        hasMedia: false,
+                    });
+
+                    if (lead) {
+                        lead.lastMessage = isAudioMsg
+                            ? `🎤 [Nota de voz]: "${cleanReply.replace(/\n/g, ' ').slice(0, 70)}..."`
+                            : cleanReply.replace(/\n/g, ' ').slice(0, 70);
+                        lead.lastInteraction = new Date().toISOString();
+                        lead.lastSentRuleId = 'gemini';
+                        persistLead(companyId, lead);
+                    }
+                }
+
+                // Tarea 8: Despachar secuencialmente las fotos usando MessageMedia
+                if (photoMatches.length > 0) {
+                    for (const match of photoMatches) {
+                        const productCode = match[1]?.trim();
+                        if (productCode) {
+                            await sendProductPhotosHelper(companyId, senderPhone, productCode, clientInstance);
+                        }
+                    }
                 }
             }
         } catch (geminiErr) {
@@ -1110,6 +1160,82 @@ async function sendRuleResponse(companyId, msg, rule) {
             type: 'chat',
             hasMedia: false,
         });
+    }
+}
+
+/**
+ * Tarea 8: Despacho inteligente y secuencial de fotografías de producto por WhatsApp
+ */
+async function sendProductPhotosHelper(companyId, phone, productCode, clientInstance) {
+    try {
+        const products = await db.getCompanyProducts(companyId);
+        const product = products.find(
+            (p) => (p.code || '').trim().toUpperCase() === productCode.trim().toUpperCase()
+        );
+        if (!product || !Array.isArray(product.images) || product.images.length === 0) {
+            console.log(`[${companyId}] No hay fotos registradas para el código "${productCode}"`);
+            return 0;
+        }
+
+        const cleanDigits = phone.replace(/\D/g, '');
+        const chatId = phone.includes('@') ? phone : `${cleanDigits}@c.us`;
+
+        console.log(
+            `📸 [${companyId}] Despachando ${product.images.length} fotos secuenciales para "${product.name}" (${product.code}) a ${chatId}`
+        );
+
+        let sentCount = 0;
+        for (let i = 0; i < product.images.length; i++) {
+            const imgUrl = product.images[i];
+            try {
+                let mediaInstance = null;
+                const relPath = imgUrl.startsWith('/') ? imgUrl.slice(1) : imgUrl;
+                const fullPath = path.resolve(__dirname, 'public', relPath);
+
+                if (fs.existsSync(fullPath)) {
+                    mediaInstance = MessageMedia.fromFilePath(fullPath);
+                } else if (imgUrl.startsWith('http')) {
+                    mediaInstance = await MessageMedia.fromUrl(imgUrl).catch(() => null);
+                }
+
+                if (mediaInstance && clientInstance) {
+                    if (i > 0) {
+                        await new Promise((resolve) => setTimeout(resolve, 600));
+                    }
+                    const caption = i === 0 ? `📷 ${product.name} (${product.code})` : undefined;
+                    await clientInstance.sendMessage(chatId, mediaInstance, { caption });
+
+                    const textCaption = caption || `📷 Foto de ${product.name}`;
+                    dataStore.saveMessageInDb(
+                        companyId,
+                        cleanDigits,
+                        true,
+                        textCaption,
+                        imgUrl,
+                        'image/jpeg',
+                        'image'
+                    );
+
+                    broadcastChatMessage(companyId, cleanDigits, {
+                        id: `photo_${Date.now()}_${i}`,
+                        fromMe: true,
+                        body: textCaption,
+                        timestamp: Date.now(),
+                        type: 'image',
+                        hasMedia: true,
+                        mediaUrl: imgUrl,
+                    });
+
+                    sentCount++;
+                }
+            } catch (err) {
+                console.error(`[${companyId}] Error enviando foto ${i + 1} de ${product.code}:`, err.message);
+            }
+        }
+        return sentCount;
+    } catch (err) {
+        console.error(`[${companyId}] Error en sendProductPhotosHelper:`, err.message);
+        return 0;
     }
 }
 
