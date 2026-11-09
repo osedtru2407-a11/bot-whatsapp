@@ -43,6 +43,7 @@
     import InviteUserModal from './components/team/InviteUserModal.svelte';
     import EditRoleModal from './components/team/EditRoleModal.svelte';
     import CustomRoleModal from './components/team/CustomRoleModal.svelte';
+    import SaleAlertToasts from './components/leads/SaleAlertToasts.svelte';
 
     // Tab Content Modules
     import RulesTab from './components/rules/RulesTab.svelte';
@@ -181,6 +182,7 @@
         <InviteUserModal />
         <EditRoleModal />
         <CustomRoleModal />
+        <SaleAlertToasts />
 
         <ToastContainer />
     </div>

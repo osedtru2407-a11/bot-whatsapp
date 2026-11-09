@@ -8,6 +8,7 @@
     loadChatHistory, 
     sendChatMessage, 
     togglePauseLead,
+    reactivateBotLead,
     closeLeadChat
   } from '../../stores/leads';
   import { hasPermission } from '../../stores/auth';
@@ -97,9 +98,13 @@
     <!-- Barra de contexto y controles rápidos -->
     <div class="chat-context-bar">
         <div class="chat-status-info">
-            {#if $selectedChatLead?.humanPaused}
+            {#if $selectedChatLead?.isPersonal}
+                <span class="status-pill personal" title={$selectedChatLead.personalReason || 'Clasificado como personal'}>
+                    🛡️ Chat Silenciado (Personal)
+                </span>
+            {:else if $selectedChatLead?.humanPaused}
                 <span class="status-pill paused"
-                    >🛑 Bot Pausado (Atención Humana)</span
+                    >{$selectedChatLead.tag === 'Venta Pendiente' ? '🚨 Bot Pausado (Venta Pendiente - 120m)' : '🛑 Bot Pausado (Atención Humana)'}</span
                 >
             {:else}
                 <span class="status-pill active"
@@ -124,7 +129,16 @@
         </div>
 
         <div class="chat-header-actions">
-            {#if $hasPermission('leads:pause') && $selectedChatLead?.phone}
+            {#if $selectedChatLead?.isPersonal}
+                <button
+                    type="button"
+                    class="btn-mini-reactivate"
+                    onclick={() => reactivateBotLead($selectedChatLead.phone)}
+                    title="Reactivar el bot para este contacto y permitirle responder"
+                >
+                    🤖 Reactivar Bot
+                </button>
+            {:else if $hasPermission('leads:pause') && $selectedChatLead?.phone}
                 <button
                     type="button"
                     class="btn-mini-toggle"
@@ -149,6 +163,23 @@
             </button>
         </div>
     </div>
+
+    {#if $selectedChatLead?.isPersonal}
+        <div class="personal-notice-banner">
+            <span class="personal-notice-icon">🛡️</span>
+            <div class="personal-notice-content">
+                <strong>Chat Silenciado (Personal / Familiar):</strong>
+                <span>{$selectedChatLead.personalReason ? `Detectado: "${$selectedChatLead.personalReason}".` : 'Clasificado como lenguaje familiar o personal.'} El bot no enviará mensajes automáticos en este chat para no interferir con tu privacidad.</span>
+            </div>
+            <button
+                type="button"
+                class="btn-reactivate-mini"
+                onclick={() => reactivateBotLead($selectedChatLead.phone)}
+            >
+                🤖 Reactivar Bot
+            </button>
+        </div>
+    {/if}
 
     <!-- Contenedor estilo WhatsApp Web -->
     <div class="chat-viewport" bind:this={messagesContainer}>
@@ -323,6 +354,11 @@
         color: #fb7185;
         border: 1px solid rgba(244, 63, 94, 0.3);
     }
+    .status-pill.personal {
+        background: rgba(239, 68, 68, 0.18);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
     .status-pill.live {
         background: rgba(56, 189, 248, 0.15);
         color: #38bdf8;
@@ -378,6 +414,62 @@
     .btn-mini-toggle:hover {
         background: var(--bg-hover);
         border-color: #38bdf8;
+    }
+
+    .btn-mini-reactivate {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.4);
+        color: #4ade80;
+        font-size: 0.76rem;
+        padding: 5px 11px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-mini-reactivate:hover {
+        background: rgba(34, 197, 94, 0.25);
+        border-color: #4ade80;
+    }
+
+    .personal-notice-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.28);
+        border-radius: var(--radius-md);
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        font-size: 0.83rem;
+        color: #fca5a5;
+    }
+    .personal-notice-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .personal-notice-content {
+        flex: 1;
+        line-height: 1.35;
+    }
+    .personal-notice-content strong {
+        color: #fecaca;
+        margin-right: 4px;
+    }
+    .btn-reactivate-mini {
+        background: #166534;
+        border: 1px solid #22c55e;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    .btn-reactivate-mini:hover {
+        background: #15803d;
     }
 
     .btn-mini-refresh {

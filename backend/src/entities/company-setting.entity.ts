@@ -32,6 +32,9 @@ export class CompanySetting {
   @Column({ name: 'ignore_groups', type: 'boolean', default: true })
   ignoreGroups: boolean;
 
+  @Column({ name: 'phone_usage_type', type: 'varchar', length: 50, default: 'business_only' })
+  phoneUsageType: string;
+
   @Column({ name: 'fallback_message', type: 'text', nullable: true })
   fallbackMessage: string;
 

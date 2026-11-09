@@ -203,6 +203,12 @@ export class AiAgentController {
     @Headers('x-company-id') headerCompId?: string,
   ) {
     const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    try {
+      await this.companySettingRepository.query(
+        `ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS phone_usage_type VARCHAR(50) DEFAULT 'business_only';`,
+      );
+    } catch (e) {}
+
     let s = await this.companySettingRepository.findOne({ where: { companyId } });
     if (!s) {
       s = this.companySettingRepository.create({ companyId });
@@ -215,8 +221,12 @@ export class AiAgentController {
         : '******'
       : null;
 
+    const resolvedUsage = s.phoneUsageType || 'business_only';
+
     return {
       ...s,
+      phoneUsageType: resolvedUsage,
+      phone_usage_type: resolvedUsage,
       geminiApiKeyMasked: maskedKey,
       isCustomGeminiKey: Boolean(s.geminiApiKey),
       canConfigureGemini: true,
@@ -230,6 +240,12 @@ export class AiAgentController {
     @Headers('x-company-id') headerCompId?: string,
   ) {
     const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    try {
+      await this.companySettingRepository.query(
+        `ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS phone_usage_type VARCHAR(50) DEFAULT 'business_only';`,
+      );
+    } catch (e) {}
+
     let s = await this.companySettingRepository.findOne({ where: { companyId } });
     if (!s) {
       s = this.companySettingRepository.create({ companyId });
@@ -245,6 +261,12 @@ export class AiAgentController {
     if (body.typingDelaySeconds !== undefined) s.typingDelaySeconds = parseInt(body.typingDelaySeconds, 10) || 2;
     if (body.ignoreGroups !== undefined) s.ignoreGroups = Boolean(body.ignoreGroups);
     if (body.fallbackMessage !== undefined) s.fallbackMessage = body.fallbackMessage;
+
+    const incomingUsage = body.phoneUsageType || body.phone_usage_type;
+    if (incomingUsage !== undefined) {
+      s.phoneUsageType = incomingUsage;
+    }
+
     if (body.botTone !== undefined) s.botTone = body.botTone;
     if (body.businessInfo !== undefined) s.businessInfo = body.businessInfo;
     if (body.faqText !== undefined) s.faqText = body.faqText;
@@ -263,8 +285,12 @@ export class AiAgentController {
         : '******'
       : null;
 
+    const resolvedUsage = s.phoneUsageType || 'business_only';
+
     return {
       ...s,
+      phoneUsageType: resolvedUsage,
+      phone_usage_type: resolvedUsage,
       geminiApiKeyMasked: maskedKey,
       isCustomGeminiKey: Boolean(s.geminiApiKey),
       canConfigureGemini: true,

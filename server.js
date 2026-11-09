@@ -180,6 +180,108 @@ const chatSSEClients = new Map();
 // Clientes SSE para eventos generales de la empresa (actualización en vivo de prospectos/CRM): Map<companyId, Set<res>>
 const companyEventsClients = new Map();
 
+// Mapeo en memoria de teléfono/LID a su chatId real en WhatsApp Web
+const chatTargetMap = new Map();
+
+/**
+ * Resuelve el número de teléfono real (E.164) y el chatId de WhatsApp para un remitente.
+ * Maneja tanto números estándar (@c.us) como identidades vinculadas (@lid).
+ */
+async function resolveContactIdentifier(client, rawFrom, msg) {
+    const raw = String(rawFrom || '').trim();
+    const isLid = raw.endsWith('@lid') || (raw.length >= 15 && !raw.includes('@'));
+    const cleanRawDigits = raw.replace(/\D/g, '');
+
+    // Si no es un LID y tiene formato telefónico estándar (7 a 14 dígitos)
+    if (!isLid && cleanRawDigits.length >= 7 && cleanRawDigits.length <= 14) {
+        return { realPhone: cleanRawDigits, chatId: `${cleanRawDigits}@c.us`, isLid: false };
+    }
+
+    const chatId = raw.endsWith('@lid') ? raw : `${raw}@lid`;
+    let resolvedPhone = null;
+
+    if (client) {
+        // 1. Intentar client.getContactLidAndPhone oficial de whatsapp-web.js
+        try {
+            if (typeof client.getContactLidAndPhone === 'function') {
+                const res = await client.getContactLidAndPhone([chatId]);
+                if (Array.isArray(res) && res.length > 0 && res[0]?.pn) {
+                    const candidate = String(res[0].pn).replace('@c.us', '').replace(/\D/g, '');
+                    if (candidate && candidate.length >= 7 && candidate.length <= 14 && candidate !== cleanRawDigits) {
+                        resolvedPhone = candidate;
+                    }
+                }
+            }
+        } catch (err) {
+            // Continuar
+        }
+
+        // 2. Intentar msg.getContact()
+        if (!resolvedPhone && msg && typeof msg.getContact === 'function') {
+            try {
+                const contact = await msg.getContact();
+                if (contact) {
+                    const num = contact.number ? String(contact.number).replace(/\D/g, '') : '';
+                    if (num && num.length >= 7 && num.length <= 14 && num !== cleanRawDigits) {
+                        resolvedPhone = num;
+                    } else if (contact.id && contact.id._serialized && contact.id._serialized.endsWith('@c.us')) {
+                        const fromIdUser = contact.id.user || contact.id._serialized.replace('@c.us', '').replace(/\D/g, '');
+                        if (fromIdUser && fromIdUser.length >= 7 && fromIdUser.length <= 14 && fromIdUser !== cleanRawDigits) {
+                            resolvedPhone = fromIdUser;
+                        }
+                    }
+                }
+            } catch (err) {
+                // Continuar
+            }
+        }
+
+        // 3. Fallback directo en Puppeteer con WAWebApiContact / enforceLidAndPnRetrieval
+        if (!resolvedPhone && client.pupPage && typeof client.pupPage.evaluate === 'function') {
+            try {
+                const evalResult = await client.pupPage.evaluate(async (targetLid) => {
+                    try {
+                        if (window.WWebJS && window.WWebJS.enforceLidAndPnRetrieval) {
+                            const res = await window.WWebJS.enforceLidAndPnRetrieval(targetLid);
+                            if (res && res.phone) {
+                                const pn = res.phone._serialized || res.phone.user || res.phone;
+                                return typeof pn === 'string' ? pn : null;
+                            }
+                        }
+                        const widFactory = window.require && window.require('WAWebWidFactory');
+                        const wid = widFactory ? widFactory.createWid(targetLid) : null;
+                        if (wid) {
+                            const apiContact = window.require && window.require('WAWebApiContact');
+                            if (apiContact) {
+                                const pn = apiContact.getPhoneNumber ? apiContact.getPhoneNumber(wid) : (apiContact.getAlternateUserWid ? apiContact.getAlternateUserWid(wid) : null);
+                                if (pn) return pn.user || pn._serialized || null;
+                            }
+                            const c = window.require && window.require('WAWebCollections') && window.require('WAWebCollections').Contact.get(wid);
+                            if (c && c.phoneNumber) {
+                                return typeof c.phoneNumber === 'string' ? c.phoneNumber : (c.phoneNumber.user || c.phoneNumber._serialized);
+                            }
+                        }
+                        return null;
+                    } catch (e) {
+                        return null;
+                    }
+                }, chatId);
+
+                if (evalResult) {
+                    const candidate = String(evalResult).replace('@c.us', '').replace(/\D/g, '');
+                    if (candidate && candidate.length >= 7 && candidate.length <= 14 && candidate !== cleanRawDigits) {
+                        resolvedPhone = candidate;
+                    }
+                }
+            } catch (err) {
+                // Continuar
+            }
+        }
+    }
+
+    return { realPhone: resolvedPhone, chatId, isLid: true };
+}
+
 function broadcastChatMessage(companyId, phone, messageData) {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     if (!cleanPhone) return;
@@ -630,6 +732,9 @@ function persistLead(companyId, lead) {
 // LÓGICA DE ATENCIÓN AUTOMÁTICA POR EMPRESA
 // =========================================================================
 
+// Tarea 11: Colas de ráfagas (Debounce de 8.5s) por remitente
+const serverDebounceQueues = new Map();
+
 async function handleIncomingMessage(companyId, msg) {
     const company = appData.companies.find((c) => c.id === companyId);
     if (!company) return;
@@ -650,9 +755,17 @@ async function handleIncomingMessage(companyId, msg) {
         return;
     }
 
-    if (company.settings.ignoreGroups && fromId.includes('@g.us')) return;
+    if (fromId.endsWith('@g.us') || fromId.includes('@g.us')) return;
 
-    const senderPhone = fromId.replace('@c.us', '').replace('@g.us', '');
+    const holder = companyClients.get(companyId);
+    const { realPhone, chatId } = await resolveContactIdentifier(holder?.client, fromId, msg);
+
+    if (realPhone) {
+        chatTargetMap.set(realPhone, chatId);
+    }
+    chatTargetMap.set(chatId, chatId);
+
+    const senderPhone = realPhone || fromId.replace('@c.us', '').replace('@g.us', '');
     if (!senderPhone || senderPhone === 'status@broadcast') return;
 
     // Ignorar mensajes antiguos sincronizados al reconectar o con más de 2 minutos (120s) de antigüedad
@@ -781,6 +894,12 @@ async function handleIncomingMessage(companyId, msg) {
     // 2. Buscar o registrar lead para esta empresa específica
     if (!company.leads) company.leads = [];
     let lead = company.leads.find((l) => l.phone === senderPhone);
+    if (!lead && realPhone && fromId !== senderPhone) {
+        lead = company.leads.find((l) => l.phone === fromId || l.phone === fromId.replace('@lid', ''));
+        if (lead) {
+            lead.phone = senderPhone;
+        }
+    }
     const isAudioMsg = Boolean(
         rawAudioMedia ||
         isAudioType ||
@@ -806,7 +925,7 @@ async function handleIncomingMessage(companyId, msg) {
                     c.phone.replace(/\D/g, '') === cleanSender),
         );
         const initialName =
-            savedContact?.name || msg._data?.notifyName || senderPhone;
+            savedContact?.name || msg._data?.notifyName || (realPhone ? `+${realPhone}` : senderPhone);
         lead = {
             phone: senderPhone,
             name: initialName,
@@ -823,9 +942,11 @@ async function handleIncomingMessage(companyId, msg) {
         };
         company.leads.unshift(lead);
     } else {
+        const previousInteraction = lead?.lastInteraction ? new Date(lead.lastInteraction).getTime() : 0;
+        const minutesSinceLastInteraction = previousInteraction > 0 ? (Date.now() - previousInteraction) / (1000 * 60) : 0;
         lead.lastMessage = displayMsg;
         lead.lastInteraction = new Date().toISOString();
-        if (msg._data?.notifyName && lead.name === senderPhone) {
+        if (msg._data?.notifyName && (lead.name === senderPhone || lead.name.includes('@lid') || lead.name.length >= 15)) {
             lead.name = msg._data.notifyName;
         }
     }
@@ -864,23 +985,102 @@ async function handleIncomingMessage(companyId, msg) {
     // Persistir y emitir actualización inmediata del prospecto en la lista de CRM
     persistLead(companyId, lead);
 
-    if (lead.humanPaused) {
+    // Tarea 11: Si el chat está silenciado como personal y el filtro personal está habilitado (uso mixto), no responder
+    if (lead.isPersonal && company.settings?.phoneUsageType === 'personal_and_business') {
         console.log(
-            `[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`,
+            `[${company.name}] 🛡️ Mensaje de ${senderPhone} silenciado (chat personal).`,
         );
         return;
     }
 
-    // 3. Buscar regla coincidente en las rutas de esta empresa
-    const hasMediaFlag = Boolean(receivedMedia);
-    const mediaMimetype = receivedMedia
-        ? receivedMedia.mimetype
-        : isAudioType
-          ? 'audio/ogg'
-          : '';
+    if (lead.humanPaused) {
+        if (lead.humanPausedUntil && Date.now() > new Date(lead.humanPausedUntil).getTime()) {
+            console.log(
+                `[${company.name}] ⏱️ Pausa temporal de 120min finalizada para ${senderPhone}. Reactivando bot.`,
+            );
+            lead.humanPaused = false;
+            lead.humanPausedUntil = null;
+            persistLead(companyId, lead);
+            await dataStore.upsertLeadInDb(companyId, lead);
+        } else {
+            console.log(
+                `[${company.name}] Mensaje recibido de ${senderPhone}, pero el bot está pausado para este contacto (atención humana).`,
+            );
+            return;
+        }
+    }
+
+    // Tarea 11: Encolar mensaje en buffer de ráfaga (Debounce de 8.5s)
+    enqueueServerDebounce(companyId, senderPhone, {
+        msg,
+        cleanText,
+        displayMsg,
+        receivedMedia,
+        rawAudioMedia,
+        isAudioType,
+        isAudioMsg,
+        company,
+        lead,
+        minutesSinceLastInteraction: typeof minutesSinceLastInteraction !== 'undefined' ? minutesSinceLastInteraction : 0,
+    });
+}
+
+function enqueueServerDebounce(companyId, phone, item) {
+    const queueKey = `${companyId}_${phone}`;
+    if (serverDebounceQueues.has(queueKey)) {
+        const queue = serverDebounceQueues.get(queueKey);
+        clearTimeout(queue.timeoutId);
+        queue.items.push(item);
+        queue.timeoutId = setTimeout(() => processServerDebouncedQueue(queueKey), 8500);
+        console.log(`[${item.company.name}] ⏳ Ráfaga detectada de ${phone} (${queue.items.length} mensajes acumulados). Reiniciando ventana de 8.5s...`);
+    } else {
+        const timeoutId = setTimeout(() => processServerDebouncedQueue(queueKey), 8500);
+        serverDebounceQueues.set(queueKey, {
+            companyId,
+            phone,
+            timeoutId,
+            items: [item],
+            minutesSinceLastInteraction: item.minutesSinceLastInteraction,
+        });
+        console.log(`[${item.company.name}] ⏳ Mensaje de ${phone} recibido. Esperando ventana de 8.5s para capturar posibles ráfagas...`);
+    }
+}
+
+async function processServerDebouncedQueue(queueKey) {
+    const queue = serverDebounceQueues.get(queueKey);
+    if (!queue) return;
+    serverDebounceQueues.delete(queueKey);
+
+    const { companyId, phone: senderPhone, items, minutesSinceLastInteraction } = queue;
+    if (!items || items.length === 0) return;
+
+    const company = appData.companies.find((c) => c.id === companyId);
+    if (!company || !company.settings || !company.settings.botEnabled) return;
+
+    const latestItem = items[items.length - 1];
+    const msg = latestItem.msg;
+    const clientInstance = companyClients.get(companyId);
+
+    const lead = (company.leads || []).find((l) => l.phone === senderPhone);
+    if (!lead || (lead.humanPaused && (!lead.humanPausedUntil || Date.now() <= new Date(lead.humanPausedUntil).getTime())) || (lead.isPersonal && company.settings?.phoneUsageType === 'personal_and_business')) return;
+
+    // Concatenar todos los mensajes de la ráfaga
+    const combinedText = items
+        .map((i) => i.cleanText || i.displayMsg)
+        .filter((t) => Boolean(t && t.trim()))
+        .join('\n')
+        .trim();
+
+    const lastRawAudio = items.filter((i) => i.rawAudioMedia).pop()?.rawAudioMedia;
+    const lastMedia = items.filter((i) => i.receivedMedia).pop()?.receivedMedia;
+    const hasMediaFlag = Boolean(lastMedia);
+    const isAudioMsg = Boolean(lastRawAudio);
+    const mediaMimetype = lastMedia ? lastMedia.mimetype : (isAudioMsg ? 'audio/ogg' : '');
+
+    // 1. Buscar regla coincidente en las rutas de esta empresa
     const context = { lastSentRuleId: lead ? lead.lastSentRuleId : null };
     const matchedRule = matchRule(
-        text,
+        combinedText.toLowerCase(),
         company.rules || [],
         hasMediaFlag,
         mediaMimetype,
@@ -889,7 +1089,7 @@ async function handleIncomingMessage(companyId, msg) {
 
     if (matchedRule) {
         console.log(
-            `[${company.name}] Regla activada: "${matchedRule.name}" para ${senderPhone}`,
+            `[${company.name}] Regla activada: "${matchedRule.name}" para ${senderPhone} tras ráfaga`,
         );
 
         if (matchedRule.leadTag) {
@@ -906,7 +1106,6 @@ async function handleIncomingMessage(companyId, msg) {
         lead.lastSentRuleId = matchedRule.id;
         persistLead(companyId, lead);
 
-        // Simular escritura natural
         if (company.settings.simulateTyping) {
             try {
                 const chat = await msg.getChat();
@@ -918,22 +1117,21 @@ async function handleIncomingMessage(companyId, msg) {
             } catch (e) {}
         }
 
-        // 4. Enviar respuesta con el cliente de WhatsApp de esta empresa
         await sendRuleResponse(companyId, msg, matchedRule);
     } else if (
         company.settings.geminiEnabled !== false &&
         geminiService.isConfigured(company.settings.geminiApiKey) &&
         libraryService.hasActiveKnowledge(company.library) &&
-        (text.length > 0 || rawAudioMedia)
+        (combinedText.length > 0 || lastRawAudio)
     ) {
         persistLead(companyId, lead);
-        if (rawAudioMedia) {
+        if (lastRawAudio) {
             console.log(
-                `[${company.name}] 🎙️ Escuchando nota de voz de ${senderPhone} con Gemini (Base de conocimiento activa)...`,
+                `[${company.name}] 🎙️ Escuchando nota de voz de ${senderPhone} con Gemini tras ráfaga...`,
             );
         } else {
             console.log(
-                `[${company.name}] 🤖 Usando Gemini para responder a ${senderPhone} (Base de conocimiento activa)...`,
+                `[${company.name}] 🤖 Usando Gemini para responder a ${senderPhone} tras ráfaga (${items.length} msgs)...`,
             );
         }
 
@@ -948,20 +1146,62 @@ async function handleIncomingMessage(companyId, msg) {
 
             const businessName =
                 company.settings.businessName || company.name || 'Mi Negocio';
-            const geminiInput = rawAudioMedia
+            const geminiInput = lastRawAudio
                 ? {
-                      text: cleanText,
-                      audio: rawAudioMedia,
+                      text: combinedText,
+                      audio: lastRawAudio,
                   }
-                : cleanText;
+                : combinedText;
 
-            // Sesión de Gemini aislada por empresa y remitente
             const sessionKey = `${companyId}_${senderPhone}`;
             let catalogProducts = [];
             try {
                 catalogProducts = await db.getCompanyProducts(companyId);
             } catch (e) {}
 
+            const allDbMessages = await dataStore.getMessagesFromDb(companyId, senderPhone, 200);
+            const priorMessages = allDbMessages.slice(0, -items.length);
+            const totalPriorMessages = priorMessages.length;
+            let conversationSummary = lead.conversationSummary || null;
+
+            const shouldUpdateSummary =
+                (totalPriorMessages > 6 && !conversationSummary) ||
+                (typeof minutesSinceLastInteraction !== 'undefined' && minutesSinceLastInteraction > 60 && totalPriorMessages >= 2) ||
+                (totalPriorMessages > 6 && (!lead.lastSummaryAt || (Date.now() - new Date(lead.lastSummaryAt).getTime()) > 60 * 60 * 1000));
+
+            if (shouldUpdateSummary && totalPriorMessages > 0) {
+                try {
+                    const messagesToSummarize = (typeof minutesSinceLastInteraction !== 'undefined' && minutesSinceLastInteraction > 60)
+                        ? priorMessages
+                        : priorMessages.slice(0, -6);
+
+                    if (messagesToSummarize.length > 0) {
+                        const newSummary = await geminiService.generateConversationSummary(
+                            conversationSummary,
+                            messagesToSummarize,
+                            company.settings.geminiApiKey
+                        );
+                        if (newSummary && newSummary.trim()) {
+                            conversationSummary = newSummary.trim();
+                            lead.conversationSummary = conversationSummary;
+                            lead.lastSummaryAt = new Date().toISOString();
+                            await dataStore.updateLeadSummaryInDb(companyId, senderPhone, conversationSummary);
+                            console.log(`📝 [${company.name}] Resumen consolidado generado/actualizado para ${senderPhone} (${newSummary.split('\n').length} líneas).`);
+                        }
+                    }
+                } catch (sumErr) {
+                    console.warn(`Aviso actualizando resumen para ${senderPhone}:`, sumErr.message);
+                }
+            }
+
+            const recentBuffer = priorMessages.slice(-6);
+
+            let activePromotions = [];
+            try {
+                activePromotions = await db.getCompanyActivePromotions(companyId);
+            } catch (e) {}
+
+            const phoneUsageType = company.settings?.phoneUsageType || 'business_only';
             const aiReply = await geminiService.sendMessage(
                 sessionKey,
                 geminiInput,
@@ -970,6 +1210,10 @@ async function handleIncomingMessage(companyId, msg) {
                 company.settings.geminiApiKey,
                 company.settings.geminiModel,
                 catalogProducts,
+                activePromotions,
+                conversationSummary,
+                recentBuffer,
+                phoneUsageType
             );
 
             if (chat) {
@@ -979,10 +1223,38 @@ async function handleIncomingMessage(companyId, msg) {
             }
 
             if (aiReply) {
+                // Tarea 11: Interceptar directiva [MARCAR_PERSONAL: MOTIVO] únicamente si está configurado en uso mixto
+                if (phoneUsageType === 'personal_and_business') {
+                    const personalDirectiveRegex = /\[MARCAR_PERSONAL(?::\s*([^\]]+))?\]/gi;
+                    const personalMatches = [...aiReply.matchAll(personalDirectiveRegex)];
+                    if (personalMatches.length > 0) {
+                        const reason = (personalMatches[0][1] || 'Conversación personal detectada').trim();
+                        console.log(`[${company.name}] 🛡️ Chat con ${senderPhone} clasificado como PERSONAL (${reason}). Silenciando bot permanentemente.`);
+                        lead.isPersonal = true;
+                        lead.personalReason = reason;
+                        lead.tag = 'Personal / Silenciado';
+                        persistLead(companyId, lead);
+                        await dataStore.markLeadPersonalInDb(companyId, senderPhone, reason);
+                        // Silencio absoluto: no responder a WhatsApp
+                        return;
+                    }
+                }
+
+                // Tarea 10: Interceptar directiva [ALERTA_VENTA: RESUMEN_DEL_PEDIDO]
+                const saleDirectiveRegex = /\[ALERTA_VENTA(?::\s*([^\]]+))?\]/gi;
+                const saleMatches = [...aiReply.matchAll(saleDirectiveRegex)];
+                const hasSaleAlert = saleMatches.length > 0;
+                const saleSummary = hasSaleAlert ? (saleMatches[0][1] || 'Pedido confirmado / Intención de compra').trim() : '';
+
                 // Tarea 8: Interceptar directiva [ENVIAR_FOTOS: CODIGO_PRODUCTO] mediante expresión regular
                 const photoDirectiveRegex = /\[ENVIAR_FOTOS:\s*([A-Za-z0-9_\-\.]+)\s*\]/gi;
                 const photoMatches = [...aiReply.matchAll(photoDirectiveRegex)];
-                const cleanReply = aiReply.replace(photoDirectiveRegex, '').trim();
+
+                // Limpiar todas las directivas del texto visible que recibe el cliente
+                const cleanReply = aiReply
+                    .replace(saleDirectiveRegex, '')
+                    .replace(photoDirectiveRegex, '')
+                    .trim();
 
                 if (cleanReply) {
                     await msg.reply(cleanReply);
@@ -1026,6 +1298,90 @@ async function handleIncomingMessage(companyId, msg) {
                         }
                     }
                 }
+
+                // Tarea 10: Procesar Alerta de Venta (Línea Única, Auto-mensaje, Mark Unread, Pausa 120min, Evento Web)
+                if (hasSaleAlert) {
+                    const holder = companyClients.get(companyId);
+                    const { realPhone, chatId } = await resolveContactIdentifier(holder?.client, senderPhone);
+                    const targetChatId = chatTargetMap.get(senderPhone) || chatId;
+
+                    const candidateDigits = (realPhone || senderPhone).replace(/\D/g, '');
+                    const isLidNumber = candidateDigits.length >= 15 || senderPhone.endsWith('@lid');
+                    const validWaPhone = !isLidNumber && candidateDigits.length >= 7 && candidateDigits.length <= 14 
+                        ? candidateDigits 
+                        : (realPhone && realPhone.length >= 7 && realPhone.length <= 14 ? realPhone : null);
+
+                    const clientDisplayName = lead?.name && lead.name !== senderPhone 
+                        ? `${lead.name} (${validWaPhone ? `+${validWaPhone}` : senderPhone})` 
+                        : (validWaPhone ? `+${validWaPhone}` : senderPhone);
+
+                    const chatLinkText = validWaPhone
+                        ? `Ir al chat: https://wa.me/${validWaPhone}`
+                        : `(Abre WhatsApp y busca el chat de ${clientDisplayName} con punto verde)`;
+
+                    // 1. Mensaje al chat propio del negocio (consigo mismo)
+                    try {
+                        const selfWid = holder?.client?.info?.wid?._serialized || (holder?.client?.info?.wid?.user ? `${holder.client.info.wid.user}@c.us` : null);
+                        if (holder?.client && selfWid) {
+                            const selfAlertMsg = `🚨 ¡VENTA PENDIENTE!\nCliente: ${clientDisplayName}\nResumen: ${saleSummary}\n${chatLinkText}`;
+                            await holder.client.sendMessage(selfWid, selfAlertMsg);
+                            console.log(`[${company.name}] 🚨 Alerta de venta enviada al chat propio (${selfWid})`);
+                        }
+                    } catch (errSelf) {
+                        console.warn(`[${company.name}] Error enviando auto-mensaje de venta:`, errSelf.message);
+                    }
+
+                    // 2. Marcar la conversación del cliente como no leída en el WhatsApp del comerciante
+                    try {
+                        if (holder?.client) {
+                            if (typeof holder.client.markChatUnread === 'function') {
+                                await holder.client.markChatUnread(targetChatId);
+                            } else {
+                                const chat = await holder.client.getChatById(targetChatId);
+                                if (chat && typeof chat.markUnread === 'function') {
+                                    await chat.markUnread();
+                                }
+                            }
+                            console.log(`[${company.name}] 🟢 Chat de ${targetChatId} marcado como no leído.`);
+                        }
+                    } catch (errUnread) {
+                        console.warn(`[${company.name}] Error marcando chat como no leído:`, errUnread.message);
+                    }
+
+                    // 3. Pausa del bot en ese chat durante 120 minutos
+                    const pauseMinutes = 120;
+                    const pausedUntil = new Date(Date.now() + pauseMinutes * 60 * 1000);
+                    if (lead) {
+                        lead.humanPaused = true;
+                        lead.humanPausedUntil = pausedUntil.toISOString();
+                        lead.tag = 'Venta Pendiente';
+                        persistLead(companyId, lead);
+                        await dataStore.upsertLeadInDb(companyId, lead);
+                    }
+
+                    // 4. Alerta en Panel Web (SSE)
+                    broadcastCompanyEvent(companyId, 'sale_alert', {
+                        lead: {
+                            phone: validWaPhone || senderPhone,
+                            name: clientDisplayName,
+                            tag: 'Venta Pendiente',
+                            humanPaused: true,
+                            humanPausedUntil: pausedUntil.toISOString(),
+                        },
+                        summary: saleSummary,
+                        timestamp: Date.now(),
+                    });
+
+                    broadcastCompanyEvent(companyId, 'lead_updated', {
+                        phone: validWaPhone || senderPhone,
+                        name: clientDisplayName,
+                        lastMessage: cleanReply,
+                        tag: 'Venta Pendiente',
+                        humanPaused: true,
+                        humanPausedUntil: pausedUntil.toISOString(),
+                        isPersonal: Boolean(lead?.isPersonal),
+                    });
+                }
             }
         } catch (geminiErr) {
             console.error(
@@ -1047,7 +1403,7 @@ async function handleIncomingMessage(companyId, msg) {
         }
     } else if (
         company.settings.fallbackMessage &&
-        (text.length > 0 || hasMediaFlag || isAudioMsg)
+        (combinedText.length > 0 || hasMediaFlag || isAudioMsg)
     ) {
         if (lead) {
             lead.lastSentRuleId = 'fallback';
@@ -2402,7 +2758,11 @@ function findLeadAndChatId(company, rawPhone) {
 
     // 2. Determinar el chatId exacto para WhatsApp
     let chatId = null;
-    if (
+    if (chatTargetMap.has(raw)) {
+        chatId = chatTargetMap.get(raw);
+    } else if (cleanDigits && chatTargetMap.has(cleanDigits)) {
+        chatId = chatTargetMap.get(cleanDigits);
+    } else if (
         raw.endsWith('@lid') ||
         raw.endsWith('@c.us') ||
         raw.endsWith('@g.us')
@@ -3257,6 +3617,9 @@ app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
     if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
 
     lead.humanPaused = !lead.humanPaused;
+    if (!lead.humanPaused) {
+        lead.humanPausedUntil = null;
+    }
     saveData(appData);
     await dataStore
         .upsertLeadInDb(req.companyId, lead)
@@ -3265,6 +3628,87 @@ app.post('/api/leads/:phone/toggle-pause', resolveCompany, async (req, res) => {
         );
 
     res.json({ success: true, humanPaused: lead.humanPaused });
+});
+
+app.post('/api/leads/:phone/reactivate', resolveCompany, async (req, res) => {
+    if (!req.company.leads) req.company.leads = [];
+    const { lead } = findLeadAndChatId(req.company, req.params.phone);
+    if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
+
+    lead.isPersonal = false;
+    lead.personalReason = null;
+    lead.humanPaused = false;
+    lead.humanPausedUntil = null;
+    lead.tag = 'Reactivado';
+    saveData(appData);
+    await dataStore.reactivateLeadInDb(req.companyId, req.params.phone);
+
+    res.json({
+        success: true,
+        phone: lead.phone,
+        isPersonal: false,
+        humanPaused: false,
+        tag: lead.tag,
+    });
+});
+
+app.patch('/api/leads/:phone/tag', resolveCompany, async (req, res) => {
+    if (!req.company.leads) req.company.leads = [];
+    const { lead } = findLeadAndChatId(req.company, req.params.phone);
+    if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
+
+    const newTag = (req.body.tag || 'Nuevo').trim();
+    lead.tag = newTag;
+
+    // Si se cambia de 'Venta Pendiente' a otra etiqueta, desactivamos la pausa humana de venta
+    if (newTag !== 'Venta Pendiente' && lead.humanPaused && newTag !== 'Personal / Silenciado') {
+        lead.humanPaused = false;
+        lead.humanPausedUntil = null;
+    }
+
+    saveData(appData);
+    await dataStore.upsertLeadInDb(req.companyId, lead).catch(e => console.error('Error DB lead tag:', e));
+
+    broadcastCompanyEvent(req.companyId, 'lead_updated', {
+        phone: lead.phone,
+        name: lead.name,
+        lastMessage: lead.lastMessage,
+        tag: lead.tag,
+        humanPaused: Boolean(lead.humanPaused),
+        humanPausedUntil: lead.humanPausedUntil || null,
+        isPersonal: Boolean(lead.isPersonal),
+    });
+
+    res.json({ success: true, tag: lead.tag, humanPaused: Boolean(lead.humanPaused) });
+});
+
+app.put('/api/leads/:phone/tag', resolveCompany, async (req, res) => {
+    if (!req.company.leads) req.company.leads = [];
+    const { lead } = findLeadAndChatId(req.company, req.params.phone);
+    if (!lead) return res.status(404).json({ error: 'Contacto no encontrado' });
+
+    const newTag = (req.body.tag || 'Nuevo').trim();
+    lead.tag = newTag;
+
+    if (newTag !== 'Venta Pendiente' && lead.humanPaused && newTag !== 'Personal / Silenciado') {
+        lead.humanPaused = false;
+        lead.humanPausedUntil = null;
+    }
+
+    saveData(appData);
+    await dataStore.upsertLeadInDb(req.companyId, lead).catch(e => console.error('Error DB lead tag:', e));
+
+    broadcastCompanyEvent(req.companyId, 'lead_updated', {
+        phone: lead.phone,
+        name: lead.name,
+        lastMessage: lead.lastMessage,
+        tag: lead.tag,
+        humanPaused: Boolean(lead.humanPaused),
+        humanPausedUntil: lead.humanPausedUntil || null,
+        isPersonal: Boolean(lead.isPersonal),
+    });
+
+    res.json({ success: true, tag: lead.tag, humanPaused: Boolean(lead.humanPaused) });
 });
 
 // 8.1. Obtener historial de chat con un prospecto (en vivo de WhatsApp o de base de datos)
@@ -3404,6 +3848,8 @@ app.get('/api/leads/:phone/messages', resolveCompany, async (req, res) => {
         leadTag: lead?.tag || 'Nuevo',
         humanPaused: Boolean(lead?.humanPaused),
         liveFetched,
+        conversationSummary: lead?.conversationSummary || null,
+        lastSummaryAt: lead?.lastSummaryAt || null,
         messages,
     });
 });
@@ -3651,6 +4097,16 @@ app.post('/api/simulate', resolveCompany, async (req, res) => {
                 : rawText;
 
             const sessionKey = `sim_${req.companyId}`;
+            let simCatalogProducts = [];
+            try {
+                simCatalogProducts = await db.getCompanyProducts(req.companyId);
+            } catch (e) {}
+
+            let simPromotions = [];
+            try {
+                simPromotions = await db.getCompanyActivePromotions(req.companyId);
+            } catch (e) {}
+
             const aiReply = await geminiService.sendMessage(
                 sessionKey,
                 geminiInput,
@@ -3658,6 +4114,8 @@ app.post('/api/simulate', resolveCompany, async (req, res) => {
                 req.company.library || [],
                 req.company.settings.geminiApiKey,
                 req.company.settings.geminiModel,
+                simCatalogProducts,
+                simPromotions,
             );
             res.json({
                 matched: false,
@@ -3823,6 +4281,7 @@ app.get('/api/settings', resolveCompany, (req, res) => {
             : null;
     res.json({
         ...s,
+        phoneUsageType: s.phoneUsageType || 'business_only',
         geminiApiKeyMasked: maskedKey,
         isCustomGeminiKey: Boolean(s.geminiApiKey),
         canConfigureGemini: isSuper,
@@ -3832,7 +4291,13 @@ app.get('/api/settings', resolveCompany, (req, res) => {
 app.post('/api/settings', resolveCompany, async (req, res) => {
     const prevApiKey = req.company.settings?.geminiApiKey;
     const prevModel = req.company.settings?.geminiModel;
+    const incomingUsage = req.body.phoneUsageType || req.body.phone_usage_type;
+
     req.company.settings = { ...req.company.settings, ...req.body };
+    if (incomingUsage) {
+        req.company.settings.phoneUsageType = incomingUsage;
+        req.company.settings.phone_usage_type = incomingUsage;
+    }
 
     // Solo superusuarios pueden alterar geminiApiKey y geminiModel
     if (
@@ -3852,6 +4317,10 @@ app.post('/api/settings', resolveCompany, async (req, res) => {
         .catch((e) => console.error('Error guardando configuración en DB:', e));
 
     const s = req.company.settings;
+    const resolvedUsage = s.phoneUsageType || s.phone_usage_type || 'business_only';
+    s.phoneUsageType = resolvedUsage;
+    s.phone_usage_type = resolvedUsage;
+
     const isSuper = Boolean(req.user?.isSuperadmin);
     const maskedKey =
         isSuper && s.geminiApiKey
@@ -3861,6 +4330,8 @@ app.post('/api/settings', resolveCompany, async (req, res) => {
             : null;
     res.json({
         ...s,
+        phoneUsageType: resolvedUsage,
+        phone_usage_type: resolvedUsage,
         geminiApiKeyMasked: maskedKey,
         isCustomGeminiKey: Boolean(s.geminiApiKey),
         canConfigureGemini: isSuper,

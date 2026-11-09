@@ -36,9 +36,53 @@ export class LeadsService {
     }
 
     lead.humanPaused = !lead.humanPaused;
+    if (!lead.humanPaused) {
+      lead.humanPausedUntil = null;
+    }
     await this.leadRepository.save(lead);
 
     return { success: true, humanPaused: lead.humanPaused };
+  }
+
+  /**
+   * Tarea 11: Reactivar bot para un contacto silenciado/personal
+   */
+  async reactivateLead(companyId: string, phone: string): Promise<{ success: boolean; isPersonal: boolean; humanPaused: boolean; tag: string }> {
+    const cleanPhone = phone.replace(/\D/g, '');
+    let lead = await this.leadRepository.findOne({
+      where: [
+        { companyId, phone },
+        { companyId, phone: cleanPhone },
+      ],
+    });
+
+    if (!lead) {
+      throw new NotFoundException('Contacto no encontrado');
+    }
+
+    lead.isPersonal = false;
+    lead.personalReason = null;
+    lead.humanPaused = false;
+    lead.humanPausedUntil = null;
+    lead.tag = 'Reactivado';
+    await this.leadRepository.save(lead);
+
+    this.whatsappManager.broadcastCompanyEvent(companyId, 'lead_updated', {
+      phone: lead.phone,
+      name: lead.name,
+      lastMessage: lead.lastMessage,
+      tag: lead.tag,
+      isPersonal: false,
+      personalReason: null,
+      humanPaused: false,
+    });
+
+    return {
+      success: true,
+      isPersonal: false,
+      humanPaused: false,
+      tag: lead.tag,
+    };
   }
 
   async getLeadMessages(companyId: string, phone: string) {
@@ -119,6 +163,8 @@ export class LeadsService {
       leadTag: lead?.tag || 'Nuevo',
       humanPaused: Boolean(lead?.humanPaused),
       liveFetched,
+      conversationSummary: lead?.conversationSummary || null,
+      lastSummaryAt: lead?.lastSummaryAt || null,
       messages,
     };
   }
@@ -129,6 +175,52 @@ export class LeadsService {
     }
 
     return this.whatsappManager.sendMessage(companyId, phone, message.trim());
+  }
+
+  async updateLeadTag(
+    companyId: string,
+    phone: string,
+    tag: string,
+  ): Promise<{ success: boolean; tag: string; humanPaused: boolean }> {
+    const cleanPhone = phone.replace(/\D/g, '');
+    let lead = await this.leadRepository.findOne({
+      where: [
+        { companyId, phone },
+        { companyId, phone: cleanPhone },
+      ],
+    });
+
+    if (!lead) {
+      throw new NotFoundException('Contacto no encontrado');
+    }
+
+    const newTag = (tag || 'Nuevo').trim();
+    lead.tag = newTag;
+
+    // Si se cambia de 'Venta Pendiente' a otra etiqueta, desactivamos la pausa humana de venta
+    if (newTag !== 'Venta Pendiente' && lead.humanPaused && newTag !== 'Personal / Silenciado') {
+      lead.humanPaused = false;
+      lead.humanPausedUntil = null;
+    }
+
+    await this.leadRepository.save(lead);
+
+    this.whatsappManager.broadcastCompanyEvent(companyId, 'lead_updated', {
+      phone: lead.phone,
+      name: lead.name,
+      lastMessage: lead.lastMessage,
+      tag: lead.tag,
+      isPersonal: Boolean(lead.isPersonal),
+      personalReason: lead.personalReason || null,
+      humanPaused: Boolean(lead.humanPaused),
+      humanPausedUntil: lead.humanPausedUntil ? lead.humanPausedUntil.toISOString() : null,
+    });
+
+    return {
+      success: true,
+      tag: lead.tag,
+      humanPaused: Boolean(lead.humanPaused),
+    };
   }
 }
 

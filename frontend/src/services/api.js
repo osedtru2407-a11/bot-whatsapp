@@ -145,6 +145,12 @@ export const api = {
             method: 'PUT',
             body: body instanceof FormData ? body : JSON.stringify(body),
         }),
+    patch: (url, body, options) =>
+        apiRequest(url, {
+            ...options,
+            method: 'PATCH',
+            body: body instanceof FormData ? body : JSON.stringify(body),
+        }),
     delete: (url, body, options) => {
         const opts = options || {};
         if (body && !(body instanceof Event)) {

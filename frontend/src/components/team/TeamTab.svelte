@@ -1,4 +1,5 @@
 <script>
+  import { onDestroy } from 'svelte';
   import { 
     teamMembers, 
     companyRoles, 
@@ -10,6 +11,7 @@
     loadTeamData 
   } from '../../stores/team';
   import { hasPermission, currentUser } from '../../stores/auth';
+  import { settings } from '../../stores/settings';
   import { showToast } from '../../stores/toast';
   import { formatDate } from '../../utils/formatters';
   import { 
@@ -18,9 +20,55 @@
     isFullAdmin 
   } from '../../utils/permissions';
   import RoleDetailModal from './RoleDetailModal.svelte';
+  import Modal from '../common/Modal.svelte';
 
   let selectedRoleForDetail = $state(null);
   let isRoleDetailOpen = $state(false);
+
+  // Alerta estilizada de privacidad al añadir colaboradores con número personal
+  let isPersonalWarningOpen = $state(false);
+  let warningCountdown = $state(5);
+  let warningTimer = null;
+
+  function handleOpenInvite() {
+    const isPersonalPhone = ($settings?.phoneUsageType === 'personal_and_business');
+    if (isPersonalPhone) {
+      warningCountdown = 5;
+      isPersonalWarningOpen = true;
+      if (warningTimer) clearInterval(warningTimer);
+      warningTimer = setInterval(() => {
+        if (warningCountdown > 0) {
+          warningCountdown--;
+        } else {
+          clearInterval(warningTimer);
+          warningTimer = null;
+        }
+      }, 1000);
+    } else {
+      isInviteModalOpen.set(true);
+    }
+  }
+
+  function handleCloseWarning() {
+    if (warningTimer) {
+      clearInterval(warningTimer);
+      warningTimer = null;
+    }
+    isPersonalWarningOpen = false;
+  }
+
+  function handleProceedAfterWarning() {
+    if (warningCountdown > 0) return;
+    handleCloseWarning();
+    isInviteModalOpen.set(true);
+  }
+
+  onDestroy(() => {
+    if (warningTimer) {
+      clearInterval(warningTimer);
+      warningTimer = null;
+    }
+  });
 
   function openRoleDetail(role) {
     selectedRoleForDetail = role;
@@ -88,7 +136,7 @@
         <button 
           type="button" 
           class="btn btn-primary" 
-          onclick={() => isInviteModalOpen.set(true)}
+          onclick={handleOpenInvite}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -306,6 +354,69 @@
     isOpen={isRoleDetailOpen} 
     onClose={closeRoleDetail} 
   />
+
+  <!-- Modal Estilizado de Advertencia: Adición de Colaboradores con Teléfono Personal -->
+  {#if isPersonalWarningOpen}
+    <Modal
+      isOpen={isPersonalWarningOpen}
+      title="⚠️ Advertencia de Privacidad: Teléfono Personal en Uso"
+      subtitle="Atención: Esta empresa utiliza un número de WhatsApp configurado para uso personal/mixto"
+      maxWidth="580px"
+      onClose={handleCloseWarning}
+    >
+      <div class="personal-alert-modal-content">
+        <div class="alert-icon-banner">
+          <span class="big-warning-icon">🛡️</span>
+          <div>
+            <h4 class="alert-banner-title">No se recomienda añadir colaboradores con un teléfono personal</h4>
+            <p class="alert-banner-desc">Riesgo de exposición de tus mensajes y conversaciones privadas</p>
+          </div>
+        </div>
+
+        <div class="alert-text-body">
+          <p>
+            Actualmente tienes configurada esta línea en modo <strong>Uso Mixto (Personal y Negocio)</strong>. Al tratarse de un número personal, el sistema asume que operas como una empresa unipersonal.
+          </p>
+          <p>
+            Si decides invitar a colaboradores o miembros de equipo a esta empresa:
+          </p>
+          <ul class="alert-reasons-list">
+            <li>
+              <strong>👁️ Acceso a conversaciones personales:</strong> Los colaboradores vinculados tendrán acceso al panel CRM, al historial de chats y a todos los mensajes y notas de voz entrantes que reciba este dispositivo, incluidos aquellos de tu vida íntima, familiar o doméstica.
+            </li>
+            <li>
+              <strong>🏢 Recomendación de privacidad:</strong> Si vas a delegar la atención a un equipo de trabajo, te recomendamos enfáticamente utilizar una <strong>línea de WhatsApp comercial exclusiva ('Solo Negocio')</strong> para mantener tu vida personal completamente separada y protegida.
+            </li>
+          </ul>
+          <p class="alert-disclaimer">
+            Puedes continuar y agregar colaboradores si así lo deseas bajo tu propio criterio, pero eres consciente de que compartirás visibilidad sobre las conversaciones del dispositivo.
+          </p>
+        </div>
+      </div>
+
+      {#snippet actions()}
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick={handleCloseWarning}
+        >
+          Cancelar y Proteger Privacidad
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning-action"
+          disabled={warningCountdown > 0}
+          onclick={handleProceedAfterWarning}
+        >
+          {#if warningCountdown > 0}
+            ⏳ Lee con atención ({warningCountdown}s)...
+          {:else}
+            ⚠️ Entiendo el riesgo y deseo continuar
+          {/if}
+        </button>
+      {/snippet}
+    </Modal>
+  {/if}
 </section>
 
 <style>
@@ -571,5 +682,89 @@
   .delete-btn:disabled:hover {
     background: transparent !important;
     color: inherit !important;
+  }
+
+  /* Modal Estilizado de Advertencia de Teléfono Personal */
+  .personal-alert-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 2px;
+  }
+  .alert-icon-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+  .big-warning-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .alert-banner-title {
+    margin: 0 0 3px 0;
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: #fef08a;
+  }
+  .alert-banner-desc {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #fde68a;
+    line-height: 1.35;
+  }
+  .alert-text-body {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+  .alert-text-body p {
+    margin: 0 0 10px 0;
+  }
+  .alert-reasons-list {
+    margin: 10px 0 14px 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .alert-reasons-list li {
+    font-size: 0.84rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+  }
+  .alert-reasons-list strong {
+    color: #fff;
+  }
+  .alert-disclaimer {
+    background: rgba(15, 23, 42, 0.6);
+    border-left: 3px solid #f59e0b;
+    padding: 10px 14px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 0 !important;
+  }
+  .btn-warning-action {
+    background: #d97706 !important;
+    border-color: #f59e0b !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    padding: 9px 18px !important;
+    transition: all 0.2s ease !important;
+  }
+  .btn-warning-action:hover:not(:disabled) {
+    background: #b45309 !important;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.4) !important;
+  }
+  .btn-warning-action:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+    background: rgba(120, 53, 15, 0.5) !important;
+    border-color: rgba(180, 83, 9, 0.4) !important;
+    color: #fde68a !important;
   }
 </style>

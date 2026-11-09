@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Promotion } from '../../entities/promotion.entity';
 import { LibraryService } from '../ai-agent/library.service';
+import { GeminiService } from '../ai-agent/gemini.service';
 
 export interface PromotionStatusInfo {
   status: 'active' | 'scheduled' | 'expired' | 'paused';
@@ -25,6 +26,7 @@ export class PromotionsService {
     @InjectRepository(Promotion)
     private readonly promotionRepository: Repository<Promotion>,
     private readonly libraryService: LibraryService,
+    private readonly geminiService: GeminiService,
   ) {}
 
   /**
@@ -36,6 +38,26 @@ export class PromotionsService {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Obtiene las fechas candidatas para evaluar vigencia evitando desajustes por zona horaria UTC vs Local
+   */
+  getCandidateDates(): string[] {
+    const dates = new Set<string>();
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    dates.add(`${y}-${m}-${d}`);
+    dates.add(now.toISOString().split('T')[0]);
+
+    try {
+      const bogota = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(now);
+      if (bogota) dates.add(bogota);
+    } catch (e) {}
+
+    return Array.from(dates);
   }
 
   /**
@@ -210,6 +232,7 @@ export class PromotionsService {
     });
 
     const saved = await this.promotionRepository.save(promo);
+    this.geminiService.clearAllSessions();
     return {
       ...saved,
       ...this.calculatePromotionStatus(saved),
@@ -277,6 +300,7 @@ export class PromotionsService {
     }
 
     const updated = await this.promotionRepository.save(promo);
+    this.geminiService.clearAllSessions();
     return {
       ...updated,
       ...this.calculatePromotionStatus(updated),
@@ -331,6 +355,7 @@ export class PromotionsService {
     }
 
     const updated = await this.promotionRepository.save(promo);
+    this.geminiService.clearAllSessions();
     return {
       ...updated,
       ...this.calculatePromotionStatus(updated),
@@ -348,6 +373,7 @@ export class PromotionsService {
       throw new NotFoundException('Promoción no encontrada.');
     }
     await this.promotionRepository.remove(promo);
+    this.geminiService.clearAllSessions();
     return { success: true, message: 'Promoción eliminada correctamente.' };
   }
 
@@ -355,13 +381,16 @@ export class PromotionsService {
    * Obtiene las promociones vigentes hoy para alimentar el prompt de Gemini (máximo 2)
    */
   async getActivePromotionsForBot(companyId: string): Promise<Promotion[]> {
-    const today = this.getTodayDateString();
+    const candidateDates = this.getCandidateDates();
+    const dateConditions = candidateDates.map((_, idx) => `(p.start_date <= :d${idx} AND p.end_date >= :d${idx})`).join(' OR ');
+    const dateParams: Record<string, any> = { companyId, isActive: true };
+    candidateDates.forEach((dateVal, idx) => { dateParams[`d${idx}`] = dateVal; });
+
     const active = await this.promotionRepository
       .createQueryBuilder('p')
       .where('p.company_id = :companyId', { companyId })
       .andWhere('p.is_active = :isActive', { isActive: true })
-      .andWhere('p.start_date <= :today', { today })
-      .andWhere('p.end_date >= :today', { today })
+      .andWhere(`(${dateConditions})`, dateParams)
       .orderBy('p.start_date', 'ASC')
       .take(2)
       .getMany();

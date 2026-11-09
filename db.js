@@ -188,12 +188,14 @@ async function initDb() {
                 simulate_typing BOOLEAN DEFAULT TRUE,
                 typing_delay_seconds INT DEFAULT 2,
                 ignore_groups BOOLEAN DEFAULT TRUE,
+                phone_usage_type VARCHAR(50) DEFAULT 'business_only',
                 fallback_message TEXT,
                 gemini_enabled BOOLEAN DEFAULT TRUE,
                 gemini_api_key TEXT,
                 gemini_model VARCHAR(100) DEFAULT 'gemini-3.5-flash-lite',
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
+            ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS phone_usage_type VARCHAR(50) DEFAULT 'business_only';
         `);
 
         // 6. Rutas de Venta (Rules)
@@ -227,10 +229,20 @@ async function initDb() {
                 last_message TEXT,
                 last_sent_rule_id VARCHAR(100),
                 human_paused BOOLEAN DEFAULT FALSE,
+                human_paused_until TIMESTAMP WITH TIME ZONE,
                 received_files JSONB DEFAULT '[]'::jsonb,
                 last_interaction TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                conversation_summary TEXT,
+                last_summary_at TIMESTAMP WITH TIME ZONE,
+                is_personal BOOLEAN DEFAULT FALSE,
+                personal_reason VARCHAR(255),
                 UNIQUE(company_id, phone)
             );
+            ALTER TABLE leads ADD COLUMN IF NOT EXISTS human_paused_until TIMESTAMP WITH TIME ZONE;
+            ALTER TABLE leads ADD COLUMN IF NOT EXISTS conversation_summary TEXT;
+            ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_summary_at TIMESTAMP WITH TIME ZONE;
+            ALTER TABLE leads ADD COLUMN IF NOT EXISTS is_personal BOOLEAN DEFAULT FALSE;
+            ALTER TABLE leads ADD COLUMN IF NOT EXISTS personal_reason VARCHAR(255);
         `);
 
         // 8. Envíos Programados (Schedules)
@@ -605,10 +617,41 @@ async function getCompanyProducts(companyId) {
     }
 }
 
+async function getCompanyActivePromotions(companyId) {
+    try {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const localDate = `${y}-${m}-${d}`;
+        const utcDate = now.toISOString().split('T')[0];
+        let bogotaDate = localDate;
+        try {
+            bogotaDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(now);
+        } catch (e) {}
+
+        const res = await pool.query(
+            `SELECT * FROM promotions 
+             WHERE company_id = $1 AND is_active = true 
+               AND (
+                 (start_date <= $2 AND end_date >= $2)
+                 OR (start_date <= $3 AND end_date >= $3)
+                 OR (start_date <= $4 AND end_date >= $4)
+               )
+             ORDER BY start_date ASC LIMIT 2`,
+            [companyId, localDate, utcDate, bogotaDate]
+        );
+        return res.rows || [];
+    } catch (err) {
+        return [];
+    }
+}
+
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
     initDb,
     getCompanyProducts,
+    getCompanyActivePromotions,
     DEFAULT_SYSTEM_ROLES,
 };

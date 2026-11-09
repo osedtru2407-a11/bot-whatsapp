@@ -1,5 +1,6 @@
 <script>
   import { isInviteModalOpen, companyRoles, inviteMember, checkTeamUserByEmail } from '../../stores/team';
+  import { settings } from '../../stores/settings';
   import { showToast } from '../../stores/toast';
   import Modal from '../common/Modal.svelte';
 
@@ -131,6 +132,15 @@
   onClose={handleClose}
 >
   <form onsubmit={handleSubmit} class="form-body">
+    {#if ($settings?.phoneUsageType === 'personal_and_business')}
+      <div class="personal-line-warning-callout">
+        <span class="warning-callout-icon">⚠️</span>
+        <div class="warning-callout-text">
+          <strong>Aviso de Privacidad:</strong> Esta empresa usa una línea personal/mixta de WhatsApp. Este colaborador tendrá acceso al CRM y los historiales de chats sincronizados con este dispositivo.
+        </div>
+      </div>
+    {/if}
+
     <!-- 1. CORREO ELECTRÓNICO (PRIMER INPUT) -->
     <div class="form-group">
       <div class="field-label-row">
@@ -337,6 +347,28 @@
     line-height: 1.4;
     margin-bottom: 16px;
     animation: fadeIn 0.25s ease;
+  }
+
+  .personal-line-warning-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: #fde68a;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  .warning-callout-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .warning-callout-text strong {
+    color: #fef08a;
   }
 
   .field-helper-note {

@@ -4,6 +4,8 @@
         leads,
         loadLeads,
         togglePauseLead,
+        reactivateBotLead,
+        updateLeadTag,
         openLeadFiles,
         openLeadChat,
         isImportModalOpen,
@@ -14,26 +16,66 @@
         isGroupsModalOpen,
         addMembersToGroup,
     } from '../../stores/groups';
+    import { settings } from '../../stores/settings';
     import { hasPermission } from '../../stores/auth';
     import { formatDate } from '../../utils/formatters';
     import Modal from '../common/Modal.svelte';
 
-    let currentSubTab = $state('crm'); // 'crm' | 'contacts'
+    let currentSubTab = $state('crm'); // 'crm' | 'contacts' | 'personal'
     let searchQuery = $state('');
     let sourceFilter = $state('all'); // 'all' | 'whatsapp' | 'google_csv'
     let currentPage = $state(1);
     const pageSize = 50;
 
+    // Estado para modificar etiqueta CRM en celda interactiva
+    let activeTagDropdownPhone = $state(null);
+
+    const availableTags = [
+        { name: 'Venta Pendiente', icon: '🚨', desc: 'Atención prioritaria para concretar venta' },
+        { name: 'Nuevo', icon: '✨', desc: 'Contacto recién ingresado' },
+        { name: 'Interesado', icon: '🔥', desc: 'Consultó productos o catálogo' },
+        { name: 'Cliente Frecuente', icon: '⭐', desc: 'Comprador habitual del negocio' },
+        { name: 'Cotización', icon: '📋', desc: 'Presupuesto o cotización enviada' },
+        { name: 'Atendido', icon: '✅', desc: 'Conversación atendida y cerrada' },
+        { name: 'Comprobante/Archivo', icon: '📎', desc: 'Envió comprobante o documento' },
+        { name: 'Audio / Nota de voz', icon: '🎤', desc: 'Interactuó mediante audios' },
+        { name: 'Personal / Silenciado', icon: '🛡️', desc: 'Chat clasificado como personal' },
+        { name: 'Reactivado', icon: '🔄', desc: 'Bot reactivado recientemente' },
+    ];
+
+    function toggleTagDropdown(phone, event) {
+        event?.stopPropagation();
+        if (activeTagDropdownPhone === phone) {
+            activeTagDropdownPhone = null;
+        } else {
+            activeTagDropdownPhone = phone;
+        }
+    }
+
+    async function handleSelectTag(lead, tag) {
+        activeTagDropdownPhone = null;
+        if (lead.tag === tag) return;
+        await updateLeadTag(lead.phone, tag);
+    }
+
+    function handleGlobalClick() {
+        if (activeTagDropdownPhone) {
+            activeTagDropdownPhone = null;
+        }
+    }
+
     let syncTimer = null;
     onMount(() => {
         loadLeads();
         syncTimer = setInterval(loadLeads, 4000);
+        window.addEventListener('click', handleGlobalClick);
     });
     onDestroy(() => {
         if (syncTimer) {
             clearInterval(syncTimer);
             syncTimer = null;
         }
+        window.removeEventListener('click', handleGlobalClick);
     });
 
     // Selección múltiple para asignación masiva a grupos
@@ -44,9 +86,18 @@
     // Modal rápido para asignar un contacto/prospecto individual a un grupo
     let contactToAssign = $state(null);
 
-    // Filtrado de prospectos del embudo CRM (personas que han interactuado con el bot)
+    // Prospectos comerciales activos vs chats personales silenciados
+    const commercialLeads = $derived(
+        $leads.filter((l) => !l.isPersonal && !l.is_personal),
+    );
+
+    const silencedLeads = $derived(
+        $leads.filter((l) => Boolean(l.isPersonal || l.is_personal)),
+    );
+
+    // Filtrado de prospectos del embudo CRM comercial
     const filteredLeads = $derived(
-        $leads.filter((l) => {
+        commercialLeads.filter((l) => {
             if (!searchQuery.trim()) return true;
             const q = searchQuery.toLowerCase();
             return (
@@ -54,6 +105,20 @@
                 (l.phone || '').includes(q) ||
                 (l.lastMessage || '').toLowerCase().includes(q) ||
                 (l.tag || '').toLowerCase().includes(q)
+            );
+        }),
+    );
+
+    // Filtrado de chats personales silenciados
+    const filteredSilencedLeads = $derived(
+        silencedLeads.filter((l) => {
+            if (!searchQuery.trim()) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+                (l.name || '').toLowerCase().includes(q) ||
+                (l.phone || '').includes(q) ||
+                (l.personalReason || '').toLowerCase().includes(q) ||
+                (l.lastMessage || '').toLowerCase().includes(q)
             );
         }),
     );
@@ -164,7 +229,7 @@
         >
             <span class="subtab-icon">🎯</span>
             <span class="subtab-text">Prospectos del Embudo (CRM)</span>
-            <span class="subtab-badge">{$leads.length}</span>
+            <span class="subtab-badge">{commercialLeads.length}</span>
         </button>
         <button
             type="button"
@@ -175,6 +240,17 @@
             <span class="subtab-text">Agenda de Contactos & Difusión</span>
             <span class="subtab-badge subtab-badge-accent"
                 >{$contacts.length}</span
+            >
+        </button>
+        <button
+            type="button"
+            class="subtab-btn {currentSubTab === 'personal' ? 'active' : ''}"
+            onclick={() => setSubTab('personal')}
+        >
+            <span class="subtab-icon">🛡️</span>
+            <span class="subtab-text">Chats Silenciados / Personales</span>
+            <span class="subtab-badge subtab-badge-warning"
+                >{silencedLeads.length}</span
             >
         </button>
     </div>
@@ -269,16 +345,50 @@
                                         >
                                     </div>
                                 </td>
-                                <td>
-                                    <span
-                                        class="badge-tag badge-tag-{(
-                                            lead.tag || 'nuevo'
-                                        )
-                                            .toLowerCase()
-                                            .replace(/\s+/g, '')}"
+                                <td class="tag-cell-container">
+                                    <button
+                                        type="button"
+                                        class="badge-tag-interactive badge-tag {lead.tag === 'Venta Pendiente' ? 'badge-tag-sale-pending' : `badge-tag-${(lead.tag || 'nuevo').toLowerCase().replace(/\s+/g, '')}`}"
+                                        onclick={(e) => toggleTagDropdown(lead.phone, e)}
+                                        title="Haz clic para modificar la etiqueta CRM"
                                     >
-                                        🏷️ {lead.tag || 'Nuevo'}
-                                    </span>
+                                        {#if lead.tag === 'Venta Pendiente'}
+                                            <span class="sale-tag-pulse-dot"></span>
+                                            <span class="tag-text-bold">🚨 {lead.tag}</span>
+                                        {:else}
+                                            🏷️ {lead.tag || 'Nuevo'}
+                                        {/if}
+                                        <span class="tag-chevron">▾</span>
+                                    </button>
+
+                                    {#if activeTagDropdownPhone === lead.phone}
+                                        <div class="tag-dropdown-menu">
+                                            <div class="tag-dropdown-title">
+                                                <span>🏷️ Modificar Etiqueta CRM</span>
+                                            </div>
+                                            <div class="tag-dropdown-options">
+                                                {#each availableTags as tagOpt}
+                                                    <button
+                                                        type="button"
+                                                        class="tag-dropdown-opt {lead.tag === tagOpt.name ? 'selected' : ''} {tagOpt.name === 'Venta Pendiente' ? 'opt-sale-pending' : ''}"
+                                                        onclick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSelectTag(lead, tagOpt.name);
+                                                        }}
+                                                    >
+                                                        <span class="tag-opt-icon">{tagOpt.icon}</span>
+                                                        <div class="tag-opt-text">
+                                                            <strong>{tagOpt.name}</strong>
+                                                            <small>{tagOpt.desc}</small>
+                                                        </div>
+                                                        {#if lead.tag === tagOpt.name}
+                                                            <span class="tag-opt-check">✓</span>
+                                                        {/if}
+                                                    </button>
+                                                {/each}
+                                            </div>
+                                        </div>
+                                    {/if}
                                 </td>
                                 <td
                                     class="last-msg-cell"
@@ -306,10 +416,19 @@
                                 >
                                 <td>
                                     {#if lead.humanPaused}
-                                        <span
-                                            style="color: #fb7185; font-weight: 600;"
-                                            >🛑 Pausado (Humano)</span
-                                        >
+                                        {#if lead.tag === 'Venta Pendiente' || (lead.humanPausedUntil && new Date(lead.humanPausedUntil) > new Date())}
+                                            <span
+                                                style="color: #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"
+                                                title="Pausado automáticamente por 120 min para cierre de venta"
+                                            >
+                                                🚨 Venta (120m)
+                                            </span>
+                                        {:else}
+                                            <span
+                                                style="color: #fb7185; font-weight: 600;"
+                                                >🛑 Pausado (Humano)</span
+                                            >
+                                        {/if}
                                     {:else}
                                         <span style="color: #4ade80;"
                                             >🤖 Bot Activo</span
@@ -361,7 +480,7 @@
                 </table>
             </div>
         {/if}
-    {:else}
+    {:else if currentSubTab === 'contacts'}
         <!-- ==================== VISTA 2: AGENDA DE CONTACTOS & DIFUSIÓN ==================== -->
         <div class="content-toolbar">
             <div>
@@ -610,6 +729,122 @@
                 </div>
             {/if}
         {/if}
+    {:else if currentSubTab === 'personal'}
+        <!-- ==================== VISTA 3: CHATS SILENCIADOS (PERSONALES / FAMILIARES) ==================== -->
+        <div class="content-toolbar">
+            <div>
+                <h2>🛡️ Chats Silenciados (Familiares & Personales)</h2>
+                <p class="section-desc">
+                    Contactos identificados por la IA con lenguaje doméstico o afectivo (hijos, parejas, familiares). El bot permanece silenciado permanentemente para no interrumpir tu vida privada. Puedes reactivarlo manualmente si se trata de un cliente comercial.
+                </p>
+            </div>
+            <div class="toolbar-actions-group">
+                <div class="toolbar-search">
+                    <input
+                        type="search"
+                        class="search-input"
+                        placeholder="🔍 Buscar en chats silenciados..."
+                        bind:value={searchQuery}
+                    />
+                </div>
+            </div>
+        </div>
+
+        {#if ($settings?.phoneUsageType || 'business_only') === 'business_only'}
+            <div class="personal-mode-banner business-mode">
+                <span class="mode-badge-icon">💡</span>
+                <div class="mode-badge-text">
+                    <strong>Modo Actual: Solo Negocio (Línea Comercial Exclusiva)</strong>
+                    <span>El sistema de filtrado de mensajes personales está inactivo para acelerar las respuestas y reducir el consumo de tokens en Gemini. Si usas este número también para tu vida personal o familiar, puedes cambiarlo al modo "Uso Mixto" en <strong>Configuración</strong>.</span>
+                </div>
+            </div>
+        {:else}
+            <div class="personal-mode-banner mixed-mode">
+                <span class="mode-badge-icon">🛡️</span>
+                <div class="mode-badge-text">
+                    <strong>Modo Actual: Uso Mixto (Personal y Negocio)</strong>
+                    <span>La IA analiza y silencia automáticamente a contactos que envíen mensajes de carácter doméstico o afectivo para no interferir en tus conversaciones privadas.</span>
+                </div>
+            </div>
+        {/if}
+
+        {#if filteredSilencedLeads.length === 0}
+            <div class="empty-leads-state">
+                <div style="font-size: 40px; margin-bottom: 12px;">🛡️</div>
+                <h3>
+                    {searchQuery
+                        ? 'No hay chats silenciados que coincidan con la búsqueda'
+                        : 'No hay chats personales silenciados'}
+                </h3>
+                <p>
+                    Cuando un familiar, amigo o pareja te escriba a tu número con mensajes domésticos o afectivos ("Hijo, la bendición", "Amor, ¿ya vienes?", "Tío, llámeme"), la IA lo detectará al instante, silenciará el bot permanentemente y lo agrupará aquí.
+                </p>
+            </div>
+        {:else}
+            <div class="leads-table-container">
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th>Contacto</th>
+                            <th>Motivo de Silenciado</th>
+                            <th>Último Mensaje Recibido</th>
+                            <th>Última Interacción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each filteredSilencedLeads as lead (lead.phone)}
+                            <tr>
+                                <td>
+                                    <div class="lead-name-box">
+                                        <strong
+                                            >{lead.name || 'Contacto Personal'}</strong
+                                        >
+                                        <span class="lead-phone-text"
+                                            >+{lead.phone}</span
+                                        >
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-personal-reason" title={lead.personalReason || 'Lenguaje personal'}>
+                                        🛡️ {lead.personalReason || 'Lenguaje personal detectado'}
+                                    </span>
+                                </td>
+                                <td
+                                    class="last-msg-cell"
+                                    title={lead.lastMessage || ''}
+                                >
+                                    {lead.lastMessage || '-'}
+                                </td>
+                                <td class="date-cell"
+                                    >{formatDate(lead.lastInteraction)}</td
+                                >
+                                <td>
+                                    <div class="lead-actions-row">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-sm btn-view-chat"
+                                            onclick={() => openLeadChat(lead)}
+                                            title="Ver historial de conversación y responder manualmente"
+                                        >
+                                            💬 Ver Chat
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-sm btn-reactivate-bot"
+                                            onclick={() => reactivateBotLead(lead.phone)}
+                                            title="Reactivar atención automática del bot para este contacto"
+                                        >
+                                            🤖 Reactivar Bot
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
+        {/if}
     {/if}
 
     <!-- Modal Rápido: Asignar Contacto o Prospecto a un Grupo -->
@@ -737,6 +972,11 @@
     .subtab-badge-accent {
         background: rgba(34, 197, 94, 0.2);
         color: #4ade80;
+    }
+
+    .subtab-badge-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
     }
 
     .toolbar-actions-group {
@@ -964,6 +1204,168 @@
         text-overflow: ellipsis;
     }
 
+    /* Celda interactiva de etiqueta CRM */
+    .tag-cell-container {
+        position: relative;
+    }
+
+    .badge-tag-interactive {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: var(--radius-full);
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid transparent;
+        background: rgba(148, 163, 184, 0.15);
+        color: #cbd5e1;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .badge-tag-interactive:hover {
+        transform: scale(1.03);
+        border-color: rgba(56, 189, 248, 0.5);
+    }
+
+    .badge-tag-sale-pending {
+        background: linear-gradient(135deg, #b45309 0%, #d97706 45%, #f59e0b 100%) !important;
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        border: 1px solid #fde68a !important;
+        box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
+        animation: pulseTag 2.2s infinite ease-in-out;
+    }
+
+    .sale-tag-pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 0 6px #ffffff;
+        animation: pulseDot 1.4s infinite;
+    }
+
+    .tag-text-bold {
+        font-weight: 800;
+        letter-spacing: 0.3px;
+    }
+
+    .tag-chevron {
+        font-size: 0.68rem;
+        opacity: 0.7;
+    }
+
+    /* Menú desplegable para cambiar etiqueta */
+    .tag-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        z-index: 1000;
+        min-width: 240px;
+        background: rgba(15, 23, 42, 0.98);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        border-radius: 10px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 15px rgba(56, 189, 248, 0.15);
+        padding: 6px;
+        animation: fadeIn 0.18s ease-out;
+    }
+
+    .tag-dropdown-title {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #94a3b8;
+        padding: 6px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tag-dropdown-options {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .tag-dropdown-opt {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 6px 10px;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        color: #e2e8f0;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.15s ease;
+    }
+
+    .tag-dropdown-opt:hover {
+        background: rgba(56, 189, 248, 0.15);
+        color: #fff;
+    }
+
+    .tag-dropdown-opt.selected {
+        background: rgba(56, 189, 248, 0.22);
+        color: #38bdf8;
+    }
+
+    .tag-dropdown-opt.opt-sale-pending {
+        background: rgba(245, 158, 11, 0.12);
+        color: #fbbf24;
+    }
+
+    .tag-dropdown-opt.opt-sale-pending:hover {
+        background: rgba(245, 158, 11, 0.25);
+    }
+
+    .tag-opt-icon {
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .tag-opt-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tag-opt-text strong {
+        font-size: 0.79rem;
+        line-height: 1.2;
+    }
+
+    .tag-opt-text small {
+        font-size: 0.69rem;
+        color: #94a3b8;
+    }
+
+    .tag-opt-check {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #38bdf8;
+    }
+
+    @keyframes pulseTag {
+        0%, 100% {
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.75);
+            transform: scale(1.02);
+        }
+    }
+
     .date-cell {
         font-size: 0.82rem;
         color: var(--text-muted);
@@ -982,6 +1384,65 @@
     .btn-view-chat:hover {
         background: rgba(56, 189, 248, 0.12) !important;
         border-color: #38bdf8 !important;
+    }
+
+    .btn-reactivate-bot {
+        color: #4ade80 !important;
+        border-color: rgba(74, 222, 128, 0.35) !important;
+    }
+    .btn-reactivate-bot:hover {
+        background: rgba(74, 222, 128, 0.15) !important;
+        border-color: #4ade80 !important;
+    }
+
+    .badge-personal-reason {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        max-width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .personal-mode-banner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 16px;
+        font-size: 0.84rem;
+        line-height: 1.4;
+    }
+    .personal-mode-banner.business-mode {
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        color: #bae6fd;
+    }
+    .personal-mode-banner.mixed-mode {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+        color: #bbf7d0;
+    }
+    .mode-badge-icon {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .mode-badge-text {
+        flex: 1;
+    }
+    .mode-badge-text strong {
+        display: block;
+        color: #fff;
+        margin-bottom: 2px;
     }
 
     /* Modal de asignación a grupo */

@@ -39,10 +39,25 @@ export class Lead {
   @Column({ name: 'human_paused', type: 'boolean', default: false })
   humanPaused: boolean;
 
+  @Column({ name: 'human_paused_until', type: 'timestamptz', nullable: true })
+  humanPausedUntil: Date | null;
+
   @Column({ name: 'received_files', type: 'jsonb', default: () => "'[]'::jsonb" })
   receivedFiles: any[];
 
   @Column({ name: 'last_interaction', type: 'timestamptz', default: () => 'NOW()' })
   lastInteraction: Date;
+
+  @Column({ name: 'conversation_summary', type: 'text', nullable: true })
+  conversationSummary: string | null;
+
+  @Column({ name: 'last_summary_at', type: 'timestamptz', nullable: true })
+  lastSummaryAt: Date | null;
+
+  @Column({ name: 'is_personal', type: 'boolean', default: false })
+  isPersonal: boolean;
+
+  @Column({ name: 'personal_reason', type: 'varchar', length: 255, nullable: true })
+  personalReason: string | null;
 }
 

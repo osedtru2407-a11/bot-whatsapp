@@ -5,6 +5,7 @@
   import { libraryStats } from '../../stores/library';
   import { teamMembers } from '../../stores/team';
   import { hasPermission, isSuperadmin, currentUser } from '../../stores/auth';
+  import { pendingSalesCount, displayPendingSalesBadge } from '../../stores/leads';
 
   function setTab(tabId) {
     activeTab.set(tabId);
@@ -133,9 +134,19 @@
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
+            {#if $isSidebarCollapsed && $pendingSalesCount > 0}
+              <span class="collapsed-sales-badge" title="{$pendingSalesCount} ventas pendientes">
+                {$displayPendingSalesBadge}
+              </span>
+            {/if}
           </div>
           {#if !$isSidebarCollapsed}
             <span class="nav-label">Prospectos & CRM</span>
+            {#if $pendingSalesCount > 0}
+              <span class="sidebar-badge sales-pending-badge" title="{$pendingSalesCount} ventas pendientes">
+                {$displayPendingSalesBadge}
+              </span>
+            {/if}
           {/if}
         </button>
       {/if}
@@ -411,6 +422,7 @@
     flex-shrink: 0;
     width: 20px;
     height: 20px;
+    position: relative;
   }
 
   .nav-label {
@@ -425,6 +437,43 @@
     font-size: 0.7rem;
     font-weight: 700;
     line-height: 1;
+  }
+  .sidebar-badge.sales-pending-badge {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    border: 1px solid rgba(254, 202, 202, 0.4);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    animation: pulse-sales-badge 2s infinite ease-in-out;
+  }
+  .collapsed-sales-badge {
+    position: absolute;
+    top: -7px;
+    right: -9px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 3px;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #0f172a;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    line-height: 1;
+    z-index: 10;
+  }
+  @keyframes pulse-sales-badge {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.9);
+    }
   }
   .sidebar-badge.schedules {
     background: rgba(56, 189, 248, 0.2);

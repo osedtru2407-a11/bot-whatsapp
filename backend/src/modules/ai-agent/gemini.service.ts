@@ -93,6 +93,99 @@ export class GeminiService {
       .trim();
   }
 
+  /**
+   * Tarea 7: Formatear buffer de historial de mensajes literales para Gemini (máximo 6 mensajes / 3 turnos)
+   * Garantiza que el primer mensaje siempre sea de rol 'user' como exige la API de Gemini.
+   */
+  formatHistoryBuffer(messages: any[], maxMessages: number = 6): any[] {
+    if (!messages || messages.length === 0) return [];
+
+    const formatted: any[] = [];
+    for (const m of messages) {
+      if (!m) continue;
+      if (m.role && Array.isArray(m.parts)) {
+        formatted.push(m);
+      } else if (typeof m.body === 'string' && m.body.trim()) {
+        formatted.push({
+          role: m.fromMe ? 'model' : 'user',
+          parts: [{ text: m.body.trim() }],
+        });
+      }
+    }
+
+    let buffer = formatted.slice(-maxMessages);
+
+    // Requisito estricto de Gemini API: el primer mensaje del historial debe ser del usuario ('user')
+    while (buffer.length > 0 && buffer[0].role !== 'user') {
+      buffer.shift();
+    }
+
+    return buffer;
+  }
+
+  /**
+   * Tarea 7: Generar o actualizar resumen consolidado de conversación (máximo 5 líneas)
+   */
+  async generateConversationSummary(
+    previousSummary: string | null,
+    messages: Array<{ fromMe: boolean; body?: string }>,
+    customApiKey?: string | null,
+  ): Promise<string> {
+    if (!messages || messages.length === 0) {
+      return previousSummary || '';
+    }
+
+    const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : this.globalApiKey;
+    const client = this.getClient(effectiveKey);
+    if (!client) {
+      return previousSummary || '';
+    }
+
+    const transcript = messages
+      .filter((m) => m && typeof m.body === 'string' && m.body.trim())
+      .map((m) => `${m.fromMe ? 'Asistente' : 'Cliente'}: ${m.body.trim()}`)
+      .join('\n');
+
+    if (!transcript) {
+      return previousSummary || '';
+    }
+
+    const prompt = `Actúa como un asistente experto en ventas y CRM. Tu misión es generar o actualizar un breve resumen consolidado (MÁXIMO 5 LÍNEAS) de la siguiente conversación entre el cliente y el asistente virtual.
+
+El resumen DEBE destacar de forma concisa y directa:
+- Qué productos, códigos o prendas consultó o por cuáles mostró interés el cliente.
+- Qué detalles específicos dio el cliente (tallas, colores, ciudad de entrega, presupuesto, dudas).
+- Qué precios, promociones o información clave le fueron proporcionados.
+- En qué estado o acuerdo quedó la conversación.
+
+${previousSummary && previousSummary.trim() ? `RESUMEN PREVIO:\n${previousSummary.trim()}\n\nNUEVOS MENSAJES A CONSOLIDAR:\n` : 'CONVERSACIÓN:\n'}${transcript}
+
+REGLAS ESTRICTAS:
+- Máximo 5 líneas con viñetas (-).
+- NO agregues introducciones, saludos ni conclusiones.
+- Sé 100% fáctico con los productos y datos mencionados.`;
+
+    try {
+      const response = await client.models.generateContent({
+        model: PRIMARY_MODEL,
+        contents: prompt,
+      });
+
+      const summaryText = response.text ? response.text.trim() : '';
+      if (!summaryText) return previousSummary || '';
+
+      const lines = summaryText
+        .split('\n')
+        .map((l: string) => l.trim())
+        .filter((l: string) => l.length > 0);
+
+      return lines.slice(0, 5).join('\n');
+    } catch (err: any) {
+      this.logger.warn(`Aviso generando resumen de conversación con Gemini: ${err?.message}`);
+      return previousSummary || '';
+    }
+  }
+
   getSystemInstruction(
     businessName: string = 'nuestro negocio',
     libraryContext: string = '',
@@ -101,11 +194,13 @@ export class GeminiService {
       businessInfo?: string;
       faqText?: string;
       neverDo?: string;
+      phoneUsageType?: string;
     },
     catalogProducts: any[] = [],
     justSoldOutProducts: any[] = [],
     justRestockedProducts: any[] = [],
     promotions: any[] = [],
+    conversationSummary?: string | null,
   ): string {
     let instruction = `Eres un asistente virtual de atención y ventas por WhatsApp para "${businessName}".
 Tus objetivos y reglas de estilo:
@@ -149,6 +244,40 @@ ${instructions.faqText.trim()}`;
 ======================================================
 ${instructions.neverDo.trim()}
 Respeta estas prohibiciones siempre y bajo cualquier circunstancia.`;
+    }
+
+    // Tarea 11: Discriminación Semántica de Chats Personales vs Comerciales (Solo si la línea está configurada en uso mixto)
+    if (instructions?.phoneUsageType === 'personal_and_business') {
+      instruction += `\n\n======================================================
+🛡️ DISCRIMINACIÓN DE CHATS PERSONALES VS COMERCIALES:
+======================================================
+Esta línea de WhatsApp puede ser de uso compartido entre el negocio y la vida personal/familiar del comerciante. Debes clasificar y actuar según las siguientes pautas:
+
+1. MENSAJES FAMILIARES / PERSONALES / ÍNTIMOS (AUTO-SILENCIADO):
+   - Si el mensaje contiene lenguaje inequívocamente familiar, doméstico, afectivo, de parentesco o íntimo ajeno por completo al negocio (por ejemplo: "Hijo, la bendición", "Amor, ¿ya vienes?", "Tío, llámeme", "Mamá, te dejé las llaves", "Mi vida cómo te fue hoy", "Pásame el teléfono del médico"):
+     * NO generes ningún texto de respuesta para el chat de WhatsApp.
+     * Emite ÚNICAMENTE la directiva de silenciado:
+       [MARCAR_PERSONAL: MOTIVO]
+       (Ejemplos: [MARCAR_PERSONAL: Mensaje familiar/parentesco], [MARCAR_PERSONAL: Mensaje de pareja/afectivo], [MARCAR_PERSONAL: Mensaje doméstico])
+
+2. SALUDOS NORMALES, NEUTROS O AMBIGUOS (ATENCIÓN COMERCIAL):
+   - Si el mensaje es un saludo formal, neutro o ambiguo (por ejemplo: "Hola", "Buenas tardes", "¿Cómo estás?", "Buenas", "Hola cómo te va", "¿Quién habla?"):
+     * NUNCA lo marques como personal.
+     * Trátalo como un cliente potencial: salúdalo con calidez y cortesía, preséntate como el asistente de "${businessName}" y pregúntale en qué le puedes colaborar hoy.
+
+3. REGLA ESTRICTA DE SEGURIDAD:
+   - Solo emite [MARCAR_PERSONAL: MOTIVO] cuando sea 100% evidente e indiscutible que es un familiar, pareja o amigo cercano hablando de temas privados. Ante cualquier duda o si parece un cliente, responde comercialmente.
+======================================================`;
+    }
+
+    // Tarea 7: Memoria Resumida (Summary-Buffer) de interacciones previas con este cliente
+    if (conversationSummary && conversationSummary.trim()) {
+      instruction += `\n\n======================================================
+📝 RESUMEN DE LA CONVERSACIÓN PREVIA CON ESTE CLIENTE:
+======================================================
+${conversationSummary.trim()}
+
+(Toma en cuenta este resumen como antecedente fáctico de lo conversado previamente con este cliente. Continúa la conversación con coherencia y naturalidad sin repetir preguntas que ya hayan sido respondidas).`;
     }
 
     // Tarea 8: Catálogo de productos oficial y regla de despacho de fotos a demanda
@@ -254,14 +383,19 @@ REGLAS DE COMUNICACIÓN EMOCIONANTE (BUENAS NOTICIAS):
 ======================================================
 Actualmente aplican las siguientes promociones vigentes (máximo 2 activas hoy):\n`;
       for (const promo of promotions) {
-        promoBlock += `\n* 🎯 CAMPAÑA: ${promo.name}
-  - Vigencia: Desde ${promo.startDate} hasta ${promo.endDate}
-  - Descripción y Condiciones:
-${(promo.content || '').trim()}
+        const startStr = promo.startDate instanceof Date ? promo.startDate.toISOString().split('T')[0] : (promo.startDate || promo.start_date || '');
+        const endStr = promo.endDate instanceof Date ? promo.endDate.toISOString().split('T')[0] : (promo.endDate || promo.end_date || '');
+        const promoContent = (promo.content || promo.textContent || '').trim();
+        const promoDesc = (promo.description || '').trim();
+
+        promoBlock += `\n* 🎯 CAMPAÑA / OFERTA: ${promo.name}
+  - Vigencia: Desde ${startStr} hasta ${endStr}
+  - Detalles de la Oferta / Promoción:
+${promoContent}
 `;
-        if (promo.description && promo.description.trim()) {
+        if (promoDesc) {
           promoBlock += `  - 📌 INSTRUCCIONES E INDICACIONES INTERNAS PARA EL ASISTENTE:
-${promo.description.trim()}
+${promoDesc}
 `;
         }
       }
@@ -290,6 +424,25 @@ REGLAS ESTRICTAS DE RESPUESTA:
 ======================================================`;
     }
 
+    // Tarea 10: Detección de Intención de Compra y Alertas en Línea Única
+    instruction += `\n\n======================================================
+💰 DETECCIÓN DE INTENCIÓN DE COMPRA Y PEDIDOS (OBLIGATORIO):
+======================================================
+Analiza los mensajes del cliente para detectar si tiene intención explícita de compra o si está cerrando un pedido.
+Criterios de detección de venta/pedido:
+1. El cliente confirma un pedido o la compra de productos específicos (ej: "Quiero 2 unidades del combo 1", "Me llevo la hamburguesa", "Apartamelo por favor", "Quiero pedir X", "Listo, hazme el pedido").
+2. El cliente solicita datos de pago, métodos de transferencia o cuentas bancarias (ej: "¿Cómo te puedo pagar?", "¿A qué cuenta te transfiero?", "¿Tienes Nequi, Daviplata o tarjeta?", "Pásame el link de pago").
+3. El cliente proporciona datos de despacho o entrega (ej: "Envíamelo a la Cra 15 # 20-30", "Mi dirección es...").
+4. El cliente envía o afirma haber realizado una transferencia o comprobante de pago (ej: "Listo, ya te transferí", "Te acabo de enviar el comprobante").
+
+REGLAS DE ACTUACIÓN CUANDO SE DETECTE UNA VENTA O PEDIDO:
+1. Responde al cliente de forma sumamente cordial, confirmándole con amabilidad que su solicitud o pedido ha sido recibido y que un asesor comercial del equipo se pondrá en contacto de inmediato por este mismo chat para coordinar el pago, despacho y entrega.
+2. Agrega OBLIGATORIAMENTE al final de tu respuesta (en una nueva línea) la directiva:
+   [ALERTA_VENTA: RESUMEN_DEL_PEDIDO]
+   Donde "RESUMEN_DEL_PEDIDO" debe ser un resumen sintético de los artículos pedidos, cantidades, total o intención detectada (por ejemplo: [ALERTA_VENTA: 2x Combo Hamburguesa - Solicita datos de transferencia] o [ALERTA_VENTA: Camiseta Talla M - Enviar a Cra 15 # 20-30]).
+3. NUNCA inventes números de cuenta bancaria personales no autorizados ni enlaces ficticios; confía siempre el cobro y la confirmación final al asesor humano.
+======================================================`;
+
     return instruction;
   }
 
@@ -304,9 +457,12 @@ REGLAS ESTRICTAS DE RESPUESTA:
       businessInfo?: string;
       faqText?: string;
       neverDo?: string;
+      phoneUsageType?: string;
     },
     catalogProducts: any[] = [],
     promotions: any[] = [],
+    conversationSummary?: string | null,
+    recentHistory: any[] = [],
   ): any {
     const effectiveKey = (customApiKey && customApiKey.trim()) ? customApiKey.trim() : this.globalApiKey;
     const client = this.getClient(effectiveKey);
@@ -317,6 +473,16 @@ REGLAS ESTRICTAS DE RESPUESTA:
     const keyPrefix = effectiveKey ? effectiveKey.slice(-8) : 'global';
     const cacheKey = `${keyPrefix}_${sessionId}`;
     const now = Date.now();
+
+    // Tarea 7: Control de inactividad de sesión (>60 minutos)
+    if (this.sessions.has(cacheKey)) {
+      const session = this.sessions.get(cacheKey)!;
+      const minutesInactive = (now - session.lastActivity) / (1000 * 60);
+      if (minutesInactive > 60) {
+        this.logger.log(`⏰ [Sesión ${cacheKey}] Sesión expirada (>60 min sin actividad). Reiniciando sesión con resumen y buffer.`);
+        this.sessions.delete(cacheKey);
+      }
+    }
 
     const availableCodesSet = new Set(
       catalogProducts
@@ -357,6 +523,7 @@ REGLAS ESTRICTAS DE RESPUESTA:
       justSoldOutProducts,
       justRestockedProducts,
       promotions,
+      conversationSummary,
     );
     const currentHash = this.computeContextHash(systemPrompt);
 
@@ -364,12 +531,12 @@ REGLAS ESTRICTAS DE RESPUESTA:
       const session = this.sessions.get(cacheKey)!;
       session.lastActivity = now;
 
-      // Si el catálogo y las instrucciones no han cambiado, reutilizamos la sesión
+      // Si el catálogo, promociones y el resumen no han cambiado, reutilizamos la sesión
       if (session.contextHash === currentHash) {
         return session.chat;
       }
 
-      // Si el catálogo cambió en medio del chat:
+      // Si el catálogo, promociones o resumen cambiaron en caliente:
       let existingHistory: any[] = [];
       try {
         if (typeof session.chat.getHistory === 'function') {
@@ -379,8 +546,14 @@ REGLAS ESTRICTAS DE RESPUESTA:
         existingHistory = [];
       }
 
+      // Tarea 7: Acotar historial existente a la ventana de 6 mensajes (Summary-Buffer)
+      const bufferHistory = this.formatHistoryBuffer(
+        existingHistory.length > 0 ? existingHistory : recentHistory,
+        6,
+      );
+
       this.logger.log(
-        `🔄 [Sesión ${cacheKey}] Catálogo actualizado en caliente (Agotados en vivo: ${justSoldOutProducts.length}, Reabastecidos en vivo: ${justRestockedProducts.length}). Preservando ${existingHistory.length} mensajes previos.`,
+        `🔄 [Sesión ${cacheKey}] Contexto/Catálogo actualizado en caliente (Agotados: ${justSoldOutProducts.length}, Reabastecidos: ${justRestockedProducts.length}). Preservando buffer de ${bufferHistory.length} mensajes previos.`,
       );
 
       const updatedChat = client.chats.create({
@@ -388,7 +561,7 @@ REGLAS ESTRICTAS DE RESPUESTA:
         config: {
           systemInstruction: systemPrompt,
         },
-        history: existingHistory,
+        history: bufferHistory.length > 0 ? bufferHistory : undefined,
       });
 
       session.chat = updatedChat;
@@ -398,11 +571,14 @@ REGLAS ESTRICTAS DE RESPUESTA:
       return updatedChat;
     }
 
+    // Nueva sesión o sesión restablecida tras >60 minutos de inactividad
+    const initialBuffer = this.formatHistoryBuffer(recentHistory, 6);
     const chat = client.chats.create({
       model: modelName,
       config: {
         systemInstruction: systemPrompt,
       },
+      history: initialBuffer.length > 0 ? initialBuffer : undefined,
     });
 
     this.sessions.set(cacheKey, {
@@ -446,9 +622,12 @@ REGLAS ESTRICTAS DE RESPUESTA:
       businessInfo?: string;
       faqText?: string;
       neverDo?: string;
+      phoneUsageType?: string;
     },
     catalogProducts: any[] = [],
     promotions: any[] = [],
+    conversationSummary?: string | null,
+    recentHistory: any[] = [],
   ): Promise<string> {
     if (!this.isConfigured(customApiKey)) {
       throw new Error('Gemini no está configurado para esta empresa.');
@@ -504,8 +683,19 @@ REGLAS ESTRICTAS DE RESPUESTA:
           instructions,
           catalogProducts,
           promotions,
+          conversationSummary,
+          recentHistory,
         );
         const response = await chat.sendMessage({ message: messagePayload });
+
+        // Tarea 7: Limitar historial de memoria de sesión en vivo a máximo 6 mensajes (3 turnos)
+        if (chat && Array.isArray(chat.history) && chat.history.length > 6) {
+          chat.history = chat.history.slice(-6);
+          while (chat.history.length > 0 && chat.history[0].role !== 'user') {
+            chat.history.shift();
+          }
+        }
+
         const rawText = response.text || '';
         return this.formatForWhatsApp(rawText);
       } catch (err: any) {

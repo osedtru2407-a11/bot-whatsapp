@@ -16,7 +16,8 @@ export const settings = writable({
   neverDo: '',
   geminiApiKeyMasked: null,
   isCustomGeminiKey: false,
-  geminiModel: 'gemini-3.5-flash-lite'
+  geminiModel: 'gemini-3.5-flash-lite',
+  phoneUsageType: 'business_only'
 });
 
 export const geminiStatus = writable({
@@ -44,7 +45,8 @@ export async function loadSettings() {
       neverDo: data.neverDo || '',
       geminiApiKeyMasked: data.geminiApiKeyMasked || null,
       isCustomGeminiKey: data.isCustomGeminiKey ?? false,
-      geminiModel: data.geminiModel || 'gemini-3.5-flash-lite'
+      geminiModel: data.geminiModel || 'gemini-3.5-flash-lite',
+      phoneUsageType: data.phoneUsageType || data.phone_usage_type || 'business_only'
     });
 
     try {
@@ -62,7 +64,8 @@ export async function loadSettings() {
 export async function saveSettings(settingsData) {
   try {
     const data = await api.post('/api/settings', settingsData);
-    settings.update(s => ({ ...s, ...data }));
+    const resolvedUsage = data.phoneUsageType || data.phone_usage_type || settingsData.phoneUsageType || 'business_only';
+    settings.update(s => ({ ...s, ...data, phoneUsageType: resolvedUsage }));
     try {
       const gStatus = await api.get('/api/gemini/status');
       geminiStatus.set(gStatus);

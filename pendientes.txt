@@ -200,7 +200,7 @@
 
 ---
 
-## Tarea 11: Discriminación de Mensajes Personales y Manejo de Ráfagas (Debounce)
+## Tarea 11: Discriminación de Mensajes Personales y Manejo de Ráfagas (Debounce) (COMPLETADA)
 
 * **Objetivo Funcional:** Evitar que el bot responda a familiares o conversaciones privadas en cuentas de WhatsApp de uso mixto, agrupando ráfagas cortas de mensajes antes de procesar y permitiendo a la IA clasificar la conversación como personal para auto-silenciarse de forma permanente en ese chat.
 * **Prompt para el Agente:**

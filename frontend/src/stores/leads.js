@@ -1,5 +1,5 @@
 // frontend/src/stores/leads.js
-import { writable, get } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { api } from '../services/api';
 import { currentCompanyId } from './company';
 import { showToast } from './toast';
@@ -16,6 +16,103 @@ export const isChatModalOpen = writable(false);
 export const chatMessages = writable([]);
 export const isChatLoading = writable(false);
 export const isLiveChat = writable(false);
+
+// Tarea 10: Notificación y Alerta Flotante (Toast Enriquecido) de Venta Pendiente
+export const saleAlerts = writable([]);
+export const activeSaleAlert = writable(null);
+
+export function dismissSaleAlert(alertId) {
+  if (!alertId) {
+    activeSaleAlert.set(null);
+    return;
+  }
+  saleAlerts.update(list => list.filter(a => a.id !== alertId));
+}
+
+export function dismissAllSaleAlerts() {
+  saleAlerts.set([]);
+  activeSaleAlert.set(null);
+}
+
+// Derived store para conteo de ventas pendientes activas para el badge en Sidebar
+export const pendingSalesCount = derived(leads, ($leads) => {
+  if (!Array.isArray($leads)) return 0;
+  return $leads.filter(l => l.tag === 'Venta Pendiente' || (l.humanPaused && l.tag === 'Venta Pendiente')).length;
+});
+
+export const displayPendingSalesBadge = derived(pendingSalesCount, ($count) => {
+  if ($count > 99) return '99+';
+  return String($count);
+});
+
+export async function updateLeadTag(phone, newTag) {
+  try {
+    const res = await api.patch(`/api/leads/${encodeURIComponent(phone)}/tag`, { tag: newTag });
+    if (res && res.success) {
+      leads.update(list => {
+        return list.map(l => {
+          if (l.phone === phone || (l.phone && l.phone.replace(/\D/g, '') === phone.replace(/\D/g, ''))) {
+            return {
+              ...l,
+              tag: res.tag,
+              humanPaused: res.humanPaused,
+              humanPausedUntil: res.humanPaused ? l.humanPausedUntil : null,
+            };
+          }
+          return l;
+        });
+      });
+
+      // Si la etiqueta dejó de ser Venta Pendiente, descartar toast flotante correspondiente
+      if (newTag !== 'Venta Pendiente') {
+        const cleanPhone = phone.replace(/\D/g, '');
+        saleAlerts.update(list => list.filter(a => {
+          const alertPhone = a.lead?.phone || '';
+          return alertPhone !== phone && alertPhone.replace(/\D/g, '') !== cleanPhone;
+        }));
+      }
+
+      showToast(`Etiqueta actualizada a "${res.tag}"`, 'success');
+      return { success: true };
+    }
+  } catch (err) {
+    console.error('Error actualizando etiqueta de prospecto:', err);
+    showToast(err.message || 'Error actualizando etiqueta', 'error');
+    return { success: false, error: err.message };
+  }
+}
+
+export function playSaleAlertSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+    // Secuencia sonora de campanada de caja / éxito: C5 -> E5 -> G5 -> C6
+    const notes = [
+      { freq: 523.25, time: 0, duration: 0.15 },
+      { freq: 659.25, time: 0.11, duration: 0.15 },
+      { freq: 783.99, time: 0.22, duration: 0.18 },
+      { freq: 1046.50, time: 0.33, duration: 0.45 },
+    ];
+    notes.forEach(({ freq, time, duration }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+      gain.gain.setValueAtTime(0.28, ctx.currentTime + time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + time + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + duration);
+    });
+  } catch (e) {
+    console.warn('No se pudo reproducir el aviso sonoro:', e);
+  }
+}
 
 let activeEventSource = null;
 let chatPollTimer = null;
@@ -66,6 +163,20 @@ export function initCompanyRealtimeEvents(companyId) {
         if (msg.event === 'leads_reloaded') {
           loadLeads();
         }
+
+        if (msg.event === 'sale_alert' && msg.payload) {
+          playSaleAlertSound();
+          const alertItem = {
+            id: 'sale_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+            lead: msg.payload.lead,
+            summary: msg.payload.summary || 'Pedido confirmado / Intención de compra',
+            timestamp: msg.payload.timestamp || Date.now(),
+          };
+          saleAlerts.update(list => [
+            alertItem,
+            ...list.filter(a => (a.lead?.phone || '') !== (alertItem.lead?.phone || '')),
+          ]);
+        }
       } catch (e) {
         console.warn('Error procesando evento SSE de empresa:', e);
       }
@@ -105,6 +216,22 @@ export async function togglePauseLead(phone) {
     selectedChatLead.update(curr => curr && curr.phone === phone ? { ...curr, humanPaused: res.humanPaused } : curr);
     showToast(res.humanPaused ? 'Bot pausado para este cliente' : 'Bot reactivado para este cliente', 'info');
     return { success: true, humanPaused: res.humanPaused };
+  } catch (err) {
+    showToast(err.message, 'error');
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Tarea 11: Reactivar bot para un contacto silenciado como personal
+ */
+export async function reactivateBotLead(phone) {
+  try {
+    const res = await api.post(`/api/leads/${encodeURIComponent(phone)}/reactivate`, {});
+    leads.update(list => list.map(l => l.phone === phone ? { ...l, isPersonal: false, personalReason: null, humanPaused: false, tag: res.tag || 'Reactivado' } : l));
+    selectedChatLead.update(curr => curr && curr.phone === phone ? { ...curr, isPersonal: false, personalReason: null, humanPaused: false, tag: res.tag || 'Reactivado' } : curr);
+    showToast('🤖 Bot reactivado para este contacto. Volverá a responder normalmente.', 'success');
+    return { success: true };
   } catch (err) {
     showToast(err.message, 'error');
     return { success: false, error: err.message };

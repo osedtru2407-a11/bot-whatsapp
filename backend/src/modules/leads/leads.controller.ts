@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Put,
   Param,
   Body,
   Query,
@@ -56,6 +58,16 @@ export class LeadsController {
     return this.leadsService.togglePause(companyId, phone);
   }
 
+  @Post(':phone/reactivate')
+  async reactivateLead(
+    @Param('phone') phone: string,
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    return this.leadsService.reactivateLead(companyId, phone);
+  }
+
   @Get(':phone/messages')
   async getMessages(
     @Param('phone') phone: string,
@@ -75,6 +87,28 @@ export class LeadsController {
   ) {
     const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
     return this.leadsService.sendLeadMessage(companyId, phone, message);
+  }
+
+  @Patch(':phone/tag')
+  async updateTag(
+    @Param('phone') phone: string,
+    @Body('tag') tag: string,
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    return this.leadsService.updateLeadTag(companyId, phone, tag);
+  }
+
+  @Put(':phone/tag')
+  async updateTagPut(
+    @Param('phone') phone: string,
+    @Body('tag') tag: string,
+    @Query('companyId') queryCompId?: string,
+    @Headers('x-company-id') headerCompId?: string,
+  ) {
+    const companyId = await this.resolveCompanyId(queryCompId, headerCompId);
+    return this.leadsService.updateLeadTag(companyId, phone, tag);
   }
 }
 

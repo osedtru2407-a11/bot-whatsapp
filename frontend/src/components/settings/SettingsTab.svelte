@@ -12,6 +12,7 @@
     let simulateTyping = $state(true);
     let typingDelaySeconds = $state(2);
     let ignoreGroups = $state(true);
+    let phoneUsageType = $state('business_only');
     let fallbackMessage = $state('');
     let isSaving = $state(false);
     let isKeyModalOpen = $state(false);
@@ -23,6 +24,7 @@
             simulateTyping = $settings.simulateTyping ?? true;
             typingDelaySeconds = $settings.typingDelaySeconds || 2;
             ignoreGroups = $settings.ignoreGroups ?? true;
+            phoneUsageType = $settings.phoneUsageType || $settings.phone_usage_type || 'business_only';
             fallbackMessage = $settings.fallbackMessage || '';
         }
     });
@@ -37,6 +39,8 @@
             simulateTyping: Boolean(simulateTyping),
             typingDelaySeconds: parseInt(typingDelaySeconds, 10) || 2,
             ignoreGroups: Boolean(ignoreGroups),
+            phoneUsageType,
+            phone_usage_type: phoneUsageType,
             fallbackMessage: fallbackMessage.trim(),
         });
 
@@ -198,6 +202,72 @@
                         max="15"
                         bind:value={typingDelaySeconds}
                     />
+                </div>
+            </div>
+
+            <!-- Configuración del Tipo de Uso de la Línea de WhatsApp (Tarea 11) -->
+            <div class="phone-usage-card">
+                <div class="phone-usage-header">
+                    <span class="phone-usage-icon">📱</span>
+                    <div>
+                        <h4 class="phone-usage-title">Propósito / Uso de la Línea de WhatsApp</h4>
+                        <p class="phone-usage-subtitle">
+                            Configura si este número de WhatsApp es exclusivo para tu empresa o si también lo usas de forma personal/familiar.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="phone-usage-options">
+                    <button
+                        type="button"
+                        class="usage-option-card {phoneUsageType === 'business_only' ? 'selected' : ''}"
+                        onclick={() => { phoneUsageType = 'business_only'; }}
+                    >
+                        <div class="usage-radio-col">
+                            <input
+                                type="radio"
+                                name="phoneUsage"
+                                value="business_only"
+                                checked={phoneUsageType === 'business_only'}
+                                onchange={() => { phoneUsageType = 'business_only'; }}
+                            />
+                        </div>
+                        <div class="usage-content-col">
+                            <div class="usage-badge-title">
+                                <strong>🏢 Solo Negocio (Línea Comercial Exclusiva)</strong>
+                                <span class="badge-recommended">Recomendado</span>
+                            </div>
+                            <p class="usage-desc">
+                                Este número es usado <strong>únicamente para ventas y atención a clientes</strong>.
+                                Se desactiva el filtrado de mensajes personales, <strong>agilizando la respuesta del bot y optimizando el consumo de tokens de IA</strong> al no sobrecargar a Gemini con análisis de parentesco o vida privada.
+                            </p>
+                        </div>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="usage-option-card {phoneUsageType === 'personal_and_business' ? 'selected' : ''}"
+                        onclick={() => { phoneUsageType = 'personal_and_business'; }}
+                    >
+                        <div class="usage-radio-col">
+                            <input
+                                type="radio"
+                                name="phoneUsage"
+                                value="personal_and_business"
+                                checked={phoneUsageType === 'personal_and_business'}
+                                onchange={() => { phoneUsageType = 'personal_and_business'; }}
+                            />
+                        </div>
+                        <div class="usage-content-col">
+                            <div class="usage-badge-title">
+                                <strong>👥 Uso Mixto (Personal y Negocio)</strong>
+                            </div>
+                            <p class="usage-desc">
+                                Compartes este número entre tu empresa y tus conversaciones con <strong>familiares, amigos o parejas</strong>.
+                                Activa el análisis de Gemini para <strong>detectar y silenciar automáticamente al bot</strong> ante mensajes domésticos o afectivos ("Hijo la bendición", "Amor ya vienes?"), protegiendo tu privacidad.
+                            </p>
+                        </div>
+                    </button>
                 </div>
             </div>
 
@@ -388,6 +458,105 @@
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--border-subtle);
         color: var(--text-secondary);
+    }
+
+    .phone-usage-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+    .phone-usage-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .phone-usage-icon {
+        font-size: 22px;
+        line-height: 1;
+    }
+    .phone-usage-title {
+        margin: 0 0 4px 0;
+        font-size: 14.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .phone-usage-subtitle {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+    .phone-usage-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    @media (max-width: 768px) {
+        .phone-usage-options {
+            grid-template-columns: 1fr;
+        }
+    }
+    .usage-option-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+        font-family: inherit;
+        color: inherit;
+        width: 100%;
+    }
+    .usage-option-card:hover {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: rgba(56, 189, 248, 0.4);
+    }
+    .usage-option-card.selected {
+        background: rgba(56, 189, 248, 0.1);
+        border-color: #38bdf8;
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.12);
+    }
+    .usage-radio-col {
+        padding-top: 2px;
+    }
+    .usage-content-col {
+        flex: 1;
+    }
+    .usage-badge-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    .usage-badge-title strong {
+        font-size: 13.5px;
+        color: #fff;
+    }
+    .badge-recommended {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .usage-desc {
+        margin: 0;
+        font-size: 11.5px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+    .usage-desc strong {
+        color: #e2e8f0;
     }
 
     @media (max-width: 640px) {

@@ -30,7 +30,8 @@ async function loadAllAppData() {
             fallbackMessage: s.fallback_message || `¡Hola! Gracias por comunicarte con ${c.name}.`,
             geminiEnabled: s.gemini_enabled !== false,
             geminiApiKey: s.gemini_api_key || null,
-            geminiModel: s.gemini_model || 'gemini-3.5-flash-lite'
+            geminiModel: s.gemini_model || 'gemini-3.5-flash-lite',
+            phoneUsageType: s.phone_usage_type || 'business_only'
         };
 
         // Rules
@@ -60,7 +61,12 @@ async function loadAllAppData() {
             lastInteraction: l.last_interaction ? new Date(l.last_interaction).toISOString() : new Date().toISOString(),
             lastSentRuleId: l.last_sent_rule_id || null,
             humanPaused: Boolean(l.human_paused),
-            receivedFiles: Array.isArray(l.received_files) ? l.received_files : []
+            humanPausedUntil: l.human_paused_until ? new Date(l.human_paused_until).toISOString() : null,
+            receivedFiles: Array.isArray(l.received_files) ? l.received_files : [],
+            conversationSummary: l.conversation_summary || null,
+            lastSummaryAt: l.last_summary_at ? new Date(l.last_summary_at).toISOString() : null,
+            isPersonal: Boolean(l.is_personal),
+            personalReason: l.personal_reason || null
         }));
 
         // Contacts (Agenda y directorio de contactos importados / WhatsApp para campañas)
@@ -204,9 +210,14 @@ async function deleteCompanyFromDb(companyId) {
  * Guardar o actualizar configuración de empresa
  */
 async function saveCompanySettingsInDb(companyId, settings) {
+    try {
+        await pool.query(`ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS phone_usage_type VARCHAR(50) DEFAULT 'business_only';`);
+    } catch (e) {}
+
+    const usageType = settings.phoneUsageType || settings.phone_usage_type || 'business_only';
     await pool.query(`
-        INSERT INTO company_settings (company_id, business_name, bot_enabled, simulate_typing, typing_delay_seconds, ignore_groups, fallback_message, gemini_enabled, gemini_api_key, gemini_model, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+        INSERT INTO company_settings (company_id, business_name, bot_enabled, simulate_typing, typing_delay_seconds, ignore_groups, fallback_message, gemini_enabled, gemini_api_key, gemini_model, phone_usage_type, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
         ON CONFLICT (company_id) DO UPDATE SET
             business_name = EXCLUDED.business_name,
             bot_enabled = EXCLUDED.bot_enabled,
@@ -217,6 +228,7 @@ async function saveCompanySettingsInDb(companyId, settings) {
             gemini_enabled = EXCLUDED.gemini_enabled,
             gemini_api_key = EXCLUDED.gemini_api_key,
             gemini_model = EXCLUDED.gemini_model,
+            phone_usage_type = EXCLUDED.phone_usage_type,
             updated_at = NOW();
     `, [
         companyId,
@@ -228,7 +240,8 @@ async function saveCompanySettingsInDb(companyId, settings) {
         settings.fallbackMessage || '',
         settings.geminiEnabled !== false,
         settings.geminiApiKey || null,
-        settings.geminiModel || 'gemini-3.5-flash-lite'
+        settings.geminiModel || 'gemini-3.5-flash-lite',
+        usageType
     ]);
 }
 
@@ -279,18 +292,27 @@ async function deleteRuleFromDb(companyId, ruleId) {
  * Upsert Lead (contacto)
  */
 async function upsertLeadInDb(companyId, lead) {
+    try {
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS human_paused_until TIMESTAMP WITH TIME ZONE;`);
+    } catch (e) {}
+
     const leadId = lead.id || `lead_${companyId}_${lead.phone}`;
     await pool.query(`
-        INSERT INTO leads (id, company_id, phone, name, tag, last_message, last_sent_rule_id, human_paused, received_files, last_interaction)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO leads (id, company_id, phone, name, tag, last_message, last_sent_rule_id, human_paused, human_paused_until, received_files, last_interaction, conversation_summary, last_summary_at, is_personal, personal_reason)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         ON CONFLICT (company_id, phone) DO UPDATE SET
             name = EXCLUDED.name,
             tag = EXCLUDED.tag,
             last_message = EXCLUDED.last_message,
             last_sent_rule_id = EXCLUDED.last_sent_rule_id,
             human_paused = EXCLUDED.human_paused,
+            human_paused_until = EXCLUDED.human_paused_until,
             received_files = EXCLUDED.received_files,
-            last_interaction = EXCLUDED.last_interaction;
+            last_interaction = EXCLUDED.last_interaction,
+            conversation_summary = COALESCE(EXCLUDED.conversation_summary, leads.conversation_summary),
+            last_summary_at = COALESCE(EXCLUDED.last_summary_at, leads.last_summary_at),
+            is_personal = COALESCE(EXCLUDED.is_personal, leads.is_personal),
+            personal_reason = COALESCE(EXCLUDED.personal_reason, leads.personal_reason);
     `, [
         leadId,
         companyId,
@@ -300,9 +322,65 @@ async function upsertLeadInDb(companyId, lead) {
         lead.lastMessage || '',
         lead.lastSentRuleId || null,
         Boolean(lead.humanPaused),
+        lead.humanPausedUntil || null,
         JSON.stringify(lead.receivedFiles || []),
-        lead.lastInteraction || new Date().toISOString()
+        lead.lastInteraction || new Date().toISOString(),
+        lead.conversationSummary || null,
+        lead.lastSummaryAt || null,
+        Boolean(lead.isPersonal),
+        lead.personalReason || null
     ]);
+}
+
+/**
+ * Tarea 7: Actualizar resumen consolidado de conversación de un lead
+ */
+async function updateLeadSummaryInDb(companyId, phone, summary) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone) return;
+    try {
+        await pool.query(`
+            UPDATE leads
+            SET conversation_summary = $1, last_summary_at = NOW()
+            WHERE company_id = $2 AND phone = $3;
+        `, [summary, companyId, cleanPhone]);
+    } catch (e) {
+        console.error('Error actualizando resumen de lead en DB:', e.message);
+    }
+}
+
+/**
+ * Tarea 11: Marcar lead como personal (silenciado permanentemente para el bot)
+ */
+async function markLeadPersonalInDb(companyId, phone, reason) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone) return;
+    try {
+        await pool.query(`
+            UPDATE leads
+            SET is_personal = true, personal_reason = $1, tag = 'Personal / Silenciado'
+            WHERE company_id = $2 AND phone = $3;
+        `, [reason || 'Conversación personal detectada', companyId, cleanPhone]);
+    } catch (e) {
+        console.error('Error marcando lead como personal en DB:', e.message);
+    }
+}
+
+/**
+ * Tarea 11: Reactivar bot para un contacto silenciado
+ */
+async function reactivateLeadInDb(companyId, phone) {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone) return;
+    try {
+        await pool.query(`
+            UPDATE leads
+            SET is_personal = false, personal_reason = NULL, human_paused = false, human_paused_until = NULL, tag = 'Reactivado'
+            WHERE company_id = $1 AND phone = $2;
+        `, [companyId, cleanPhone]);
+    } catch (e) {
+        console.error('Error reactivando lead en DB:', e.message);
+    }
 }
 
 /**
@@ -573,6 +651,9 @@ module.exports = {
     saveRuleInDb,
     deleteRuleFromDb,
     upsertLeadInDb,
+    updateLeadSummaryInDb,
+    markLeadPersonalInDb,
+    reactivateLeadInDb,
     deleteLeadFromDb,
     saveScheduleInDb,
     deleteScheduleFromDb,
