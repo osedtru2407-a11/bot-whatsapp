@@ -13,6 +13,7 @@ import { User } from './user.entity';
 import { CompanyUser } from './company-user.entity';
 import { Role } from './role.entity';
 import { CompanySetting } from './company-setting.entity';
+import { Plan } from './plan.entity';
 
 @Entity('companies')
 export class Company {
@@ -28,6 +29,28 @@ export class Company {
   @ManyToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'created_by' })
   creator: User;
+
+  @Column({ name: 'plan_id', type: 'varchar', length: 100, nullable: true })
+  planId: string;
+
+  @ManyToOne(() => Plan, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'plan_id' })
+  plan: Plan;
+
+  @Column({ name: 'gemini_calls_count', type: 'int', default: 0 })
+  geminiCallsCount: number;
+
+  @Column({ name: 'gemini_calls_reset_at', type: 'timestamptz', nullable: true, default: () => 'NOW()' })
+  geminiCallsResetAt: Date;
+
+  @Column({ name: 'auto_messages_count', type: 'int', default: 0 })
+  autoMessagesCount: number;
+
+  @Column({ name: 'auto_messages_reset_at', type: 'timestamptz', nullable: true, default: () => 'NOW()' })
+  autoMessagesResetAt: Date;
+
+  @Column({ name: 'plan_started_at', type: 'timestamptz', nullable: true, default: () => 'NOW()' })
+  planStartedAt: Date;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz', default: () => 'NOW()' })
   createdAt: Date;

@@ -13,6 +13,7 @@ import { Product } from '../../entities/product.entity';
 import { Promotion } from '../../entities/promotion.entity';
 import { RulesModule } from '../rules/rules.module';
 import { AiAgentModule } from '../ai-agent/ai-agent.module';
+import { PlansModule } from '../plans/plans.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AiAgentModule } from '../ai-agent/ai-agent.module';
     ]),
     forwardRef(() => RulesModule),
     forwardRef(() => AiAgentModule),
+    forwardRef(() => PlansModule),
   ],
   providers: [WhatsAppManagerService],
   controllers: [WhatsAppController],

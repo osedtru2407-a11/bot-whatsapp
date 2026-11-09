@@ -14,3 +14,4 @@ export * from './contact.entity';
 export * from './password-reset.entity';
 export * from './product.entity';
 export * from './promotion.entity';
+export * from './plan.entity';

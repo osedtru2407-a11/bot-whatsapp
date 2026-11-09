@@ -140,6 +140,12 @@ async function loadAllAppData() {
             id: c.id,
             name: c.name,
             createdBy: c.created_by,
+            planId: c.plan_id || 'plan_demo',
+            geminiCallsCount: parseInt(c.gemini_calls_count || 0, 10),
+            geminiCallsResetAt: c.gemini_calls_reset_at ? new Date(c.gemini_calls_reset_at).toISOString() : null,
+            autoMessagesCount: parseInt(c.auto_messages_count || 0, 10),
+            autoMessagesResetAt: c.auto_messages_reset_at ? new Date(c.auto_messages_reset_at).toISOString() : null,
+            planStartedAt: c.plan_started_at ? new Date(c.plan_started_at).toISOString() : null,
             settings,
             rules,
             leads,
@@ -164,8 +170,8 @@ async function createCompanyInDb(id, name, createdBy = null, linkOwner = true) {
     try {
         await client.query('BEGIN');
         await client.query(`
-            INSERT INTO companies (id, name, created_by)
-            VALUES ($1, $2, $3)
+            INSERT INTO companies (id, name, created_by, plan_id)
+            VALUES ($1, $2, $3, 'plan_demo')
         `, [id, name, createdBy]);
 
         await client.query(`

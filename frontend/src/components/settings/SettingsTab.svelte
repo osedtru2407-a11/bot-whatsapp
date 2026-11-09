@@ -1,10 +1,12 @@
 <script>
+    import { onMount } from 'svelte';
     import {
         settings,
         geminiStatus,
         saveSettings,
     } from '../../stores/settings';
     import { hasPermission, isSuperadmin } from '../../stores/auth';
+    import { companyPlanUsage, loadCompanyPlanUsage } from '../../stores/plans';
     import GeminiKeyModal from './GeminiKeyModal.svelte';
 
     let businessName = $state('');
@@ -16,6 +18,10 @@
     let fallbackMessage = $state('');
     let isSaving = $state(false);
     let isKeyModalOpen = $state(false);
+
+    onMount(() => {
+        loadCompanyPlanUsage();
+    });
 
     $effect(() => {
         if ($settings) {
@@ -71,6 +77,112 @@
                     required
                 />
             </div>
+
+            <!-- Sección destacada de Plan SaaS y Cuotas de Consumo (Tarea 9) -->
+            {#if $companyPlanUsage}
+                <div class="plan-usage-card-box">
+                    <div class="plan-usage-header">
+                        <div class="plan-title-group">
+                            <span class="plan-header-icon">💎</span>
+                            <div>
+                                <div class="plan-badge-inline">
+                                    <h3 class="plan-header-title">{$companyPlanUsage.plan.name}</h3>
+                                    {#if Number($companyPlanUsage.plan.price) === 0}
+                                        <span class="plan-price-pill demo">Demo / Gratuito</span>
+                                    {:else}
+                                        <span class="plan-price-pill paid">${$companyPlanUsage.plan.price} {$companyPlanUsage.plan.currency}/mes</span>
+                                    {/if}
+                                </div>
+                                {#if $companyPlanUsage.plan.description}
+                                    <p class="plan-header-desc">{$companyPlanUsage.plan.description}</p>
+                                {/if}
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            class="btn-refresh-usage"
+                            onclick={loadCompanyPlanUsage}
+                            title="Actualizar consumo de cuota"
+                        >
+                            🔄 Actualizar
+                        </button>
+                    </div>
+
+                    {#if $companyPlanUsage.geminiUsage.isExhausted}
+                        <div class="quota-exhausted-banner">
+                            <span class="banner-icon">⚠️</span>
+                            <div class="banner-text">
+                                <strong>Límite de Consultas de IA Agotado</strong>
+                                <p>{$companyPlanUsage.plan.customWarningMessage || 'Has completado el límite de llamadas a Gemini de tu plan actual. Las respuestas de IA están detenidas hasta el próximo ciclo o actualización de plan.'}</p>
+                            </div>
+                        </div>
+                    {/if}
+
+                    <div class="usage-bars-grid">
+                        <!-- Barra 1: Consultas Gemini IA -->
+                        <div class="usage-meter-card">
+                            <div class="meter-top">
+                                <div class="meter-label">
+                                    <span class="meter-icon">🤖</span>
+                                    <strong>Consultas a Gemini IA</strong>
+                                </div>
+                                <span class="meter-count">
+                                    {#if $companyPlanUsage.geminiUsage.isUnlimited}
+                                        <strong>{$companyPlanUsage.geminiUsage.current}</strong> / ∞ (Ilimitado)
+                                    {:else}
+                                        <strong>{$companyPlanUsage.geminiUsage.current}</strong> / {$companyPlanUsage.geminiUsage.limit}
+                                        <small class="meter-type">({$companyPlanUsage.geminiUsage.type === 'total' ? 'vitalicio' : 'mensual'})</small>
+                                    {/if}
+                                </span>
+                            </div>
+
+                            {#if !$companyPlanUsage.geminiUsage.isUnlimited}
+                                <div class="progress-track">
+                                    <div
+                                        class="progress-fill {$companyPlanUsage.geminiUsage.percent >= 90 ? 'critical' : ($companyPlanUsage.geminiUsage.percent >= 70 ? 'warning' : 'ok')}"
+                                        style="width: {$companyPlanUsage.geminiUsage.percent}%"
+                                    ></div>
+                                </div>
+                                <div class="meter-bottom">
+                                    <span>{$companyPlanUsage.geminiUsage.percent}% consumido</span>
+                                    <span>Quedan {Math.max(0, $companyPlanUsage.geminiUsage.limit - $companyPlanUsage.geminiUsage.current)}</span>
+                                </div>
+                            {/if}
+                        </div>
+
+                        <!-- Barra 2: Mensajes Automáticos (Reglas) -->
+                        <div class="usage-meter-card">
+                            <div class="meter-top">
+                                <div class="meter-label">
+                                    <span class="meter-icon">⚡</span>
+                                    <strong>Mensajes Automáticos (Reglas)</strong>
+                                </div>
+                                <span class="meter-count">
+                                    {#if $companyPlanUsage.autoMessagesUsage.isUnlimited}
+                                        <strong>{$companyPlanUsage.autoMessagesUsage.current}</strong> / ∞ (Ilimitado)
+                                    {:else}
+                                        <strong>{$companyPlanUsage.autoMessagesUsage.current}</strong> / {$companyPlanUsage.autoMessagesUsage.limit}
+                                        <small class="meter-type">({$companyPlanUsage.autoMessagesUsage.type === 'total' ? 'vitalicio' : 'mensual'})</small>
+                                    {/if}
+                                </span>
+                            </div>
+
+                            {#if !$companyPlanUsage.autoMessagesUsage.isUnlimited}
+                                <div class="progress-track">
+                                    <div
+                                        class="progress-fill {$companyPlanUsage.autoMessagesUsage.percent >= 90 ? 'critical' : ($companyPlanUsage.autoMessagesUsage.percent >= 70 ? 'warning' : 'ok')}"
+                                        style="width: {$companyPlanUsage.autoMessagesUsage.percent}%"
+                                    ></div>
+                                </div>
+                                <div class="meter-bottom">
+                                    <span>{$companyPlanUsage.autoMessagesUsage.percent}% consumido</span>
+                                    <span>Quedan {Math.max(0, $companyPlanUsage.autoMessagesUsage.limit - $companyPlanUsage.autoMessagesUsage.current)}</span>
+                                </div>
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            {/if}
 
             <!-- Sección destacada de Inteligencia Artificial Gemini -->
             <div class="gemini-card-box">
@@ -557,6 +669,173 @@
     }
     .usage-desc strong {
         color: #e2e8f0;
+    }
+
+    /* Estilos de Plan SaaS y Consumo (Tarea 9) */
+    .plan-usage-card-box {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: var(--radius-md);
+        padding: 22px;
+        margin: 18px 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .plan-usage-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    .plan-title-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .plan-header-icon {
+        font-size: 1.8rem;
+        line-height: 1;
+    }
+    .plan-badge-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .plan-header-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #f8fafc;
+    }
+    .plan-price-pill {
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+    .plan-price-pill.demo {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .plan-price-pill.paid {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+    .plan-header-desc {
+        margin: 4px 0 0 0;
+        font-size: 0.825rem;
+        color: #94a3b8;
+    }
+    .btn-refresh-usage {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-secondary);
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-refresh-usage:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+    .quota-exhausted-banner {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .banner-icon {
+        font-size: 1.3rem;
+        line-height: 1;
+    }
+    .banner-text strong {
+        display: block;
+        color: #fca5a5;
+        font-size: 0.85rem;
+    }
+    .banner-text p {
+        margin: 3px 0 0 0;
+        font-size: 0.8rem;
+        color: #fecaca;
+        line-height: 1.35;
+    }
+    .usage-bars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    .usage-meter-card {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: var(--radius-sm);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .meter-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.825rem;
+    }
+    .meter-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #e2e8f0;
+    }
+    .meter-icon {
+        font-size: 1rem;
+    }
+    .meter-count {
+        color: #cbd5e1;
+    }
+    .meter-count strong {
+        color: #fff;
+    }
+    .meter-type {
+        color: #94a3b8;
+        font-size: 0.72rem;
+    }
+    .progress-track {
+        height: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 9999px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.3s ease;
+    }
+    .progress-fill.ok {
+        background: linear-gradient(90deg, #0284c7, #38bdf8);
+    }
+    .progress-fill.warning {
+        background: linear-gradient(90deg, #d97706, #fbbf24);
+    }
+    .progress-fill.critical {
+        background: linear-gradient(90deg, #dc2626, #f87171);
+    }
+    .meter-bottom {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: #94a3b8;
     }
 
     @media (max-width: 640px) {

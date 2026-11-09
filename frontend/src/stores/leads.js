@@ -3,6 +3,7 @@ import { writable, derived, get } from 'svelte/store';
 import { api } from '../services/api';
 import { currentCompanyId } from './company';
 import { showToast } from './toast';
+import { loadCompanyPlanUsage } from './plans';
 import { importContactsCsv as doImportContactsCsv, syncContactsFromWhatsApp as doSyncContactsFromWhatsApp } from './contacts';
 
 export const leads = writable([]);
@@ -177,6 +178,19 @@ export function initCompanyRealtimeEvents(companyId) {
             ...list.filter(a => (a.lead?.phone || '') !== (alertItem.lead?.phone || '')),
           ]);
         }
+
+        if (msg.event === 'quota_exhausted') {
+          loadCompanyPlanUsage(msg.payload?.companyId);
+          showToast(
+            msg.payload?.message || '⚠️ Has superado el límite de tu plan. Las respuestas automáticas se han pausado.',
+            'error',
+            15000
+          );
+        }
+
+        if (msg.event === 'quota_reset') {
+          loadCompanyPlanUsage(msg.payload?.companyId);
+        }
       } catch (e) {
         console.warn('Error procesando evento SSE de empresa:', e);
       }
@@ -251,135 +265,135 @@ export async function openLeadChat(lead) {
   startRealtimeStream(lead.phone);
 }
 
-  export function closeLeadChat() {
-    stopRealtimeStream();
-    isChatModalOpen.set(false);
-    selectedChatLead.set(null);
-  }
+export function closeLeadChat() {
+  stopRealtimeStream();
+  isChatModalOpen.set(false);
+  selectedChatLead.set(null);
+}
 
-  export function startRealtimeStream(phone) {
-    stopRealtimeStream();
-    const companyId = get(currentCompanyId) || 'default';
-    const url = `/api/leads/${encodeURIComponent(phone)}/stream?companyId=${encodeURIComponent(companyId)}`;
+export function startRealtimeStream(phone) {
+  stopRealtimeStream();
+  const companyId = get(currentCompanyId) || 'default';
+  const url = `/api/leads/${encodeURIComponent(phone)}/stream?companyId=${encodeURIComponent(companyId)}`;
 
-    try {
-      const es = new EventSource(url);
-      activeEventSource = es;
+  try {
+    const es = new EventSource(url);
+    activeEventSource = es;
 
-      es.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'connected') {
-            isLiveChat.set(true);
-            return;
-          }
-
-          // Agregar nuevo mensaje en tiempo real sin duplicar
-          chatMessages.update(msgs => {
-            const exists = msgs.some(m => m.id === msg.id || (m.timestamp === msg.timestamp && m.body === msg.body));
-            if (exists) return msgs;
-            return [...msgs, msg];
-          });
-
-          // Actualizar datos del prospecto en la lista general en vivo
-          leads.update(list => list.map(l => l.phone === phone ? {
-            ...l,
-            lastMessage: msg.body || (msg.hasMedia ? '📎 Archivo adjunto' : l.lastMessage),
-            lastInteraction: new Date().toISOString()
-          } : l));
-
-        } catch (err) {
-          console.warn('Error procesando evento SSE:', err);
+    es.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'connected') {
+          isLiveChat.set(true);
+          return;
         }
-      };
 
-      es.onerror = () => {
-        // EventSource reconecta automáticamente en navegadores estándar
-      };
-    } catch (err) {
-      console.warn('Error inicializando EventSource:', err);
-    }
-
-    // Polling de respaldo continuo cada 3 segundos mientras el modal esté abierto
-    chatPollTimer = setInterval(() => {
-      if (get(isChatModalOpen) && get(selectedChatLead)?.phone === phone) {
-        loadChatHistory(phone, false);
-      } else {
-        stopRealtimeStream();
-      }
-    }, 3000);
-  }
-
-  export function stopRealtimeStream() {
-    if (activeEventSource) {
-      try { activeEventSource.close(); } catch (e) { }
-      activeEventSource = null;
-    }
-    if (chatPollTimer) {
-      clearInterval(chatPollTimer);
-      chatPollTimer = null;
-    }
-  }
-
-  export async function loadChatHistory(phone, showSpinner = true) {
-    if (showSpinner) isChatLoading.set(true);
-    try {
-      const res = await api.get(`/api/leads/${encodeURIComponent(phone)}/messages`);
-      const newMsgs = res.messages || [];
-
-      chatMessages.update(curr => {
-        if (curr.length === 0) return newMsgs;
-        if (curr.length !== newMsgs.length || curr[curr.length - 1]?.id !== newMsgs[newMsgs.length - 1]?.id) {
-          return newMsgs;
-        }
-        return curr;
-      });
-
-      isLiveChat.set(Boolean(res.liveFetched));
-      if (res.leadName) {
-        selectedChatLead.update(curr => curr ? { ...curr, name: res.leadName, tag: res.leadTag, humanPaused: res.humanPaused } : curr);
-      }
-      return newMsgs;
-    } catch (err) {
-      if (showSpinner) {
-        console.error('Error cargando historial de chat:', err);
-        showToast('Error cargando chat: ' + err.message, 'error');
-        chatMessages.set([]);
-      }
-      return [];
-    } finally {
-      if (showSpinner) isChatLoading.set(false);
-    }
-  }
-
-  export async function sendChatMessage(phone, message) {
-    if (!message || !message.trim()) return { success: false };
-    try {
-      const res = await api.post(`/api/leads/${encodeURIComponent(phone)}/messages`, { message: message.trim() });
-      if (res.message) {
+        // Agregar nuevo mensaje en tiempo real sin duplicar
         chatMessages.update(msgs => {
-          const exists = msgs.some(m => m.id === res.message.id);
+          const exists = msgs.some(m => m.id === msg.id || (m.timestamp === msg.timestamp && m.body === msg.body));
           if (exists) return msgs;
-          return [...msgs, res.message];
+          return [...msgs, msg];
         });
+
+        // Actualizar datos del prospecto en la lista general en vivo
+        leads.update(list => list.map(l => l.phone === phone ? {
+          ...l,
+          lastMessage: msg.body || (msg.hasMedia ? '📎 Archivo adjunto' : l.lastMessage),
+          lastInteraction: new Date().toISOString()
+        } : l));
+
+      } catch (err) {
+        console.warn('Error procesando evento SSE:', err);
       }
-      leads.update(list => list.map(l => l.phone === phone ? {
-        ...l,
-        lastMessage: message.trim(),
-        lastInteraction: new Date().toISOString()
-      } : l));
-      showToast('Mensaje entregado al cliente', 'success');
-      return { success: true };
-    } catch (err) {
-      showToast(err.message || 'Error al enviar mensaje', 'error');
-      return { success: false, error: err.message };
+    };
+
+    es.onerror = () => {
+      // EventSource reconecta automáticamente en navegadores estándar
+    };
+  } catch (err) {
+    console.warn('Error inicializando EventSource:', err);
+  }
+
+  // Polling de respaldo continuo cada 3 segundos mientras el modal esté abierto
+  chatPollTimer = setInterval(() => {
+    if (get(isChatModalOpen) && get(selectedChatLead)?.phone === phone) {
+      loadChatHistory(phone, false);
+    } else {
+      stopRealtimeStream();
     }
-  }
+  }, 3000);
+}
 
-  export async function importContactsCsv(importData) {
-    return doImportContactsCsv(importData.csv, importData.defaultTag, importData.defaultPrefix, importData.groupId);
+export function stopRealtimeStream() {
+  if (activeEventSource) {
+    try { activeEventSource.close(); } catch (e) { }
+    activeEventSource = null;
   }
+  if (chatPollTimer) {
+    clearInterval(chatPollTimer);
+    chatPollTimer = null;
+  }
+}
 
-  export async function syncContactsFromWhatsApp(options = {}) {
-    return doSyncContactsFromWhatsApp(options.defaultTag, options.groupId);
+export async function loadChatHistory(phone, showSpinner = true) {
+  if (showSpinner) isChatLoading.set(true);
+  try {
+    const res = await api.get(`/api/leads/${encodeURIComponent(phone)}/messages`);
+    const newMsgs = res.messages || [];
+
+    chatMessages.update(curr => {
+      if (curr.length === 0) return newMsgs;
+      if (curr.length !== newMsgs.length || curr[curr.length - 1]?.id !== newMsgs[newMsgs.length - 1]?.id) {
+        return newMsgs;
+      }
+      return curr;
+    });
+
+    isLiveChat.set(Boolean(res.liveFetched));
+    if (res.leadName) {
+      selectedChatLead.update(curr => curr ? { ...curr, name: res.leadName, tag: res.leadTag, humanPaused: res.humanPaused } : curr);
+    }
+    return newMsgs;
+  } catch (err) {
+    if (showSpinner) {
+      console.error('Error cargando historial de chat:', err);
+      showToast('Error cargando chat: ' + err.message, 'error');
+      chatMessages.set([]);
+    }
+    return [];
+  } finally {
+    if (showSpinner) isChatLoading.set(false);
   }
+}
+
+export async function sendChatMessage(phone, message) {
+  if (!message || !message.trim()) return { success: false };
+  try {
+    const res = await api.post(`/api/leads/${encodeURIComponent(phone)}/messages`, { message: message.trim() });
+    if (res.message) {
+      chatMessages.update(msgs => {
+        const exists = msgs.some(m => m.id === res.message.id);
+        if (exists) return msgs;
+        return [...msgs, res.message];
+      });
+    }
+    leads.update(list => list.map(l => l.phone === phone ? {
+      ...l,
+      lastMessage: message.trim(),
+      lastInteraction: new Date().toISOString()
+    } : l));
+    showToast('Mensaje entregado al cliente', 'success');
+    return { success: true };
+  } catch (err) {
+    showToast(err.message || 'Error al enviar mensaje', 'error');
+    return { success: false, error: err.message };
+  }
+}
+
+export async function importContactsCsv(importData) {
+  return doImportContactsCsv(importData.csv, importData.defaultTag, importData.defaultPrefix, importData.groupId);
+}
+
+export async function syncContactsFromWhatsApp(options = {}) {
+  return doSyncContactsFromWhatsApp(options.defaultTag, options.groupId);
+}

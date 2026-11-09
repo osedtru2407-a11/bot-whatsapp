@@ -447,6 +447,96 @@ async function initDb() {
             CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
         `);
 
+        // 18. Tabla de Planes SaaS y Cuotas (Tarea 9)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS plans (
+                id VARCHAR(100) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                price NUMERIC(10, 2) DEFAULT 0.00,
+                currency VARCHAR(10) DEFAULT 'USD',
+                gemini_limit_type VARCHAR(20) DEFAULT 'monthly',
+                gemini_limit INT DEFAULT 100,
+                auto_messages_limit_type VARCHAR(20) DEFAULT 'monthly',
+                auto_messages_limit INT DEFAULT 500,
+                custom_warning_message TEXT,
+                is_default BOOLEAN DEFAULT FALSE,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS plan_id VARCHAR(100) REFERENCES plans(id) ON DELETE SET NULL;
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS gemini_calls_count INT DEFAULT 0;
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS gemini_calls_reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS auto_messages_count INT DEFAULT 0;
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS auto_messages_reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+            ALTER TABLE companies ADD COLUMN IF NOT EXISTS plan_started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+        `);
+
+        // Sembrar planes predeterminados en db.js
+        const defaultPlans = [
+            {
+                id: 'plan_demo',
+                name: 'Versión Gratuita / Demo',
+                description: '100 llamados de IA totales para probar el sistema sin costo.',
+                price: 0.00,
+                currency: 'USD',
+                geminiLimitType: 'total',
+                geminiLimit: 100,
+                autoMessagesLimitType: 'monthly',
+                autoMessagesLimit: 200,
+                customWarningMessage: 'Has completado el límite de 100 consultas de inteligencia artificial de la versión demo. Un asesor humano continuará la atención.',
+                isDefault: true,
+                isActive: true
+            },
+            {
+                id: 'plan_standard',
+                name: 'Plan Estándar ($5 USD/mes)',
+                description: '2.500 respuestas de IA Gemini mensuales y 5.000 mensajes automáticos.',
+                price: 5.00,
+                currency: 'USD',
+                geminiLimitType: 'monthly',
+                geminiLimit: 2500,
+                autoMessagesLimitType: 'monthly',
+                autoMessagesLimit: 5000,
+                customWarningMessage: 'Hemos completado el límite mensual de respuestas automáticas de nuestro plan. En breve un asesor continuará la atención personalmente.',
+                isDefault: false,
+                isActive: true
+            },
+            {
+                id: 'plan_pro',
+                name: 'Plan Pro Ilimitado',
+                description: 'Consultas de IA y mensajes automáticos sin límite de cuota.',
+                price: 15.00,
+                currency: 'USD',
+                geminiLimitType: 'monthly',
+                geminiLimit: -1,
+                autoMessagesLimitType: 'unlimited',
+                autoMessagesLimit: -1,
+                customWarningMessage: null,
+                isDefault: false,
+                isActive: true
+            }
+        ];
+
+        for (const p of defaultPlans) {
+            await client.query(`
+                INSERT INTO plans (id, name, description, price, currency, gemini_limit_type, gemini_limit, auto_messages_limit_type, auto_messages_limit, custom_warning_message, is_default, is_active)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                ON CONFLICT (id) DO NOTHING;
+            `, [
+                p.id, p.name, p.description, p.price, p.currency,
+                p.geminiLimitType, p.geminiLimit, p.autoMessagesLimitType,
+                p.autoMessagesLimit, p.customWarningMessage, p.isDefault, p.isActive
+            ]);
+        }
+
+        // Asignar el plan demo a empresas existentes sin plan
+        await client.query(`
+            UPDATE companies SET plan_id = 'plan_demo' WHERE plan_id IS NULL;
+        `);
+
         // 10. Sembrar roles preestablecidos del sistema si no existen
         for (const role of DEFAULT_SYSTEM_ROLES) {
             await client.query(
@@ -628,7 +718,7 @@ async function getCompanyActivePromotions(companyId) {
         let bogotaDate = localDate;
         try {
             bogotaDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(now);
-        } catch (e) {}
+        } catch (e) { }
 
         const res = await pool.query(
             `SELECT * FROM promotions 
@@ -647,11 +737,378 @@ async function getCompanyActivePromotions(companyId) {
     }
 }
 
+// =========================================================================
+// MÉTODOS DE GESTIÓN DE PLANES SAAS Y CONSUMO DE CUOTA (TAREA 9)
+// =========================================================================
+
+async function getPlans() {
+    try {
+        const res = await pool.query('SELECT * FROM plans ORDER BY price ASC, created_at ASC');
+        return res.rows || [];
+    } catch (err) {
+        console.error('Error obteniendo planes:', err);
+        return [];
+    }
+}
+
+async function getPlanById(id) {
+    const res = await pool.query('SELECT * FROM plans WHERE id = $1', [id]);
+    return res.rows[0] || null;
+}
+
+async function createPlan(data) {
+    const id = data.id || 'plan_' + Date.now();
+    if (data.isDefault) {
+        await pool.query('UPDATE plans SET is_default = FALSE');
+    }
+    const res = await pool.query(`
+        INSERT INTO plans (
+            id, name, description, price, currency,
+            gemini_limit_type, gemini_limit, auto_messages_limit_type,
+            auto_messages_limit, custom_warning_message, is_default, is_active,
+            updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+        RETURNING *;
+    `, [
+        id,
+        (data.name || 'Nuevo Plan').trim(),
+        data.description || null,
+        data.price !== undefined ? Number(data.price) : 0,
+        data.currency || 'USD',
+        data.geminiLimitType === 'total' ? 'total' : 'monthly',
+        data.geminiLimit !== undefined ? Number(data.geminiLimit) : 100,
+        data.autoMessagesLimitType || 'monthly',
+        data.autoMessagesLimit !== undefined ? Number(data.autoMessagesLimit) : 500,
+        data.customWarningMessage || null,
+        Boolean(data.isDefault),
+        data.isActive !== false
+    ]);
+    return res.rows[0];
+}
+
+async function updatePlan(id, data) {
+    if (data.isDefault) {
+        await pool.query('UPDATE plans SET is_default = FALSE WHERE id != $1', [id]);
+    }
+    const current = await getPlanById(id);
+    if (!current) throw new Error('Plan no encontrado');
+
+    const name = data.name !== undefined ? data.name.trim() : current.name;
+    const description = data.description !== undefined ? data.description : current.description;
+    const price = data.price !== undefined ? Number(data.price) : current.price;
+    const currency = data.currency !== undefined ? data.currency : current.currency;
+    const geminiLimitType = data.geminiLimitType !== undefined ? data.geminiLimitType : current.gemini_limit_type;
+    const geminiLimit = data.geminiLimit !== undefined ? Number(data.geminiLimit) : current.gemini_limit;
+    const autoMessagesLimitType = data.autoMessagesLimitType !== undefined ? data.autoMessagesLimitType : current.auto_messages_limit_type;
+    const autoMessagesLimit = data.autoMessagesLimit !== undefined ? Number(data.autoMessagesLimit) : current.auto_messages_limit;
+    const customWarningMessage = data.customWarningMessage !== undefined ? data.customWarningMessage : current.custom_warning_message;
+    const isDefault = data.isDefault !== undefined ? Boolean(data.isDefault) : current.is_default;
+    const isActive = data.isActive !== undefined ? Boolean(data.isActive) : current.is_active;
+
+    const res = await pool.query(`
+        UPDATE plans SET
+            name = $2, description = $3, price = $4, currency = $5,
+            gemini_limit_type = $6, gemini_limit = $7,
+            auto_messages_limit_type = $8, auto_messages_limit = $9,
+            custom_warning_message = $10, is_default = $11, is_active = $12,
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *;
+    `, [
+        id, name, description, price, currency,
+        geminiLimitType, geminiLimit, autoMessagesLimitType,
+        autoMessagesLimit, customWarningMessage, isDefault, isActive
+    ]);
+    return res.rows[0];
+}
+
+async function deletePlan(id) {
+    const plan = await getPlanById(id);
+    if (!plan) throw new Error('Plan no encontrado');
+    if (plan.is_default) {
+        throw new Error('No puedes eliminar el plan predeterminado del sistema');
+    }
+
+    const defaultRes = await pool.query("SELECT id FROM plans WHERE is_default = TRUE LIMIT 1");
+    const fallbackId = defaultRes.rows.length > 0 ? defaultRes.rows[0].id : 'plan_demo';
+
+    await pool.query('UPDATE companies SET plan_id = $1 WHERE plan_id = $2', [fallbackId, id]);
+    await pool.query('DELETE FROM plans WHERE id = $1', [id]);
+    return { success: true, message: `Plan "${plan.name}" eliminado correctamente.` };
+}
+
+async function assignPlanToCompany(companyId, planId) {
+    const plan = await getPlanById(planId);
+    if (!plan) throw new Error('Plan no encontrado');
+
+    const res = await pool.query(`
+        UPDATE companies SET
+            plan_id = $2,
+            plan_started_at = NOW(),
+            gemini_calls_count = 0,
+            gemini_calls_reset_at = NOW(),
+            auto_messages_count = 0,
+            auto_messages_reset_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *;
+    `, [companyId, planId]);
+
+    return res.rows[0];
+}
+
+async function resetCompanyQuota(companyId) {
+    const res = await pool.query(`
+        UPDATE companies SET
+            gemini_calls_count = 0,
+            gemini_calls_reset_at = NOW(),
+            auto_messages_count = 0,
+            auto_messages_reset_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *;
+    `, [companyId]);
+
+    return { success: true, message: 'Cuota de consumo reiniciada exitosamente a 0.' };
+}
+
+async function checkAndPerformMonthlyResetPg(compRow, planRow) {
+    if (!compRow || !planRow) return;
+    const now = new Date();
+    let needsUpdate = false;
+    let newGeminiCount = compRow.gemini_calls_count;
+    let newGeminiReset = compRow.gemini_calls_reset_at;
+    let newAutoCount = compRow.auto_messages_count;
+    let newAutoReset = compRow.auto_messages_reset_at;
+
+    if (planRow.gemini_limit_type === 'monthly') {
+        const lastReset = compRow.gemini_calls_reset_at ? new Date(compRow.gemini_calls_reset_at) : new Date(0);
+        if (now.getFullYear() !== lastReset.getFullYear() || now.getMonth() !== lastReset.getMonth()) {
+            newGeminiCount = 0;
+            newGeminiReset = now;
+            needsUpdate = true;
+        }
+    }
+
+    if (planRow.auto_messages_limit_type === 'monthly') {
+        const lastReset = compRow.auto_messages_reset_at ? new Date(compRow.auto_messages_reset_at) : new Date(0);
+        if (now.getFullYear() !== lastReset.getFullYear() || now.getMonth() !== lastReset.getMonth()) {
+            newAutoCount = 0;
+            newAutoReset = now;
+            needsUpdate = true;
+        }
+    }
+
+    if (needsUpdate) {
+        await pool.query(`
+            UPDATE companies SET
+                gemini_calls_count = $2,
+                gemini_calls_reset_at = $3,
+                auto_messages_count = $4,
+                auto_messages_reset_at = $5
+            WHERE id = $1;
+        `, [compRow.id, newGeminiCount, newGeminiReset, newAutoCount, newAutoReset]);
+        compRow.gemini_calls_count = newGeminiCount;
+        compRow.gemini_calls_reset_at = newGeminiReset;
+        compRow.auto_messages_count = newAutoCount;
+        compRow.auto_messages_reset_at = newAutoReset;
+    }
+}
+
+async function getCompanyUsage(companyId) {
+    const compRes = await pool.query(`
+        SELECT c.*, p.name as plan_name, p.description as plan_description,
+               p.price as plan_price, p.currency as plan_currency,
+               p.gemini_limit_type, p.gemini_limit,
+               p.auto_messages_limit_type, p.auto_messages_limit,
+               p.custom_warning_message
+        FROM companies c
+        LEFT JOIN plans p ON p.id = c.plan_id
+        WHERE c.id = $1;
+    `, [companyId]);
+
+    if (compRes.rows.length === 0) throw new Error('Empresa no encontrada');
+    let row = compRes.rows[0];
+
+    // Si la empresa no tiene plan asignado, asociar el plan demo por defecto
+    if (!row.plan_id) {
+        const defaultPlanRes = await pool.query('SELECT * FROM plans WHERE is_default = TRUE LIMIT 1');
+        const defPlan = defaultPlanRes.rows[0] || {
+            id: 'plan_demo',
+            name: 'Versión Gratuita / Demo',
+            gemini_limit_type: 'total',
+            gemini_limit: 100,
+            auto_messages_limit_type: 'monthly',
+            auto_messages_limit: 200
+        };
+        await pool.query('UPDATE companies SET plan_id = $1 WHERE id = $2', [defPlan.id, companyId]);
+        row.plan_id = defPlan.id;
+        row.plan_name = defPlan.name;
+        row.gemini_limit_type = defPlan.gemini_limit_type;
+        row.gemini_limit = defPlan.gemini_limit;
+        row.auto_messages_limit_type = defPlan.auto_messages_limit_type;
+        row.auto_messages_limit = defPlan.auto_messages_limit;
+    }
+
+    await checkAndPerformMonthlyResetPg(row, {
+        gemini_limit_type: row.gemini_limit_type,
+        auto_messages_limit_type: row.auto_messages_limit_type
+    });
+
+    const geminiLimit = Number(row.gemini_limit !== null ? row.gemini_limit : 100);
+    const geminiUsed = Number(row.gemini_calls_count || 0);
+    const isGeminiUnlimited = geminiLimit <= 0;
+    const geminiPercent = isGeminiUnlimited ? 0 : Math.min(100, Math.round((geminiUsed / geminiLimit) * 100));
+
+    const autoLimit = Number(row.auto_messages_limit !== null ? row.auto_messages_limit : 500);
+    const autoUsed = Number(row.auto_messages_count || 0);
+    const isAutoUnlimited = autoLimit <= 0 || row.auto_messages_limit_type === 'unlimited';
+    const autoPercent = isAutoUnlimited ? 0 : Math.min(100, Math.round((autoUsed / autoLimit) * 100));
+
+    return {
+        companyId: row.id,
+        companyName: row.name,
+        plan: {
+            id: row.plan_id,
+            name: row.plan_name,
+            description: row.plan_description,
+            price: Number(row.plan_price || 0),
+            currency: row.plan_currency || 'USD',
+            geminiLimitType: row.gemini_limit_type,
+            geminiLimit,
+            autoMessagesLimitType: row.auto_messages_limit_type,
+            autoMessagesLimit: autoLimit,
+            customWarningMessage: row.custom_warning_message
+        },
+        geminiUsage: {
+            current: geminiUsed,
+            limit: geminiLimit,
+            type: row.gemini_limit_type,
+            percent: geminiPercent,
+            isExhausted: !isGeminiUnlimited && geminiUsed >= geminiLimit,
+            isUnlimited: isGeminiUnlimited,
+            resetAt: row.gemini_calls_reset_at
+        },
+        autoMessagesUsage: {
+            current: autoUsed,
+            limit: autoLimit,
+            type: row.auto_messages_limit_type,
+            percent: autoPercent,
+            isExhausted: !isAutoUnlimited && autoUsed >= autoLimit,
+            isUnlimited: isAutoUnlimited,
+            resetAt: row.auto_messages_reset_at
+        }
+    };
+}
+
+async function checkGeminiQuota(companyId) {
+    try {
+        const usage = await getCompanyUsage(companyId);
+        if (usage.geminiUsage.isUnlimited) {
+            return { allowed: true, warningMessage: null, current: usage.geminiUsage.current, limit: -1, planName: usage.plan.name };
+        }
+        if (usage.geminiUsage.isExhausted) {
+            // Solo enviar mensaje si está explícitamente configurado en el plan.
+            // Si el empresario/superadmin dejó el campo vacío, NO se envía nada a los clientes para no exponer la cuota.
+            const warning = (usage.plan.customWarningMessage && usage.plan.customWarningMessage.trim())
+                ? usage.plan.customWarningMessage.trim()
+                : null;
+            return {
+                allowed: false,
+                warningMessage: warning,
+                current: usage.geminiUsage.current,
+                limit: usage.geminiUsage.limit,
+                planName: usage.plan.name
+            };
+        }
+        return {
+            allowed: true,
+            warningMessage: null,
+            current: usage.geminiUsage.current,
+            limit: usage.geminiUsage.limit,
+            planName: usage.plan.name
+        };
+    } catch (err) {
+        console.warn(`Aviso verificando cuota Gemini para ${companyId}:`, err.message);
+        return { allowed: true, warningMessage: null, current: 0, limit: -1, planName: '' };
+    }
+}
+
+async function incrementGeminiCalls(companyId) {
+    try {
+        await pool.query('UPDATE companies SET gemini_calls_count = COALESCE(gemini_calls_count, 0) + 1 WHERE id = $1', [companyId]);
+        const usage = await getCompanyUsage(companyId);
+        return {
+            current: usage.geminiUsage.current,
+            limit: usage.geminiUsage.limit,
+            isExhausted: usage.geminiUsage.isExhausted,
+            planName: usage.plan.name
+        };
+    } catch (err) {
+        console.warn(`Aviso incrementando Gemini calls para ${companyId}:`, err.message);
+        return { current: 0, limit: -1, isExhausted: false, planName: '' };
+    }
+}
+
+async function checkAutoMessagesQuota(companyId) {
+    try {
+        const usage = await getCompanyUsage(companyId);
+        if (usage.autoMessagesUsage.isUnlimited) {
+            return { allowed: true, current: usage.autoMessagesUsage.current, limit: -1, planName: usage.plan.name };
+        }
+        if (usage.autoMessagesUsage.isExhausted) {
+            return {
+                allowed: false,
+                current: usage.autoMessagesUsage.current,
+                limit: usage.autoMessagesUsage.limit,
+                planName: usage.plan.name
+            };
+        }
+        return {
+            allowed: true,
+            current: usage.autoMessagesUsage.current,
+            limit: usage.autoMessagesUsage.limit,
+            planName: usage.plan.name
+        };
+    } catch (err) {
+        console.warn(`Aviso verificando cuota auto mensajes para ${companyId}:`, err.message);
+        return { allowed: true, current: 0, limit: -1, planName: '' };
+    }
+}
+
+async function incrementAutoMessages(companyId) {
+    try {
+        await pool.query('UPDATE companies SET auto_messages_count = COALESCE(auto_messages_count, 0) + 1 WHERE id = $1', [companyId]);
+        const usage = await getCompanyUsage(companyId);
+        return {
+            current: usage.autoMessagesUsage.current,
+            limit: usage.autoMessagesUsage.limit,
+            isExhausted: usage.autoMessagesUsage.isExhausted,
+            planName: usage.plan.name
+        };
+    } catch (err) {
+        console.warn(`Aviso incrementando auto mensajes para ${companyId}:`, err.message);
+        return { current: 0, limit: -1, isExhausted: false, planName: '' };
+    }
+}
+
 module.exports = {
     pool,
     query: (text, params) => pool.query(text, params),
     initDb,
     getCompanyProducts,
     getCompanyActivePromotions,
+    getPlans,
+    getPlanById,
+    createPlan,
+    updatePlan,
+    deletePlan,
+    assignPlanToCompany,
+    resetCompanyQuota,
+    getCompanyUsage,
+    checkGeminiQuota,
+    incrementGeminiCalls,
+    checkAutoMessagesQuota,
+    incrementAutoMessages,
     DEFAULT_SYSTEM_ROLES,
 };

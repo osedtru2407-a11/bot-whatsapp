@@ -26,6 +26,7 @@ import { Product } from '../../entities/product.entity';
 import { Promotion } from '../../entities/promotion.entity';
 import { RulesService } from '../rules/rules.service';
 import { GeminiService } from '../ai-agent/gemini.service';
+import { PlansService } from '../plans/plans.service';
 
 export interface WhatsAppClientState {
   client: any;
@@ -64,6 +65,9 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
   // Mapeo en memoria de teléfono/LID a su chatId real en WhatsApp Web
   private readonly chatTargetMap = new Map<string, string>();
 
+  // Control de throttling/cooldown de alertas de cuota de plan (evita spam al chat propio)
+  private readonly lastQuotaAlertTime = new Map<string, number>();
+
   public readonly authDir: string;
   public readonly uploadsDir: string;
 
@@ -88,6 +92,8 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     private readonly rulesService: RulesService,
     @Inject(forwardRef(() => GeminiService))
     private readonly geminiService: GeminiService,
+    @Inject(forwardRef(() => PlansService))
+    private readonly plansService: PlansService,
   ) {
     const potentialAuthDirs = [
       process.env.WWEBJS_AUTH_DIR,
@@ -535,81 +541,81 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     const cleanDigits = raw.replace(/\D/g, '');
     let chatId = '';
 
-      if (this.chatTargetMap.has(raw)) {
-        chatId = this.chatTargetMap.get(raw)!;
-      } else if (cleanDigits && this.chatTargetMap.has(cleanDigits)) {
-        chatId = this.chatTargetMap.get(cleanDigits)!;
-      } else if (raw.endsWith('@lid') || raw.endsWith('@c.us') || raw.endsWith('@g.us')) {
-        chatId = raw;
-      } else if (cleanDigits) {
-        chatId = `${cleanDigits}@c.us`;
-      }
-
-      return { chatId, cleanDigits };
+    if (this.chatTargetMap.has(raw)) {
+      chatId = this.chatTargetMap.get(raw)!;
+    } else if (cleanDigits && this.chatTargetMap.has(cleanDigits)) {
+      chatId = this.chatTargetMap.get(cleanDigits)!;
+    } else if (raw.endsWith('@lid') || raw.endsWith('@c.us') || raw.endsWith('@g.us')) {
+      chatId = raw;
+    } else if (cleanDigits) {
+      chatId = `${cleanDigits}@c.us`;
     }
 
-  async sendMessage(companyId: string, phone: string, message ?: string, media ?: any) {
-      const holder = this.companyClients.get(companyId);
-      if (!holder || holder.status !== 'ready' || !holder.client) {
-        throw new ServiceUnavailableException('El bot de WhatsApp no está conectado todavía. Escanea el código QR.');
+    return { chatId, cleanDigits };
+  }
+
+  async sendMessage(companyId: string, phone: string, message?: string, media?: any) {
+    const holder = this.companyClients.get(companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
+      throw new ServiceUnavailableException('El bot de WhatsApp no está conectado todavía. Escanea el código QR.');
+    }
+
+    const { chatId, cleanDigits } = this.resolveChatId(phone);
+    if (!chatId) {
+      throw new BadRequestException('Número de WhatsApp inválido');
+    }
+
+    let result: any;
+    if (media && media.url) {
+      let mediaInstance: any = null;
+      const relPath = media.url.startsWith('/') ? media.url.slice(1) : media.url;
+      const fullPath = path.resolve(this.uploadsDir, '..', relPath);
+
+      if (fs.existsSync(fullPath)) {
+        mediaInstance = MessageMedia.fromFilePath(fullPath);
+      } else if (media.url.startsWith('http')) {
+        mediaInstance = await MessageMedia.fromUrl(media.url);
       }
 
-      const { chatId, cleanDigits } = this.resolveChatId(phone);
-      if (!chatId) {
-        throw new BadRequestException('Número de WhatsApp inválido');
-      }
-
-      let result: any;
-      if (media && media.url) {
-        let mediaInstance: any = null;
-        const relPath = media.url.startsWith('/') ? media.url.slice(1) : media.url;
-        const fullPath = path.resolve(this.uploadsDir, '..', relPath);
-
-        if (fs.existsSync(fullPath)) {
-          mediaInstance = MessageMedia.fromFilePath(fullPath);
-        } else if (media.url.startsWith('http')) {
-          mediaInstance = await MessageMedia.fromUrl(media.url);
-        }
-
-        if (mediaInstance) {
-          result = await holder.client.sendMessage(chatId, mediaInstance, { caption: message || undefined });
-        } else {
-          result = await holder.client.sendMessage(chatId, message || '');
-        }
+      if (mediaInstance) {
+        result = await holder.client.sendMessage(chatId, mediaInstance, { caption: message || undefined });
       } else {
         result = await holder.client.sendMessage(chatId, message || '');
       }
-
-      const msgSerializedId = result?.id?._serialized || null;
-      const bodyText = message || (media ? '📎 Archivo enviado' : '');
-
-      await this.saveMessage(companyId, cleanDigits || phone, true, bodyText, media?.url, media?.mimetype, 'chat', msgSerializedId);
-
-      this.broadcastChatMessage(companyId, cleanDigits || phone, {
-        id: msgSerializedId || `send_${Date.now()}`,
-        fromMe: true,
-        body: bodyText,
-        timestamp: Date.now(),
-        type: 'chat',
-        hasMedia: Boolean(media),
-        mediaUrl: media?.url || null,
-      });
-
-      await this.updateLeadLastMessage(companyId, cleanDigits || phone, bodyText);
-
-      return {
-        success: true,
-        message: `Mensaje entregado a ${cleanDigits || phone}`,
-        id: msgSerializedId,
-      };
+    } else {
+      result = await holder.client.sendMessage(chatId, message || '');
     }
+
+    const msgSerializedId = result?.id?._serialized || null;
+    const bodyText = message || (media ? '📎 Archivo enviado' : '');
+
+    await this.saveMessage(companyId, cleanDigits || phone, true, bodyText, media?.url, media?.mimetype, 'chat', msgSerializedId);
+
+    this.broadcastChatMessage(companyId, cleanDigits || phone, {
+      id: msgSerializedId || `send_${Date.now()}`,
+      fromMe: true,
+      body: bodyText,
+      timestamp: Date.now(),
+      type: 'chat',
+      hasMedia: Boolean(media),
+      mediaUrl: media?.url || null,
+    });
+
+    await this.updateLeadLastMessage(companyId, cleanDigits || phone, bodyText);
+
+    return {
+      success: true,
+      message: `Mensaje entregado a ${cleanDigits || phone}`,
+      id: msgSerializedId,
+    };
+  }
 
   /**
    * Tarea 8: Despacho inteligente y secuencial de fotografías de producto por WhatsApp
    */
-  async sendProductPhotos(companyId: string, phone: string, productCode: string): Promise < number > {
-      const holder = this.companyClients.get(companyId);
-      if(!holder || holder.status !== 'ready' || !holder.client) {
+  async sendProductPhotos(companyId: string, phone: string, productCode: string): Promise<number> {
+    const holder = this.companyClients.get(companyId);
+    if (!holder || holder.status !== 'ready' || !holder.client) {
       this.logger.warn(`Cliente WhatsApp no está listo para enviar fotos a ${phone}`);
       return 0;
     }
@@ -932,6 +938,16 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
     );
 
     if (matchedRule) {
+      // Tarea 9: Verificar límite de mensajes automáticos del plan SaaS
+      const autoQuota = await this.plansService.checkAutoMessagesQuota(companyId);
+      if (!autoQuota.allowed) {
+        this.logger.warn(`⚠️ [Empresa ${companyId}] Límite de mensajes automáticos alcanzado (${autoQuota.current}/${autoQuota.limit}). Omitiendo respuesta de regla.`);
+        await this.notifyQuotaExceeded(companyId, 'auto_messages', autoQuota.current, autoQuota.limit, autoQuota.planName);
+        return;
+      } else {
+        this.lastQuotaAlertTime.delete(`${companyId}_auto_messages`);
+      }
+
       this.logger.log(`[Empresa ${companyId}] 🎯 Coincidencia con regla "${matchedRule.name}" para ${phone} tras ráfaga`);
 
       const typingDelay = (settings.simulateTyping && settings.typingDelaySeconds ? settings.typingDelaySeconds : 0) * 1000;
@@ -940,6 +956,10 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
       }
 
       await this.sendMessage(companyId, phone, matchedRule.response, matchedRule.media);
+      const autoIncRes = await this.plansService.incrementAutoMessages(companyId);
+      if (autoIncRes.isExhausted) {
+        await this.notifyQuotaExceeded(companyId, 'auto_messages', autoIncRes.current, autoIncRes.limit, autoIncRes.planName);
+      }
 
       if (matchedRule.leadTag) {
         lead.tag = matchedRule.leadTag;
@@ -954,267 +974,285 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
 
     // 2. Fallback inteligente con Gemini IA
     if (settings.geminiEnabled && this.geminiService.isConfigured(settings.geminiApiKey)) {
-      try {
-        const docs = await this.libraryRepository.find({ where: { companyId, active: true } });
-        const catalogProducts = await this.productRepository.find({ where: { companyId } });
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const localDate = `${y}-${m}-${d}`;
-        const utcDate = now.toISOString().split('T')[0];
-        let bogotaDate = localDate;
+      // Tarea 9: Verificar límite de llamados a Gemini según el plan SaaS
+      const geminiQuota = await this.plansService.checkGeminiQuota(companyId);
+      if (!geminiQuota.allowed) {
+        this.logger.warn(`⚠️ [Empresa ${companyId}] Límite de llamados a Gemini agotado (${geminiQuota.current}/${geminiQuota.limit}).`);
+        await this.notifyQuotaExceeded(companyId, 'gemini', geminiQuota.current, geminiQuota.limit, geminiQuota.planName);
+          if (geminiQuota.warningMessage && geminiQuota.warningMessage.trim()) {
+            await this.sendMessage(companyId, phone, geminiQuota.warningMessage.trim());
+          }
+          return;
+        } else {
+          this.lastQuotaAlertTime.delete(`${companyId}_gemini`);
+        }
         try {
-          bogotaDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(now);
-        } catch (e) { }
-
-        const candidateDates = Array.from(new Set([localDate, utcDate, bogotaDate]));
-        const dateConditions = candidateDates.map((_, idx) => `(p.start_date <= :d${idx} AND p.end_date >= :d${idx})`).join(' OR ');
-        const dateParams: Record<string, any> = { companyId, isActive: true };
-        candidateDates.forEach((dateVal, idx) => { dateParams[`d${idx}`] = dateVal; });
-
-        const activePromotions = await this.promotionRepository
-          .createQueryBuilder('p')
-          .where('p.company_id = :companyId', { companyId })
-          .andWhere('p.is_active = :isActive', { isActive: true })
-          .andWhere(`(${dateConditions})`, dateParams)
-          .orderBy('p.start_date', 'ASC')
-          .take(2)
-          .getMany();
-
-        const allDbMessages = await this.messageRepository.find({
-          where: { companyId, phone },
-          order: { timestamp: 'ASC' },
-        });
-
-        // Excluir los mensajes de esta ráfaga actual para armar el buffer previo de antecedentes
-        const priorMessages = allDbMessages.slice(0, -items.length);
-        const totalPriorMessages = priorMessages.length;
-        let conversationSummary = lead.conversationSummary || null;
-
-        const shouldUpdateSummary =
-          (totalPriorMessages > 6 && !conversationSummary) ||
-          (minutesSinceLastInteraction > 60 && totalPriorMessages >= 2) ||
-          (totalPriorMessages > 6 && (!lead.lastSummaryAt || (Date.now() - new Date(lead.lastSummaryAt).getTime()) > 60 * 60 * 1000));
-
-        if (shouldUpdateSummary && totalPriorMessages > 0) {
+          const docs = await this.libraryRepository.find({ where: { companyId, active: true } });
+          const catalogProducts = await this.productRepository.find({ where: { companyId } });
+          const now = new Date();
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          const localDate = `${y}-${m}-${d}`;
+          const utcDate = now.toISOString().split('T')[0];
+          let bogotaDate = localDate;
           try {
-            const messagesToSummarize = minutesSinceLastInteraction > 60
-              ? priorMessages
-              : priorMessages.slice(0, -6);
+            bogotaDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(now);
+          } catch (e) { }
 
-            if (messagesToSummarize.length > 0) {
-              const newSummary = await this.geminiService.generateConversationSummary(
-                conversationSummary,
-                messagesToSummarize,
-                settings.geminiApiKey,
-              );
-              if (newSummary && newSummary.trim()) {
-                conversationSummary = newSummary.trim();
-                lead.conversationSummary = conversationSummary;
-                lead.lastSummaryAt = new Date();
+          const candidateDates = Array.from(new Set([localDate, utcDate, bogotaDate]));
+          const dateConditions = candidateDates.map((_, idx) => `(p.start_date <= :d${idx} AND p.end_date >= :d${idx})`).join(' OR ');
+          const dateParams: Record<string, any> = { companyId, isActive: true };
+          candidateDates.forEach((dateVal, idx) => { dateParams[`d${idx}`] = dateVal; });
+
+          const activePromotions = await this.promotionRepository
+            .createQueryBuilder('p')
+            .where('p.company_id = :companyId', { companyId })
+            .andWhere('p.is_active = :isActive', { isActive: true })
+            .andWhere(`(${dateConditions})`, dateParams)
+            .orderBy('p.start_date', 'ASC')
+            .take(2)
+            .getMany();
+
+          const allDbMessages = await this.messageRepository.find({
+            where: { companyId, phone },
+            order: { timestamp: 'ASC' },
+          });
+
+          // Excluir los mensajes de esta ráfaga actual para armar el buffer previo de antecedentes
+          const priorMessages = allDbMessages.slice(0, -items.length);
+          const totalPriorMessages = priorMessages.length;
+          let conversationSummary = lead.conversationSummary || null;
+
+          const shouldUpdateSummary =
+            (totalPriorMessages > 6 && !conversationSummary) ||
+            (minutesSinceLastInteraction > 60 && totalPriorMessages >= 2) ||
+            (totalPriorMessages > 6 && (!lead.lastSummaryAt || (Date.now() - new Date(lead.lastSummaryAt).getTime()) > 60 * 60 * 1000));
+
+          if (shouldUpdateSummary && totalPriorMessages > 0) {
+            try {
+              const messagesToSummarize = minutesSinceLastInteraction > 60
+                ? priorMessages
+                : priorMessages.slice(0, -6);
+
+              if (messagesToSummarize.length > 0) {
+                const newSummary = await this.geminiService.generateConversationSummary(
+                  conversationSummary,
+                  messagesToSummarize,
+                  settings.geminiApiKey,
+                );
+                if (newSummary && newSummary.trim()) {
+                  conversationSummary = newSummary.trim();
+                  lead.conversationSummary = conversationSummary;
+                  lead.lastSummaryAt = new Date();
+                  await this.leadRepository.save(lead);
+                  this.logger.log(`📝 [Empresa ${companyId}] Resumen consolidado generado/actualizado para ${phone} (${newSummary.split('\n').length} líneas).`);
+                }
+              }
+            } catch (sumErr: any) {
+              this.logger.warn(`Aviso actualizando resumen para ${phone}: ${sumErr?.message}`);
+            }
+          }
+
+          const recentBuffer = priorMessages.slice(-6);
+          const geminiInput = lastAudio ? { text: combinedText, audio: lastAudio } : combinedText;
+
+          const reply = await this.geminiService.sendMessage(
+            phone,
+            geminiInput,
+            settings.businessName || 'nuestro negocio',
+            docs,
+            settings.geminiApiKey,
+            settings.geminiModel,
+            {
+              botTone: settings.botTone,
+              businessInfo: settings.businessInfo,
+              faqText: settings.faqText,
+              neverDo: settings.neverDo,
+              phoneUsageType: settings.phoneUsageType || 'business_only',
+            },
+            catalogProducts,
+            activePromotions,
+            conversationSummary,
+            recentBuffer,
+          );
+
+          // Incrementar contador de llamadas de IA consumidas
+          const geminiIncRes = await this.plansService.incrementGeminiCalls(companyId);
+          if (geminiIncRes.isExhausted) {
+            await this.notifyQuotaExceeded(companyId, 'gemini', geminiIncRes.current, geminiIncRes.limit, geminiIncRes.planName);
+          }
+
+          if (reply) {
+            // Tarea 11: Interceptar directiva [MARCAR_PERSONAL: MOTIVO] únicamente si está configurado en uso mixto
+            if (settings.phoneUsageType === 'personal_and_business') {
+              const personalRegex = /\[MARCAR_PERSONAL(?::\s*([^\]]+))?\]/i;
+              const personalMatch = reply.match(personalRegex);
+              if (personalMatch) {
+                const reason = (personalMatch[1] || 'Conversación personal detectada').trim();
+                this.logger.log(`🛡️ [Empresa ${companyId}] Chat con ${phone} clasificado como PERSONAL (${reason}). Silenciando bot permanentemente.`);
+                lead.isPersonal = true;
+                lead.personalReason = reason;
+                lead.tag = 'Personal / Silenciado';
                 await this.leadRepository.save(lead);
-                this.logger.log(`📝 [Empresa ${companyId}] Resumen consolidado generado/actualizado para ${phone} (${newSummary.split('\n').length} líneas).`);
+                this.broadcastCompanyEvent(companyId, 'lead_updated', {
+                  phone: lead.phone,
+                  name: lead.name,
+                  lastMessage: lead.lastMessage,
+                  tag: lead.tag,
+                  isPersonal: true,
+                  personalReason: reason,
+                  humanPaused: false,
+                });
+                // REGLA: No envíes ningún mensaje de respuesta a WhatsApp
+                return;
               }
             }
-          } catch (sumErr: any) {
-            this.logger.warn(`Aviso actualizando resumen para ${phone}: ${sumErr?.message}`);
-          }
-        }
 
-        const recentBuffer = priorMessages.slice(-6);
-        const geminiInput = lastAudio ? { text: combinedText, audio: lastAudio } : combinedText;
+            this.logger.log(`🤖 [Empresa ${companyId}] Respuesta generada por Gemini IA para ${phone} tras ráfaga (${items.length} msgs)`);
 
-        const reply = await this.geminiService.sendMessage(
-          phone,
-          geminiInput,
-          settings.businessName || 'nuestro negocio',
-          docs,
-          settings.geminiApiKey,
-          settings.geminiModel,
-          {
-            botTone: settings.botTone,
-            businessInfo: settings.businessInfo,
-            faqText: settings.faqText,
-            neverDo: settings.neverDo,
-            phoneUsageType: settings.phoneUsageType || 'business_only',
-          },
-          catalogProducts,
-          activePromotions,
-          conversationSummary,
-          recentBuffer,
-        );
+            // Tarea 10: Interceptar directiva [ALERTA_VENTA: RESUMEN_DEL_PEDIDO]
+            const saleDirectiveRegex = /\[ALERTA_VENTA(?::\s*([^\]]+))?\]/gi;
+            const saleMatches = [...reply.matchAll(saleDirectiveRegex)];
+            const hasSaleAlert = saleMatches.length > 0;
+            const saleSummary = hasSaleAlert ? (saleMatches[0][1] || 'Pedido confirmado / Intención de compra').trim() : '';
 
-        if (reply) {
-          // Tarea 11: Interceptar directiva [MARCAR_PERSONAL: MOTIVO] únicamente si está configurado en uso mixto
-          if (settings.phoneUsageType === 'personal_and_business') {
-            const personalRegex = /\[MARCAR_PERSONAL(?::\s*([^\]]+))?\]/i;
-            const personalMatch = reply.match(personalRegex);
-            if (personalMatch) {
-              const reason = (personalMatch[1] || 'Conversación personal detectada').trim();
-              this.logger.log(`🛡️ [Empresa ${companyId}] Chat con ${phone} clasificado como PERSONAL (${reason}). Silenciando bot permanentemente.`);
-              lead.isPersonal = true;
-              lead.personalReason = reason;
-              lead.tag = 'Personal / Silenciado';
+            // Tarea 8: Interceptar directiva [ENVIAR_FOTOS: CODIGO_PRODUCTO] mediante expresión regular
+            const photoDirectiveRegex = /\[ENVIAR_FOTOS:\s*([A-Za-z0-9_\-\.]+)\s*\]/gi;
+            const photoMatches = [...reply.matchAll(photoDirectiveRegex)];
+
+            // Limpiar directivas del texto visible que recibe el cliente
+            const cleanTextReply = reply
+              .replace(saleDirectiveRegex, '')
+              .replace(photoDirectiveRegex, '')
+              .trim();
+
+            const typingDelay = (settings.simulateTyping && settings.typingDelaySeconds ? settings.typingDelaySeconds : 0) * 1000;
+            if (typingDelay > 0) {
+              await new Promise((r) => setTimeout(r, Math.min(typingDelay, 4000)));
+            }
+
+            // Enviar primero la respuesta de texto limpio
+            if (cleanTextReply) {
+              await this.sendMessage(companyId, phone, cleanTextReply);
+            }
+
+            // Inmediatamente después, si hubo solicitud de fotos, despacharlas secuencialmente usando MessageMedia
+            if (photoMatches.length > 0) {
+              for (const match of photoMatches) {
+                const productCode = match[1]?.trim();
+                if (productCode) {
+                  await this.sendProductPhotos(companyId, phone, productCode);
+                }
+              }
+            }
+
+            // Tarea 10: Procesar Alerta de Venta (Línea Única, Auto-mensaje, Mark Unread, Pausa 120min, Evento Web)
+            if (hasSaleAlert) {
+              const holder = this.companyClients.get(companyId);
+              const { realPhone, chatId } = await this.resolveContactIdentifier(holder?.client, phone);
+              const targetChatId = this.chatTargetMap.get(phone) || chatId;
+
+              // Determinar si tenemos un número de teléfono E.164 válido (7 a 14 dígitos y que no sea un LID)
+              const candidateDigits = (realPhone || phone).replace(/\D/g, '');
+              const isLidNumber = candidateDigits.length >= 15 || phone.endsWith('@lid');
+              const validWaPhone = !isLidNumber && candidateDigits.length >= 7 && candidateDigits.length <= 14
+                ? candidateDigits
+                : (realPhone && realPhone.length >= 7 && realPhone.length <= 14 ? realPhone : null);
+
+              const clientDisplayName = lead.name && lead.name !== phone
+                ? `${lead.name} (${validWaPhone ? `+${validWaPhone}` : phone})`
+                : (validWaPhone ? `+${validWaPhone}` : phone);
+
+              // Generar enlace wa.me SOLO si se dispone de un número telefónico E.164 válido
+              const chatLinkText = validWaPhone
+                ? `Ir al chat: https://wa.me/${validWaPhone}`
+                : `(Abre WhatsApp y busca el chat de ${clientDisplayName} con punto verde)`;
+
+              // 1. Mensaje al chat propio del negocio (el chat consigo mismo)
+              try {
+                const selfWid = holder?.client?.info?.wid?._serialized || (holder?.client?.info?.wid?.user ? `${holder.client.info.wid.user}@c.us` : null);
+                if (holder?.client && selfWid) {
+                  const selfAlertMsg = `🚨 ¡VENTA PENDIENTE!\nCliente: ${clientDisplayName}\nResumen: ${saleSummary}\n${chatLinkText}`;
+                  await holder.client.sendMessage(selfWid, selfAlertMsg);
+                  this.logger.log(`🚨 [Empresa ${companyId}] Alerta de venta enviada al chat propio (${selfWid})`);
+                }
+              } catch (errSelf: any) {
+                this.logger.warn(`Error enviando auto-mensaje de venta: ${errSelf?.message}`);
+              }
+
+              // 2. Marcar la conversación del cliente como no leída en el WhatsApp del comerciante
+              try {
+                if (holder?.client) {
+                  if (typeof holder.client.markChatUnread === 'function') {
+                    await holder.client.markChatUnread(targetChatId);
+                  } else {
+                    const chat = await holder.client.getChatById(targetChatId);
+                    if (chat && typeof chat.markUnread === 'function') {
+                      await chat.markUnread();
+                    }
+                  }
+                  this.logger.log(`🟢 [Empresa ${companyId}] Chat de ${targetChatId} marcado como no leído.`);
+                }
+              } catch (errUnread: any) {
+                this.logger.warn(`Error marcando chat como no leído: ${errUnread?.message}`);
+              }
+
+              // 3. Pausa del Bot en ese Chat (atencion_humana: true) durante 120 minutos
+              const pauseMinutes = 120;
+              const pausedUntil = new Date(Date.now() + pauseMinutes * 60 * 1000);
+              lead.humanPaused = true;
+              lead.humanPausedUntil = pausedUntil;
+              lead.tag = 'Venta Pendiente';
               await this.leadRepository.save(lead);
+
+              // 4. Alerta en Panel Web (WebSockets / SSE)
+              this.broadcastCompanyEvent(companyId, 'sale_alert', {
+                lead: {
+                  phone: validWaPhone || lead.phone,
+                  name: clientDisplayName,
+                  tag: 'Venta Pendiente',
+                  humanPaused: true,
+                  humanPausedUntil: pausedUntil.toISOString(),
+                },
+                summary: saleSummary,
+                timestamp: Date.now(),
+              });
+
               this.broadcastCompanyEvent(companyId, 'lead_updated', {
                 phone: lead.phone,
                 name: lead.name,
-                lastMessage: lead.lastMessage,
-                tag: lead.tag,
-                isPersonal: true,
-                personalReason: reason,
-                humanPaused: false,
-              });
-              // REGLA: No envíes ningún mensaje de respuesta a WhatsApp
-              return;
-            }
-          }
-
-          this.logger.log(`🤖 [Empresa ${companyId}] Respuesta generada por Gemini IA para ${phone} tras ráfaga (${items.length} msgs)`);
-
-          // Tarea 10: Interceptar directiva [ALERTA_VENTA: RESUMEN_DEL_PEDIDO]
-          const saleDirectiveRegex = /\[ALERTA_VENTA(?::\s*([^\]]+))?\]/gi;
-          const saleMatches = [...reply.matchAll(saleDirectiveRegex)];
-          const hasSaleAlert = saleMatches.length > 0;
-          const saleSummary = hasSaleAlert ? (saleMatches[0][1] || 'Pedido confirmado / Intención de compra').trim() : '';
-
-          // Tarea 8: Interceptar directiva [ENVIAR_FOTOS: CODIGO_PRODUCTO] mediante expresión regular
-          const photoDirectiveRegex = /\[ENVIAR_FOTOS:\s*([A-Za-z0-9_\-\.]+)\s*\]/gi;
-          const photoMatches = [...reply.matchAll(photoDirectiveRegex)];
-
-          // Limpiar directivas del texto visible que recibe el cliente
-          const cleanTextReply = reply
-            .replace(saleDirectiveRegex, '')
-            .replace(photoDirectiveRegex, '')
-            .trim();
-
-          const typingDelay = (settings.simulateTyping && settings.typingDelaySeconds ? settings.typingDelaySeconds : 0) * 1000;
-          if (typingDelay > 0) {
-            await new Promise((r) => setTimeout(r, Math.min(typingDelay, 4000)));
-          }
-
-          // Enviar primero la respuesta de texto limpio
-          if (cleanTextReply) {
-            await this.sendMessage(companyId, phone, cleanTextReply);
-          }
-
-          // Inmediatamente después, si hubo solicitud de fotos, despacharlas secuencialmente usando MessageMedia
-          if (photoMatches.length > 0) {
-            for (const match of photoMatches) {
-              const productCode = match[1]?.trim();
-              if (productCode) {
-                await this.sendProductPhotos(companyId, phone, productCode);
-              }
-            }
-          }
-
-          // Tarea 10: Procesar Alerta de Venta (Línea Única, Auto-mensaje, Mark Unread, Pausa 120min, Evento Web)
-          if (hasSaleAlert) {
-            const holder = this.companyClients.get(companyId);
-            const { realPhone, chatId } = await this.resolveContactIdentifier(holder?.client, phone);
-            const targetChatId = this.chatTargetMap.get(phone) || chatId;
-
-            // Determinar si tenemos un número de teléfono E.164 válido (7 a 14 dígitos y que no sea un LID)
-            const candidateDigits = (realPhone || phone).replace(/\D/g, '');
-            const isLidNumber = candidateDigits.length >= 15 || phone.endsWith('@lid');
-            const validWaPhone = !isLidNumber && candidateDigits.length >= 7 && candidateDigits.length <= 14
-              ? candidateDigits
-              : (realPhone && realPhone.length >= 7 && realPhone.length <= 14 ? realPhone : null);
-
-            const clientDisplayName = lead.name && lead.name !== phone
-              ? `${lead.name} (${validWaPhone ? `+${validWaPhone}` : phone})`
-              : (validWaPhone ? `+${validWaPhone}` : phone);
-
-            // Generar enlace wa.me SOLO si se dispone de un número telefónico E.164 válido
-            const chatLinkText = validWaPhone
-              ? `Ir al chat: https://wa.me/${validWaPhone}`
-              : `(Abre WhatsApp y busca el chat de ${clientDisplayName} con punto verde)`;
-
-            // 1. Mensaje al chat propio del negocio (el chat consigo mismo)
-            try {
-              const selfWid = holder?.client?.info?.wid?._serialized || (holder?.client?.info?.wid?.user ? `${holder.client.info.wid.user}@c.us` : null);
-              if (holder?.client && selfWid) {
-                const selfAlertMsg = `🚨 ¡VENTA PENDIENTE!\nCliente: ${clientDisplayName}\nResumen: ${saleSummary}\n${chatLinkText}`;
-                await holder.client.sendMessage(selfWid, selfAlertMsg);
-                this.logger.log(`🚨 [Empresa ${companyId}] Alerta de venta enviada al chat propio (${selfWid})`);
-              }
-            } catch (errSelf: any) {
-              this.logger.warn(`Error enviando auto-mensaje de venta: ${errSelf?.message}`);
-            }
-
-            // 2. Marcar la conversación del cliente como no leída en el WhatsApp del comerciante
-            try {
-              if (holder?.client) {
-                if (typeof holder.client.markChatUnread === 'function') {
-                  await holder.client.markChatUnread(targetChatId);
-                } else {
-                  const chat = await holder.client.getChatById(targetChatId);
-                  if (chat && typeof chat.markUnread === 'function') {
-                    await chat.markUnread();
-                  }
-                }
-                this.logger.log(`🟢 [Empresa ${companyId}] Chat de ${targetChatId} marcado como no leído.`);
-              }
-            } catch (errUnread: any) {
-              this.logger.warn(`Error marcando chat como no leído: ${errUnread?.message}`);
-            }
-
-            // 3. Pausa del Bot en ese Chat (atencion_humana: true) durante 120 minutos
-            const pauseMinutes = 120;
-            const pausedUntil = new Date(Date.now() + pauseMinutes * 60 * 1000);
-            lead.humanPaused = true;
-            lead.humanPausedUntil = pausedUntil;
-            lead.tag = 'Venta Pendiente';
-            await this.leadRepository.save(lead);
-
-            // 4. Alerta en Panel Web (WebSockets / SSE)
-            this.broadcastCompanyEvent(companyId, 'sale_alert', {
-              lead: {
-                phone: validWaPhone || lead.phone,
-                name: clientDisplayName,
+                lastMessage: cleanTextReply,
                 tag: 'Venta Pendiente',
                 humanPaused: true,
                 humanPausedUntil: pausedUntil.toISOString(),
-              },
-              summary: saleSummary,
-              timestamp: Date.now(),
-            });
+                isPersonal: Boolean(lead.isPersonal),
+              });
+            }
 
-            this.broadcastCompanyEvent(companyId, 'lead_updated', {
-              phone: lead.phone,
-              name: lead.name,
-              lastMessage: cleanTextReply,
-              tag: 'Venta Pendiente',
-              humanPaused: true,
-              humanPausedUntil: pausedUntil.toISOString(),
-              isPersonal: Boolean(lead.isPersonal),
-            });
+            return;
           }
-
-          return;
+        } catch (err: any) {
+          this.logger.warn(`Aviso consultando Gemini IA: ${err?.message}`);
         }
-      } catch (err: any) {
-        this.logger.warn(`Aviso consultando Gemini IA: ${err?.message}`);
+      }
+
+      // 3. Fallback estático
+      if (settings.fallbackMessage) {
+        await this.sendMessage(companyId, phone, settings.fallbackMessage);
       }
     }
 
-    // 3. Fallback estático
-    if (settings.fallbackMessage) {
-      await this.sendMessage(companyId, phone, settings.fallbackMessage);
-    }
-  }
-
   private async saveMessage(
-    companyId: string,
-    phone: string,
-    fromMe: boolean,
-    body: string,
-    mediaUrl: string | null = null,
-    mediaMimetype: string | null = null,
-    messageType: string = 'chat',
-    serializedId: string | null = null,
-  ) {
+      companyId: string,
+      phone: string,
+      fromMe: boolean,
+      body: string,
+      mediaUrl: string | null = null,
+      mediaMimetype: string | null = null,
+      messageType: string = 'chat',
+      serializedId: string | null = null,
+    ) {
     const msg = this.messageRepository.create({
       id: serializedId || `msg_${Date.now()}_${Math.random().toString(36).substring(7)}`,
       companyId,
@@ -1312,16 +1350,126 @@ export class WhatsAppManagerService implements OnModuleInit, OnApplicationShutdo
   }
 
   broadcastCompanyEvent(companyId: string, eventName: string, payload: any) {
+    const targetSet = new Set<any>();
+
+    // 1. Clientes conectados a esta empresa
     const clients = this.companyEventsClients.get(companyId);
     if (clients && clients.size > 0) {
+      for (const c of clients) targetSet.add(c);
+    }
+
+    // 2. Si es una alerta de cuota, transmitir también a todos los clientes conectados (ej: superadministradores)
+    if (eventName === 'quota_exhausted' || eventName === 'quota_reset') {
+      for (const [_, clientSet] of this.companyEventsClients) {
+        for (const c of clientSet) targetSet.add(c);
+      }
+    }
+
+    if (targetSet.size > 0) {
       const data = `data: ${JSON.stringify({ event: eventName, payload, timestamp: Date.now() })}\n\n`;
-      for (const clientRes of clients) {
-        try {
-          clientRes.write(data);
-        } catch {
-          clients.delete(clientRes);
+        for (const clientRes of targetSet) {
+          try {
+            clientRes.write(data);
+          } catch {
+            targetSet.delete(clientRes);
+          }
         }
       }
     }
+
+  /**
+   * Alerta cuando se supera el límite de cuota (Gemini o Mensajes Automáticos)
+   * 1. Envía mensaje por WhatsApp al propio número del empresario (selfWid / chat consigo mismo)
+   * 2. Emite evento SSE 'quota_exhausted' a la pantalla de la plataforma web
+   * 3. Aplica throttling (cooldown) para no saturar al comerciante si llegan múltiples mensajes seguidos
+   */
+  async notifyQuotaExceeded(
+      companyId: string,
+      quotaType: 'gemini' | 'auto_messages',
+      current: number,
+      limit: number,
+      planName ?: string,
+    ) {
+      const alertKey = `${companyId}_${quotaType}`;
+      const lastAlert = this.lastQuotaAlertTime.get(alertKey) || 0;
+      const now = Date.now();
+      const COOLDOWN_MS = 4 * 60 * 60 * 1000; // Cooldown de 4 horas para re-alerta por WhatsApp
+
+      const shouldSendWhatsApp = (now - lastAlert) > COOLDOWN_MS;
+
+      let companyName = companyId;
+      let finalPlanName = planName;
+      try {
+        const company = await this.companyRepository.findOne({
+          where: { id: companyId },
+          relations: ['plan'],
+        });
+        if (company?.name) companyName = company.name;
+        if (!finalPlanName && company?.plan?.name) finalPlanName = company.plan.name;
+      } catch (err: any) {
+        this.logger.debug?.(`Error obteniendo empresa para alerta de cuota: ${err?.message}`);
+      }
+
+      if (!finalPlanName) finalPlanName = 'Plan Actual';
+
+      const serviceName =
+        quotaType === 'gemini'
+          ? 'Consultas con Inteligencia Artificial (Gemini)'
+          : 'Respuestas Automáticas con Reglas';
+
+      const shortServiceName =
+        quotaType === 'gemini'
+          ? 'Gemini IA'
+          : 'Mensajes Automáticos';
+
+      if (shouldSendWhatsApp) {
+        this.lastQuotaAlertTime.set(alertKey, now);
+        const holder = this.companyClients.get(companyId);
+        if (holder?.client && (holder.status === 'ready' || holder.status === ('READY' as any))) {
+          try {
+            const selfWid =
+              holder.client.info?.wid?._serialized ||
+              (holder.client.info?.wid?.user ? `${holder.client.info.wid.user}@c.us` : null);
+
+            if (selfWid) {
+              const waAlertMsg =
+                `⚠️ *¡ALERTA DE LÍMITE DE PLAN SUPERADO!*\n\n` +
+                `🏢 *Empresa:* ${companyName}\n` +
+                `📦 *Plan:* ${finalPlanName}\n` +
+                `🚫 *Servicio alcanzado:* ${serviceName}\n` +
+                `📊 *Consumo:* ${current} de ${limit} permitidos\n\n` +
+                `ℹ️ El bot ha pausado la atención automática en este servicio para evitar sobrecostos.\n\n` +
+                `👉 Ingresa a la plataforma web para atender a tus clientes directamente o ampliar tu plan.`;
+
+              await holder.client.sendMessage(selfWid, waAlertMsg);
+              this.logger.log(`⚠️ [Empresa ${companyId}] Alerta de límite superado enviada a WhatsApp propio (${selfWid})`);
+            }
+          } catch (errSelf: any) {
+            this.logger.warn(`Error enviando alerta de cuota al propio WhatsApp de ${companyId}: ${errSelf?.message}`);
+          }
+        }
+      }
+
+      // Emitir evento SSE a la pantalla de la plataforma en tiempo real
+      this.broadcastCompanyEvent(companyId, 'quota_exhausted', {
+        companyId,
+        type: quotaType,
+        current,
+        limit,
+        companyName,
+        planName: finalPlanName,
+        serviceName,
+        shortServiceName,
+        message: `⚠️ Has superado el límite de tu plan (${finalPlanName}) para ${shortServiceName} (${current}/${limit}). La atención automática ha sido pausada.`,
+      });
+    }
+
+    clearQuotaAlertCooldown(companyId ?: string) {
+      if (companyId) {
+        this.lastQuotaAlertTime.delete(`${companyId}_gemini`);
+        this.lastQuotaAlertTime.delete(`${companyId}_auto_messages`);
+      } else {
+        this.lastQuotaAlertTime.clear();
+      }
+    }
   }
-}

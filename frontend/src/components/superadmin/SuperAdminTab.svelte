@@ -14,6 +14,7 @@
   } from '../../stores/superadmin';
   import { currentUser, isSuperadmin } from '../../stores/auth';
   import { activeTab } from '../../stores/ui';
+  import { plans, loadPlans, deletePlan } from '../../stores/plans';
 
   // Modales
   import CompanyModalAdmin from './CompanyModalAdmin.svelte';
@@ -22,8 +23,10 @@
   import UserModalAdmin from './UserModalAdmin.svelte';
   import ResetPasswordModalAdmin from './ResetPasswordModalAdmin.svelte';
   import UserCompaniesModalAdmin from './UserCompaniesModalAdmin.svelte';
+  import PlanModalAdmin from './PlanModalAdmin.svelte';
+  import AssignPlanModalAdmin from './AssignPlanModalAdmin.svelte';
 
-  let currentSubTab = $state('companies'); // 'companies' | 'users'
+  let currentSubTab = $state('companies'); // 'companies' | 'users' | 'plans'
   let searchQuery = $state('');
 
   // Estados de Modales
@@ -45,6 +48,12 @@
   let isUserCompaniesModalOpen = $state(false);
   let selectedUserForCompanies = $state(null);
 
+  let isPlanModalOpen = $state(false);
+  let selectedPlanForEdit = $state(null);
+
+  let isAssignPlanModalOpen = $state(false);
+  let selectedCompanyForAssignPlan = $state(null);
+
   $effect(() => {
     if (!$isSuperadmin) {
       activeTab.set('tab-rules');
@@ -54,6 +63,7 @@
   onMount(() => {
     if ($isSuperadmin) {
       loadAllSuperAdminData();
+      loadPlans();
     } else {
       activeTab.set('tab-rules');
     }
@@ -70,6 +80,19 @@
     );
   });
 
+  // Empresas con cuota agotada (para alerta de superadmin)
+  let companiesWithExhaustedQuota = $derived.by(() => {
+    return ($adminCompanies || []).filter(c => {
+      const gLimit = Number(c.geminiLimit ?? c.gemini_limit ?? -1);
+      const gCalls = Number(c.geminiCallsCount ?? c.gemini_calls_count ?? 0);
+      const aLimit = Number(c.autoMessagesLimit ?? c.auto_messages_limit ?? -1);
+      const aMsgs = Number(c.autoMessagesCount ?? c.auto_messages_count ?? 0);
+      const isGeminiExhausted = gLimit > 0 && gCalls >= gLimit;
+      const isAutoExhausted = aLimit > 0 && aMsgs >= aLimit;
+      return isGeminiExhausted || isAutoExhausted;
+    });
+  });
+
   // Filtrado de usuarios
   let filteredUsers = $derived.by(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -80,6 +103,44 @@
       (u.phone || '').toLowerCase().includes(q)
     );
   });
+
+  // Filtrado de planes
+  let filteredPlans = $derived.by(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return $plans;
+    return $plans.filter(p =>
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.description || '').toLowerCase().includes(q) ||
+      (p.id || '').toLowerCase().includes(q)
+    );
+  });
+
+  // Acciones de Planes SaaS
+  function openCreatePlan() {
+    selectedPlanForEdit = null;
+    isPlanModalOpen = true;
+  }
+
+  function openEditPlan(plan) {
+    selectedPlanForEdit = plan;
+    isPlanModalOpen = true;
+  }
+
+  async function handleDeletePlan(plan) {
+    if (plan.is_default || plan.isDefault) {
+      alert('No puedes eliminar el plan predeterminado del sistema');
+      return;
+    }
+    const ok = window.confirm(`¿Estás seguro de eliminar el plan "${plan.name}"? Las empresas asociadas pasarán al plan demo.`);
+    if (ok) {
+      await deletePlan(plan.id);
+    }
+  }
+
+  function openAssignPlan(company) {
+    selectedCompanyForAssignPlan = company;
+    isAssignPlanModalOpen = true;
+  }
 
   // Acciones Empresas
   function openCreateCompany() {
@@ -191,6 +252,33 @@
     </div>
   </div>
 
+  <!-- Alerta Global de Cuotas Agotadas para Superadmin -->
+  {#if companiesWithExhaustedQuota.length > 0}
+    <div class="superadmin-quota-alert-banner">
+      <div class="sa-alert-icon">⚠️</div>
+      <div class="sa-alert-content">
+        <h4 class="sa-alert-title">¡Alerta de Consumo de Plan! ({companiesWithExhaustedQuota.length} empresa{companiesWithExhaustedQuota.length > 1 ? 's' : ''} con límite alcanzado)</h4>
+        <p class="sa-alert-desc">
+          Las siguientes empresas han alcanzado el 100% de su cuota y tienen la atención automática restringida:
+          {#each companiesWithExhaustedQuota as exComp, idx}
+            <strong>{exComp.name}</strong> ({exComp.geminiCallsCount || 0}/{exComp.geminiLimit || 0} llamadas IA){#if idx < companiesWithExhaustedQuota.length - 1}, {/if}
+          {/each}
+        </p>
+      </div>
+      <div class="sa-alert-actions">
+        {#each companiesWithExhaustedQuota as exComp}
+          <button
+            type="button"
+            class="btn-sa-manage-plan"
+            onclick={() => openAssignPlan(exComp)}
+          >
+            💎 Gestionar {exComp.name}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   <!-- Métricas Globales del Sistema -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -242,7 +330,7 @@
     </div>
   </div>
 
-  <!-- Subnavegación: Empresas vs Usuarios -->
+  <!-- Subnavegación: Empresas vs Usuarios vs Planes -->
   <div class="subtabs-bar">
     <div class="tabs-group">
       <button
@@ -259,6 +347,13 @@
       >
         <span>👥 Usuarios Globales ({$adminUsers.length})</span>
       </button>
+      <button
+        type="button"
+        class="subtab-btn {currentSubTab === 'plans' ? 'active' : ''}"
+        onclick={() => { currentSubTab = 'plans'; searchQuery = ''; }}
+      >
+        <span>💎 Planes SaaS ({$plans.length})</span>
+      </button>
     </div>
 
     <!-- Barra de Búsqueda y Acción Rápida -->
@@ -267,7 +362,7 @@
         <span class="search-icon">🔍</span>
         <input
           type="text"
-          placeholder={currentSubTab === 'companies' ? 'Buscar empresa por nombre...' : 'Buscar usuario por nombre o correo...'}
+          placeholder={currentSubTab === 'companies' ? 'Buscar empresa por nombre...' : (currentSubTab === 'users' ? 'Buscar usuario por nombre o correo...' : 'Buscar plan por nombre...')}
           bind:value={searchQuery}
         />
         {#if searchQuery}
@@ -279,9 +374,13 @@
         <button type="button" class="btn btn-primary btn-add" onclick={openCreateCompany}>
           <span>➕ Nueva Empresa</span>
         </button>
-      {:else}
+      {:else if currentSubTab === 'users'}
         <button type="button" class="btn btn-primary btn-add" onclick={openCreateUser}>
           <span>➕ Nuevo Usuario</span>
+        </button>
+      {:else if currentSubTab === 'plans'}
+        <button type="button" class="btn btn-primary btn-add" onclick={openCreatePlan}>
+          <span>➕ Crear Nuevo Plan</span>
         </button>
       {/if}
     </div>
@@ -296,6 +395,7 @@
             <th>Empresa / Marca</th>
             <th>Propietario / Creador</th>
             <th>Estado WhatsApp</th>
+            <th>Plan SaaS & Consumo</th>
             <th>Equipo</th>
             <th>Flujos & Leads</th>
             <th>Inteligencia Artificial</th>
@@ -305,7 +405,7 @@
         <tbody>
           {#if filteredCompanies.length === 0}
             <tr>
-              <td colspan="7" class="empty-table-row">
+              <td colspan="8" class="empty-table-row">
                 No se encontraron empresas con el término de búsqueda.
               </td>
             </tr>
@@ -329,6 +429,27 @@
                 {:else}
                   <span class="status-pill idle">● Desconectado</span>
                 {/if}
+              </td>
+              <td>
+                <div class="plan-cell-info">
+                  <div class="plan-pill-row">
+                    <span class="plan-pill {comp.planPrice > 0 ? 'paid' : 'demo'}">
+                      💎 {comp.planName || 'Plan Demo'}
+                    </span>
+                    {#if (Number(comp.geminiLimit) > 0 && Number(comp.geminiCallsCount || 0) >= Number(comp.geminiLimit)) || (Number(comp.autoMessagesLimit) > 0 && Number(comp.autoMessagesCount || 0) >= Number(comp.autoMessagesLimit))}
+                      <span class="quota-exhausted-badge">⚠️ Cuota Agotada</span>
+                    {/if}
+                  </div>
+                  <div class="quota-progress-mini">
+                    <span class="quota-text">
+                      IA: <strong>{comp.geminiCallsCount || 0}</strong>/{comp.geminiLimit <= 0 ? '∞' : comp.geminiLimit}
+                      {#if comp.geminiLimitType === 'total'}<small class="quota-subtag">(vitalicio)</small>{/if}
+                    </span>
+                    <span class="quota-text">
+                      Reglas: <strong>{comp.autoMessagesCount || 0}</strong>/{comp.autoMessagesLimit <= 0 ? '∞' : comp.autoMessagesLimit}
+                    </span>
+                  </div>
+                </div>
               </td>
               <td>
                 <span class="badge-counter">{comp.memberCount || 0} usuarios</span>
@@ -355,6 +476,15 @@
               </td>
               <td class="text-right">
                 <div class="actions-row">
+                  <button
+                    type="button"
+                    class="btn-action-icon plan-action"
+                    onclick={() => openAssignPlan(comp)}
+                    title="Asignar Plan SaaS o Reiniciar Cuota"
+                  >
+                    💎 Plan
+                  </button>
+
                   <button
                     type="button"
                     class="btn-action-icon gemini-action"
@@ -535,6 +665,109 @@
       </table>
     </div>
   {/if}
+
+  <!-- Contenido: Vista de Planes SaaS -->
+  {#if currentSubTab === 'plans'}
+    <div class="plans-admin-grid">
+      {#if filteredPlans.length === 0}
+        <div class="empty-table-card">
+          <p>No se encontraron planes SaaS con el término de búsqueda.</p>
+          <button type="button" class="btn btn-primary" onclick={openCreatePlan}>
+            ➕ Crear Primer Plan
+          </button>
+        </div>
+      {/if}
+      {#each filteredPlans as p}
+        <div class="plan-admin-card {p.is_default || p.isDefault ? 'is-default' : ''}">
+          <div class="plan-card-top">
+            <div class="plan-badges">
+              {#if p.is_default || p.isDefault}
+                <span class="badge badge-default">⭐ Predeterminado</span>
+              {/if}
+              {#if p.is_active === false || p.isActive === false}
+                <span class="badge badge-inactive">Inactivo</span>
+              {:else}
+                <span class="badge badge-active">Activo</span>
+              {/if}
+            </div>
+            <div class="plan-price-display">
+              {#if Number(p.price) === 0}
+                <span class="free-text">Gratuito / Demo</span>
+              {:else}
+                <span class="currency">$</span>
+                <span class="price-val">{p.price}</span>
+                <span class="period">/{p.currency || 'USD'}</span>
+              {/if}
+            </div>
+          </div>
+
+          <h3 class="plan-card-title">{p.name}</h3>
+          {#if p.description}
+            <p class="plan-card-desc">{p.description}</p>
+          {/if}
+
+          <div class="plan-limits-box">
+            <div class="limit-row">
+              <span class="limit-icon">🤖</span>
+              <div class="limit-info">
+                <strong>Gemini IA:</strong>
+                <span>
+                  {#if Number(p.gemini_limit !== undefined ? p.gemini_limit : p.geminiLimit) <= 0}
+                    <strong class="highlight-unlimited">Ilimitado</strong>
+                  {:else}
+                    <strong>{p.gemini_limit !== undefined ? p.gemini_limit : p.geminiLimit}</strong> consultas ({p.gemini_limit_type === 'total' || p.geminiLimitType === 'total' ? 'Totales / Demo' : 'al mes'})
+                  {/if}
+                </span>
+              </div>
+            </div>
+
+            <div class="limit-row">
+              <span class="limit-icon">⚡</span>
+              <div class="limit-info">
+                <strong>Mensajes Automáticos:</strong>
+                <span>
+                  {#if Number(p.auto_messages_limit !== undefined ? p.auto_messages_limit : p.autoMessagesLimit) <= 0 || p.auto_messages_limit_type === 'unlimited' || p.autoMessagesLimitType === 'unlimited'}
+                    <strong class="highlight-unlimited">Ilimitado</strong>
+                  {:else}
+                    <strong>{p.auto_messages_limit !== undefined ? p.auto_messages_limit : p.autoMessagesLimit}</strong> respuestas ({p.auto_messages_limit_type === 'total' || p.autoMessagesLimitType === 'total' ? 'Totales / Vitalicio' : 'al mes'})
+                  {/if}
+                </span>
+              </div>
+            </div>
+
+            {#if p.custom_warning_message || p.customWarningMessage}
+              <div class="limit-row warning-box">
+                <span class="limit-icon">⚠️</span>
+                <div class="limit-info">
+                  <strong>Aviso de cuota agotada:</strong>
+                  <p class="warning-sample">"{p.custom_warning_message || p.customWarningMessage}"</p>
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <div class="plan-card-footer">
+            <button
+              type="button"
+              class="btn-plan-action edit"
+              onclick={() => openEditPlan(p)}
+            >
+              ✏️ Editar Plan
+            </button>
+            {#if !(p.is_default || p.isDefault)}
+              <button
+                type="button"
+                class="btn-plan-action delete"
+                onclick={() => handleDeletePlan(p)}
+              >
+                🗑️ Eliminar
+              </button>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </section>
 
 <!-- Modales del Panel Superadmin -->
@@ -542,6 +775,18 @@
   isOpen={isCompanyModalOpen}
   company={selectedCompanyForEdit}
   onClose={() => { isCompanyModalOpen = false; selectedCompanyForEdit = null; }}
+/>
+
+<PlanModalAdmin
+  isOpen={isPlanModalOpen}
+  plan={selectedPlanForEdit}
+  onClose={() => { isPlanModalOpen = false; selectedPlanForEdit = null; }}
+/>
+
+<AssignPlanModalAdmin
+  isOpen={isAssignPlanModalOpen}
+  company={selectedCompanyForAssignPlan}
+  onClose={() => { isAssignPlanModalOpen = false; selectedCompanyForAssignPlan = null; }}
 />
 
 <GeminiModalAdmin
@@ -1004,9 +1249,314 @@
     color: #fca5a5;
     border-color: rgba(239, 68, 68, 0.3);
   }
+  .plan-action:hover {
+    background: rgba(14, 165, 233, 0.2) !important;
+    border-color: rgba(14, 165, 233, 0.5) !important;
+    color: #38bdf8 !important;
+  }
   .demote-action:hover {
     background: rgba(239, 68, 68, 0.2) !important;
     color: #ef4444 !important;
+  }
+
+  /* Plan Cell in Companies Table */
+  .plan-cell-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .plan-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    width: fit-content;
+  }
+  .plan-pill.paid {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.25));
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    color: #c084fc;
+  }
+  .plan-pill.demo {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+  }
+  .quota-progress-mini {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+  .quota-text strong {
+    color: #f3f4f6;
+  }
+  .quota-subtag {
+    color: #9ca3af;
+    font-size: 0.68rem;
+    font-style: italic;
+  }
+
+  /* Grid de Planes SaaS */
+  .plans-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .empty-table-card {
+    grid-column: 1 / -1;
+    background: var(--bg-card);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .plan-admin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .plan-admin-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+  .plan-admin-card.is-default {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.08);
+  }
+  .plan-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .plan-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .badge-default {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+  }
+  .badge-active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
+  .badge-inactive {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+  }
+  .plan-price-display {
+    text-align: right;
+  }
+  .free-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #34d399;
+  }
+  .plan-price-display .currency {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    vertical-align: top;
+  }
+  .plan-price-display .price-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+  }
+  .plan-price-display .period {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+  .plan-card-title {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #f3f4f6;
+    font-weight: 700;
+  }
+  .plan-card-desc {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .plan-limits-box {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .limit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.82rem;
+  }
+  .limit-icon {
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+  .limit-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .limit-info strong {
+    color: #e2e8f0;
+  }
+  .limit-info span {
+    color: #94a3b8;
+  }
+  .highlight-unlimited {
+    color: #38bdf8 !important;
+  }
+  .warning-box {
+    border-top: 1px dashed var(--border-subtle);
+    padding-top: 8px;
+  }
+  .warning-sample {
+    margin: 2px 0 0 0;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-style: italic;
+    line-height: 1.3;
+  }
+  .plan-card-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .btn-plan-action {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+  }
+  .btn-plan-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .btn-plan-action.edit:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+  }
+  .btn-plan-action.delete {
+    flex: 0 0 auto;
+  }
+  .btn-plan-action.delete:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+  }
+
+  /* Alerta Global de Cuota para Superadmin */
+  .superadmin-quota-alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.16) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    border-left: 5px solid #ef4444;
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 18px rgba(239, 68, 68, 0.15);
+    animation: fadeIn 0.2s ease-out;
+  }
+  .sa-alert-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .sa-alert-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .sa-alert-title {
+    margin: 0 0 4px 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #fca5a5;
+  }
+  .sa-alert-desc {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    line-height: 1.45;
+  }
+  .sa-alert-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .btn-sa-manage-plan {
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-sa-manage-plan:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+  }
+  .plan-pill-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .quota-exhausted-badge {
+    padding: 2px 7px;
+    background: rgba(239, 68, 68, 0.25);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    border-radius: 9999px;
+    color: #fca5a5;
+    font-size: 0.72rem;
+    font-weight: 700;
+    animation: pulseBadge 2s infinite;
+  }
+  @keyframes pulseBadge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
   }
 </style>
 

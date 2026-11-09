@@ -14,6 +14,8 @@ import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { MailModule } from './modules/mail/mail.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { PlansModule } from './modules/plans/plans.module';
+import { SuperadminModule } from './modules/superadmin/superadmin.module';
 
 @Module({
     imports: [
@@ -34,6 +36,8 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
         SchedulerModule,
         CatalogModule,
         PromotionsModule,
+        PlansModule,
+        SuperadminModule,
     ],
     controllers: [AppController],
 })

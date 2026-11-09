@@ -19,12 +19,14 @@
     import { loadLibrary } from './stores/library';
     import { loadSettings } from './stores/settings';
     import { loadTeamData } from './stores/team';
+    import { loadCompanyPlanUsage } from './stores/plans';
     import { activeTab, isProfileModalOpen } from './stores/ui';
 
     // Layout Components
     import Header from './components/layout/Header.svelte';
     import Sidebar from './components/layout/Sidebar.svelte';
     import ToastContainer from './components/layout/ToastContainer.svelte';
+    import QuotaAlertBanner from './components/layout/QuotaAlertBanner.svelte';
 
     // Modals
     import LoginModal from './components/auth/LoginModal.svelte';
@@ -67,6 +69,7 @@
             loadLibrary(),
             loadSettings(),
             loadTeamData(),
+            loadCompanyPlanUsage(),
         ]);
     }
 
@@ -144,6 +147,8 @@
             <Sidebar />
 
             <main class="app-content-viewport">
+                <QuotaAlertBanner />
+
                 {#if $activeTab === 'tab-rules'}
                     <RulesTab />
                 {:else if $activeTab === 'tab-scheduler'}

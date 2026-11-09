@@ -20,6 +20,7 @@
     logout 
   } from '../../stores/auth';
   import { isProfileModalOpen, isChangePasswordModalOpen, activeTab } from '../../stores/ui';
+  import { companyPlanUsage } from '../../stores/plans';
 
   let { onCompanySwitched } = $props();
 
@@ -82,6 +83,12 @@
         {/if}
       </select>
     </div>
+
+    {#if $companyPlanUsage && ($companyPlanUsage.geminiUsage?.isExhausted || $companyPlanUsage.autoMessagesUsage?.isExhausted)}
+      <span class="header-quota-pill" title="Atención automática en pausa por límite de consumo superado">
+        ⚠️ Cuota Agotada
+      </span>
+    {/if}
 
     <button 
       type="button" 
@@ -415,5 +422,20 @@
     0% { transform: scale(1); opacity: 0.9; }
     50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
     100% { transform: scale(1); opacity: 0.9; }
+  }
+
+  .header-quota-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    background: rgba(239, 68, 68, 0.22);
+    border: 1px solid rgba(239, 68, 68, 0.55);
+    color: #fca5a5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    animation: pulseAlert 2s infinite;
   }
 </style>

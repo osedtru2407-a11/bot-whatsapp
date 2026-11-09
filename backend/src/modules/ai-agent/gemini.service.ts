@@ -78,6 +78,14 @@ export class GeminiService {
     this.sessions.clear();
   }
 
+  clearCompanySessions(companyId: string) {
+    for (const key of this.sessions.keys()) {
+      if (key.startsWith(companyId) || key.includes(companyId)) {
+        this.sessions.delete(key);
+      }
+    }
+  }
+
   private computeContextHash(content: string): string {
     return crypto.createHash('md5').update(content || '').digest('hex');
   }
